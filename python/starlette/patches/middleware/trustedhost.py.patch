@@ -1,0 +1,14 @@
+--- work/sources/starlette/middleware/trustedhost.py	2026-04-30 16:47:44.146039129 +0900
++++ work/patched/starlette/middleware/trustedhost.py	2026-05-01 14:57:39.571177700 +0900
+@@ -29,10 +29,7 @@
+         self.www_redirect = www_redirect
+ 
+     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+-        if self.allow_any or scope["type"] not in (
+-            "http",
+-            "websocket",
+-        ):  # pragma: no cover
++        if self.allow_any or scope["type"] != "http":  # pragma: no cover
+             await self.app(scope, receive, send)
+             return
+ 

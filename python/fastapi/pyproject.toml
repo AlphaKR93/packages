@@ -1,0 +1,79 @@
+[project]
+name = "fastapi-minimal"
+dynamic = ["version"]
+authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
+requires-python = "==3.14.*"
+dependencies = [
+    "internals>=0.2.0",
+    "pydantic>=2.9.0",
+    "starlette-minimal>=1.0.0",
+    "typing-inspection>=0.4.2",
+]
+
+[dependency-groups]
+dev = [
+    "fastapi",
+]
+
+[tool.uv]
+exclude-dependencies = ["starlette", "typing-extensions", "annotated-doc"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "work/sources/fastapi/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alpha93"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/fastapi" = "fastapi"
+
+[tool.hatch.build.hooks.custom]
+path = "scripts/hooks/hatch_build.py"
+
+[tool.uv.sources]
+fastapi = { path = "work/patched" }
+internals = { path = "../../../../internals" }
+starlette-minimal = { path = "../starlette" }
+
+[tool.patcher]
+module-source = "fastapi"
+excludes = [
+    ".agents/**/*",
+    "_compat/**/*",
+    "openapi/**/*",
+    "middleware/cors.py",
+    "middleware/gzip.py",
+    "middleware/httpsredirect.py",
+    "middleware/trustedhost.py",
+    "middleware/wsgi.py",
+    "security/oauth2.py",
+    "security/open_id_connect_url.py",
+    "__main__.py",
+    "cli.py",
+    "param_functions.py",
+    "staticfiles.py",
+    "templating.py",
+    "testclient.py",
+    "background.py",
+    "logger.py",
+    "sse.py",
+    "types.py",
+    "websockets.py",
+]
+dev-excludes = [
+    ".github/**/*",
+    "docs/**/*",
+    "docs_src/**/*",
+    "fastapi-slim/**/*",
+    "scripts/**/*",
+    "tests/**/*",
+    ".pre-commit-config.yaml",
+    ".python-version",
+    "CITATION.cff",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+]

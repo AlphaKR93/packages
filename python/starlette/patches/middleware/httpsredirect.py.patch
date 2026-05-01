@@ -1,0 +1,11 @@
+--- work/sources/starlette/middleware/httpsredirect.py	2026-04-30 16:47:44.146039129 +0900
++++ work/patched/starlette/middleware/httpsredirect.py	2026-05-01 14:57:39.627177678 +0900
+@@ -8,7 +8,7 @@
+         self.app = app
+ 
+     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+-        if scope["type"] in ("http", "websocket") and scope["scheme"] in ("http", "ws"):
++        if scope["type"] == scope["scheme"] == "http":
+             url = URL(scope=scope)
+             redirect_scheme = {"http": "https", "ws": "wss"}[url.scheme]
+             netloc = url.hostname if url.port in (80, 443) else url.netloc

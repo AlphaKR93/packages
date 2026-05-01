@@ -1,0 +1,6 @@
+### Python
+**/__pycache__/
+*.py[cod]
+
+### Patches
+**/work/patched/

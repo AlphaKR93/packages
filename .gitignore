@@ -1,0 +1,6 @@
+### Generic build outputs
+dist/
+build/
+
+### JetBrains IDEs
+.idea/

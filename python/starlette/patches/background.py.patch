@@ -1,0 +1,49 @@
+--- work/sources/starlette/background.py	2026-04-30 16:47:44.146039129 +0900
++++ work/patched/starlette/background.py	2026-05-01 21:16:30.380011457 +0900
+@@ -1,12 +1,14 @@
+-from __future__ import annotations
++from typing import override
+ 
+-from collections.abc import Callable, Sequence
+-from typing import Any, ParamSpec
++from ._utils import is_async_callable
++from .concurrency import run_in_threadpool
+ 
+-from starlette._utils import is_async_callable
+-from starlette.concurrency import run_in_threadpool
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Callable, Sequence
++    from typing import Any, ParamSpec
+ 
+-P = ParamSpec("P")
++
++    P = ParamSpec("P")
+ 
+ 
+ class BackgroundTask:
+@@ -16,7 +18,7 @@
+         self.kwargs = kwargs
+         self.is_async = is_async_callable(func)
+ 
+-    async def __call__(self) -> None:
++    async def __call__(self, /) -> None:
+         if self.is_async:
+             await self.func(*self.args, **self.kwargs)
+         else:
+@@ -24,13 +26,14 @@
+ 
+ 
+ class BackgroundTasks(BackgroundTask):
+-    def __init__(self, tasks: Sequence[BackgroundTask] | None = None):
++    def __init__(self, tasks: Sequence[BackgroundTask] | None = None, /):
+         self.tasks = list(tasks) if tasks else []
+ 
+     def add_task(self, func: Callable[P, Any], *args: P.args, **kwargs: P.kwargs) -> None:
+         task = BackgroundTask(func, *args, **kwargs)
+         self.tasks.append(task)
+ 
+-    async def __call__(self) -> None:
++    @override
++    async def __call__(self, /) -> None:
+         for task in self.tasks:
+             await task()

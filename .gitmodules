@@ -1,0 +1,6 @@
+[submodule "python/fastapi/ref"]
+	path = python/fastapi/work/sources
+	url = git@github.com:fastapi/fastapi.git
+[submodule "python/starlette/ref"]
+	path = python/starlette/work/sources
+	url = git@github.com:Kludex/starlette.git

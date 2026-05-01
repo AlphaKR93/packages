@@ -1,0 +1,51 @@
+--- work/sources/starlette/_exception_handler.py	2026-04-30 16:47:44.146039129 +0900
++++ work/patched/starlette/_exception_handler.py	2026-05-01 21:16:30.396011452 +0900
+@@ -1,26 +1,27 @@
+-from __future__ import annotations
++from ._utils import is_async_callable
++from .concurrency import run_in_threadpool
++from .exceptions import HTTPException
++from .requests import Request
+ 
+-from typing import Any
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from typing import Any
+ 
+-from starlette._utils import is_async_callable
+-from starlette.concurrency import run_in_threadpool
+-from starlette.exceptions import HTTPException
+-from starlette.requests import Request
+-from starlette.types import ASGIApp, ExceptionHandler, Message, Receive, Scope, Send
+-from starlette.websockets import WebSocket
++    from .types import ASGIApp, ExceptionHandler, Message, Receive, Scope, Send
+ 
+-ExceptionHandlers = dict[Any, ExceptionHandler]
+-StatusHandlers = dict[int, ExceptionHandler]
++    type ExceptionHandlers = dict[Any, ExceptionHandler]
++    type StatusHandlers = dict[int, ExceptionHandler]
+ 
+ 
+-def _lookup_exception_handler(exc_handlers: ExceptionHandlers, exc: Exception) -> ExceptionHandler | None:
+-    for cls in type(exc).__mro__:
++def _lookup_exception_handler(exc_handlers: ExceptionHandlers, exc: Exception, /) -> ExceptionHandler | None:
++    mro = type(exc).__mro__
++    mro: tuple[type, ...]
++    for cls in mro:
+         if cls in exc_handlers:
+             return exc_handlers[cls]
+     return None
+ 
+ 
+-def wrap_app_handling_exceptions(app: ASGIApp, conn: Request | WebSocket) -> ASGIApp:
++def wrap_app_handling_exceptions(app: ASGIApp, conn: Request, /) -> ASGIApp:
+     exception_handlers: ExceptionHandlers
+     status_handlers: StatusHandlers
+     try:
+@@ -51,6 +52,7 @@
+ 
+             if handler is None:
+                 raise exc
++            handler: ExceptionHandler
+ 
+             if response_started:
+                 raise RuntimeError("Caught handled exception, but response already started.") from exc

@@ -1,0 +1,108 @@
+--- work/sources/fastapi/dependencies/utils.py	2026-04-30 16:45:51.818075012 +0900
++++ work/patched/fastapi/dependencies/utils.py	2026-05-01 21:49:37.863386281 +0900
+@@ -56,7 +56,6 @@
+ )
+ from fastapi.dependencies.models import Dependant
+ from fastapi.exceptions import DependencyScopeError
+-from fastapi.logger import logger
+ from fastapi.security.oauth2 import SecurityScopes
+ from fastapi.types import DependencyCacheKey
+ from fastapi.utils import create_model_field, get_path_param_names
+@@ -73,52 +72,8 @@
+ )
+ from starlette.requests import HTTPConnection, Request
+ from starlette.responses import Response
+-from starlette.websockets import WebSocket
+ from typing_inspection.typing_objects import is_typealiastype
+ 
+-multipart_not_installed_error = (
+-    'Form data requires "python-multipart" to be installed. \n'
+-    'You can install "python-multipart" with: \n\n'
+-    "pip install python-multipart\n"
+-)
+-multipart_incorrect_install_error = (
+-    'Form data requires "python-multipart" to be installed. '
+-    'It seems you installed "multipart" instead. \n'
+-    'You can remove "multipart" with: \n\n'
+-    "pip uninstall multipart\n\n"
+-    'And then install "python-multipart" with: \n\n'
+-    "pip install python-multipart\n"
+-)
+-
+-
+-def ensure_multipart_is_installed() -> None:
+-    try:
+-        from python_multipart import __version__
+-
+-        # Import an attribute that can be mocked/deleted in testing
+-        assert __version__ > "0.0.12"
+-    except (ImportError, AssertionError):
+-        try:
+-            # __version__ is available in both multiparts, and can be mocked
+-            from multipart import (  # type: ignore[no-redef,import-untyped]  # ty: ignore[unused-ignore-comment]
+-                __version__,
+-            )
+-
+-            assert __version__
+-            try:
+-                # parse_options_header is only available in the right multipart
+-                from multipart.multipart import (  # type: ignore[import-untyped]  # ty: ignore[unused-ignore-comment]
+-                    parse_options_header,
+-                )
+-
+-                assert parse_options_header
+-            except ImportError:
+-                logger.error(multipart_incorrect_install_error)
+-                raise RuntimeError(multipart_incorrect_install_error) from None
+-        except ImportError:
+-            logger.error(multipart_not_installed_error)
+-            raise RuntimeError(multipart_not_installed_error) from None
+-
+ 
+ def get_parameterless_sub_dependant(*, depends: params.Depends, path: str) -> Dependant:
+     assert callable(depends.dependency), (
+@@ -365,9 +320,6 @@
+     if lenient_issubclass(type_annotation, Request):
+         dependant.request_param_name = param_name
+         return True
+-    elif lenient_issubclass(type_annotation, WebSocket):
+-        dependant.websocket_param_name = param_name
+-        return True
+     elif lenient_issubclass(type_annotation, HTTPConnection):
+         dependant.http_connection_param_name = param_name
+         return True
+@@ -489,7 +441,6 @@
+         type_annotation,
+         (
+             Request,
+-            WebSocket,
+             HTTPConnection,
+             Response,
+             StarletteBackgroundTasks,
+@@ -531,8 +482,6 @@
+         ):
+             field_info.in_ = params.ParamTypes.query
+         use_annotation_from_field_info = use_annotation
+-        if isinstance(field_info, params.Form):
+-            ensure_multipart_is_installed()
+         if not field_info.alias and getattr(field_info, "convert_underscores", None):
+             alias = param_name.replace("_", "-")
+         else:
+@@ -597,7 +546,7 @@
+ 
+ async def solve_dependencies(
+     *,
+-    request: Request | WebSocket,
++    request: Request,
+     dependant: Dependant,
+     body: dict[str, Any] | FormData | bytes | None = None,
+     background_tasks: StarletteBackgroundTasks | None = None,
+@@ -714,8 +663,6 @@
+         values[dependant.http_connection_param_name] = request
+     if dependant.request_param_name and isinstance(request, Request):
+         values[dependant.request_param_name] = request
+-    elif dependant.websocket_param_name and isinstance(request, WebSocket):
+-        values[dependant.websocket_param_name] = request
+     if dependant.background_tasks_param_name:
+         if background_tasks is None:
+             background_tasks = BackgroundTasks()

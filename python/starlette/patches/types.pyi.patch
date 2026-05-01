@@ -1,0 +1,26 @@
+--- work/sources/starlette/types.pyi	1970-01-01 09:00:00.000000000 +0900
++++ work/patched/starlette/types.pyi	2026-05-01 21:09:50.056139014 +0900
+@@ -0,0 +1,23 @@
++from collections.abc import Awaitable, Callable, Mapping, MutableMapping
++from contextlib import AbstractAsyncContextManager
++from typing import Any, Protocol
++
++from commons.types import AwaitableOr
++from starlette.requests import Request
++from starlette.responses import Response
++
++
++type StatelessLifespan[T] = Callable[[T], AbstractAsyncContextManager[None]]
++type StatefulLifespan[T] = Callable[[T], AbstractAsyncContextManager[Mapping[str, Any]]]
++type Lifespan[T] = StatelessLifespan[T] | StatefulLifespan[T]
++
++type ExceptionHandler[T] = Callable[[Request, T], AwaitableOr[Response]]
++type ExceptionHandlers = MutableMapping[int | type[BaseException], ExceptionHandler[int | type[BaseException]]]
++
++type Scope = MutableMapping[str, Any]
++type Message = MutableMapping[str, Any]
++type Receive = Callable[[], Awaitable[Message]]
++type Send = Callable[[Message], Awaitable[None]]
++
++class ASGIApp(Protocol):
++    async def __call__(self, scope: Scope, receive: Receive, send: Send, /) -> None: ...

@@ -1,0 +1,80 @@
+--- work/sources/fastapi/datastructures.py	2026-04-30 16:45:51.818075012 +0900
++++ work/patched/fastapi/datastructures.py	2026-05-01 21:49:37.863386281 +0900
+@@ -1,21 +1,16 @@
+-from collections.abc import Callable, Mapping
+-from typing import (
+-    Annotated,
+-    Any,
+-    BinaryIO,
+-    TypeVar,
+-    cast,
+-)
++__all__ = ("URL", "Address", "Headers", "QueryParams", "State", "UploadFile",)
++
++from typing import Annotated
+ 
+-from annotated_doc import Doc
+ from pydantic import GetJsonSchemaHandler
+-from starlette.datastructures import URL as URL  # noqa: F401
+-from starlette.datastructures import Address as Address  # noqa: F401
+-from starlette.datastructures import FormData as FormData  # noqa: F401
+-from starlette.datastructures import Headers as Headers  # noqa: F401
+-from starlette.datastructures import QueryParams as QueryParams  # noqa: F401
+-from starlette.datastructures import State as State  # noqa: F401
+-from starlette.datastructures import UploadFile as StarletteUploadFile
++from pydantic_core.core_schema import with_info_plain_validator_function
++from starlette.datastructures import URL, Address, Headers, QueryParams, State, UploadFile as StarletteUploadFile
++
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Callable, Mapping
++    from typing import Any, BinaryIO
++
++    Doc = lambda _: _
+ 
+ 
+ class UploadFile(StarletteUploadFile):
+@@ -133,7 +128,7 @@
+     def _validate(cls, __input_value: Any, _: Any) -> "UploadFile":
+         if not isinstance(__input_value, StarletteUploadFile):
+             raise ValueError(f"Expected UploadFile, received: {type(__input_value)}")
+-        return cast(UploadFile, __input_value)
++        return __input_value
+ 
+     @classmethod
+     def __get_pydantic_json_schema__(
+@@ -145,12 +140,11 @@
+     def __get_pydantic_core_schema__(
+         cls, source: type[Any], handler: Callable[[Any], Mapping[str, Any]]
+     ) -> Mapping[str, Any]:
+-        from ._compat.v2 import with_info_plain_validator_function
+ 
+         return with_info_plain_validator_function(cls._validate)
+ 
+ 
+-class DefaultPlaceholder:
++class DefaultPlaceholder[T]:
+     """
+     You shouldn't use this class directly.
+ 
+@@ -158,7 +152,7 @@
+     if the overridden default value was truthy.
+     """
+ 
+-    def __init__(self, value: Any):
++    def __init__(self, value: T):
+         self.value = value
+ 
+     def __bool__(self) -> bool:
+@@ -168,10 +162,8 @@
+         return isinstance(o, DefaultPlaceholder) and o.value == self.value
+ 
+ 
+-DefaultType = TypeVar("DefaultType")
+-
+-
+-def Default(value: DefaultType) -> DefaultType:
++# noinspection PyPep8Naming
++def Default[T](value: T) -> T:
+     """
+     You shouldn't use this function directly.
+ 
