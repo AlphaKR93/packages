@@ -1,11 +1,11 @@
 --- work/sources/fastapi/exceptions.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/exceptions.py	2026-05-01 21:49:37.867386280 +0900
-@@ -1,10 +1,12 @@
++++ work/patched/fastapi/exceptions.py	2026-05-02 01:30:24.103211436 +0900
+@@ -1,10 +1,11 @@
 -from collections.abc import Mapping, Sequence
 -from typing import Annotated, Any, TypedDict
-+from typing import Annotated, TypedDict
++from typing import TypedDict
  
- from annotated_doc import Doc
+-from annotated_doc import Doc
  from pydantic import BaseModel, create_model
  from starlette.exceptions import HTTPException as StarletteHTTPException
 -from starlette.exceptions import WebSocketException as StarletteWebSocketException
@@ -16,7 +16,7 @@
  
  
  class EndpointContext(TypedDict, total=False):
-@@ -44,118 +46,14 @@
+@@ -44,118 +45,14 @@
  
      def __init__(
          self,
@@ -138,7 +138,7 @@
  
  
  class FastAPIError(RuntimeError):
-@@ -221,16 +119,6 @@
+@@ -221,16 +118,6 @@
          self.body = body
  
  
@@ -155,3 +155,20 @@
  class ResponseValidationError(ValidationException):
      def __init__(
          self,
+@@ -241,16 +128,3 @@
+     ) -> None:
+         super().__init__(errors, endpoint_ctx=endpoint_ctx)
+         self.body = body
+-
+-
+-class PydanticV1NotSupportedError(FastAPIError):
+-    """
+-    A pydantic.v1 model is used, which is no longer supported.
+-    """
+-
+-
+-class FastAPIDeprecationWarning(UserWarning):
+-    """
+-    A custom deprecation warning as DeprecationWarning is ignored
+-    Ref: https://sethmlarson.dev/deprecations-via-warnings-dont-work-for-python-libraries
+-    """
