@@ -1,13 +1,19 @@
 import warnings
-from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Literal, Any, Annotated
+from typing import Literal, Annotated
 
-from pydantic import ConfigDict, TypeAdapter, ValidationError
-from pydantic.fields import FieldInfo, Field
-from pydantic.main import IncEx
+from pydantic import TypeAdapter, ValidationError
+from pydantic.fields import Field
 from pydantic.warnings import UnsupportedFieldAttributeWarning
 from pydantic_core import PydanticUndefined as Undefined
+
+if __debug__ and __import__("typing").TYPE_CHECKING:
+    from collections.abc import Sequence
+    from typing import Any
+
+    from pydantic import ConfigDict
+    from pydantic.fields import FieldInfo
+    from pydantic.main import IncEx
 
 
 @dataclass

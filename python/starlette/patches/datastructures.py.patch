@@ -1,9 +1,10 @@
 --- work/sources/starlette/datastructures.py	2026-04-30 16:47:44.146039129 +0900
-+++ work/patched/starlette/datastructures.py	2026-05-01 14:57:39.563177703 +0900
-@@ -1,30 +1,21 @@
++++ work/patched/starlette/datastructures.py	2026-05-02 15:35:29.814587064 +0900
+@@ -1,30 +1,22 @@
 -from __future__ import annotations
 -
 -from collections.abc import ItemsView, Iterable, Iterator, KeysView, Mapping, MutableMapping, Sequence, ValuesView
++from collections.abc import Mapping, Sequence
  from shlex import shlex
 -from typing import (
 -    Any,
@@ -24,7 +25,7 @@
 -    host: str
 -    port: int
 +if __debug__ and __import__("typing").TYPE_CHECKING:
-+    from collections.abc import Iterator, Mapping, MutableMapping, Sequence
++    from collections.abc import Iterator, MutableMapping
 +    from typing import Any, BinaryIO, NamedTuple
  
 +    from .types import Scope
@@ -42,7 +43,7 @@
  
  
  class URL:
-@@ -180,8 +171,9 @@
+@@ -180,8 +172,9 @@
      Used by the routing to return `url_path_for` matches.
      """
  
@@ -54,7 +55,7 @@
          return str.__new__(cls, path)
  
      def __init__(self, path: str, protocol: str = "", host: str = "") -> None:
-@@ -190,12 +182,10 @@
+@@ -190,12 +183,10 @@
  
      def make_absolute_url(self, base_url: str | URL) -> URL:
          if isinstance(base_url, str):
@@ -70,7 +71,7 @@
          else:
              scheme = base_url.scheme
  
-@@ -252,131 +242,6 @@
+@@ -252,131 +243,6 @@
          return ", ".join(repr(item) for item in self)
  
  

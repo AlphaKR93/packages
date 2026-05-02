@@ -1,19 +1,19 @@
 --- work/sources/starlette/routing.py	2026-04-30 16:47:44.146039129 +0900
-+++ work/patched/starlette/routing.py	2026-05-02 01:15:30.643492809 +0900
-@@ -1,5 +1,3 @@
++++ work/patched/starlette/routing.py	2026-05-02 15:47:15.190363623 +0900
+@@ -1,29 +1,33 @@
 -from __future__ import annotations
 -
  import contextlib
  import functools
  import inspect
-@@ -7,23 +5,29 @@
+ import re
  import traceback
  import types
- import warnings
+-import warnings
 -from collections.abc import Awaitable, Callable, Collection, Generator, Sequence
 -from contextlib import AbstractAsyncContextManager, AbstractContextManager, asynccontextmanager
 +from abc import ABC, abstractmethod
-+from contextlib import AbstractAsyncContextManager, asynccontextmanager
++from contextlib import AbstractAsyncContextManager
  from enum import Enum
 -from re import Pattern
 -from typing import Any, TypeVar
@@ -29,7 +29,6 @@
 -from starlette.responses import PlainTextResponse, RedirectResponse, Response
 -from starlette.types import ASGIApp, Lifespan, Receive, Scope, Send
 -from starlette.websockets import WebSocket, WebSocketClose
-+from commons.types import AwaitableOr
 +from ._exception_handler import wrap_app_handling_exceptions
 +from ._utils import get_route_path, is_async_callable
 +from .concurrency import run_in_threadpool
@@ -45,6 +44,8 @@
 +    from contextlib import AbstractContextManager
 +    from re import Pattern
 +    from typing import Any, Final, Self
++
++    from commons.types import AwaitableOr
 +
 +    from .responses import Response
 +    from .types import ASGIApp, Lifespan, Receive, Scope, Send

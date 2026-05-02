@@ -1,5 +1,5 @@
 --- work/sources/starlette/responses.py	2026-04-30 16:47:44.146039129 +0900
-+++ work/patched/starlette/responses.py	2026-05-01 14:57:39.551177707 +0900
++++ work/patched/starlette/responses.py	2026-05-02 15:44:47.426414159 +0900
 @@ -1,29 +1,30 @@
 -from __future__ import annotations
 -
@@ -60,7 +60,23 @@
          await send({"type": "http.response.start", "status": self.status_code, "headers": self.raw_headers})
          await send({"type": "http.response.body", "body": self.body})
  
-@@ -255,13 +245,6 @@
+@@ -213,10 +203,11 @@
+         self.headers["location"] = quote(str(url), safe=":/%#?=@[]!$&'()*+,;")
+ 
+ 
+-Content = str | bytes | memoryview
+-SyncContentStream = Iterable[Content]
+-AsyncContentStream = AsyncIterable[Content]
+-ContentStream = AsyncContentStream | SyncContentStream
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    type Content = str | bytes | memoryview
++    type SyncContentStream = Iterable[Content]
++    type AsyncContentStream = AsyncIterable[Content]
++    type ContentStream = AsyncContentStream | SyncContentStream
+ 
+ 
+ class StreamingResponse(Response):
+@@ -255,13 +246,6 @@
          await send({"type": "http.response.body", "body": b"", "more_body": False})
  
      async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
@@ -74,7 +90,7 @@
          spec_version = tuple(map(int, scope.get("asgi", {}).get("spec_version", "2.0").split(".")))
  
          if spec_version >= (2, 4):
-@@ -342,8 +325,6 @@
+@@ -342,8 +326,6 @@
          scope_type = scope["type"]
          send_header_only = scope_type == "http" and scope["method"].upper() == "HEAD"
          send_pathsend = scope_type == "http" and "http.response.pathsend" in scope.get("extensions", {})

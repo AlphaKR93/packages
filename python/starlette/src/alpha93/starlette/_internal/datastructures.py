@@ -1,5 +1,8 @@
+from collections.abc import Mapping
+
+
 if __debug__ and __import__("typing").TYPE_CHECKING:
-    from collections.abc import Mapping, Iterable, Iterator, KeysView, ValuesView, ItemsView
+    from collections.abc import Iterable, Iterator, KeysView, ValuesView, ItemsView, Sequence
     from typing import Any
 
 
@@ -29,78 +32,78 @@ class ImmutableMultiDict[K, V](Mapping[K, V]):
         self._dict = {k: v for k, v in _items}
         self._list = _items
 
-    def getlist(self, key: Any) -> list[V]:
+    def getlist(self, key: K, /) -> list[V]:
         return [item_value for item_key, item_value in self._list if item_key == key]
 
-    def keys(self) -> KeysView[K]:
+    def keys(self, /) -> KeysView[K]:
         return self._dict.keys()
 
-    def values(self) -> ValuesView[V]:
+    def values(self, /) -> ValuesView[V]:
         return self._dict.values()
 
-    def items(self) -> ItemsView[K, V]:
+    def items(self, /) -> ItemsView[K, V]:
         return self._dict.items()
 
-    def multi_items(self) -> list[tuple[K, V]]:
+    def multi_items(self, /) -> list[tuple[K, V]]:
         return list(self._list)
 
-    def __getitem__(self, key: K) -> V:
+    def __getitem__(self, key: K, /) -> V:
         return self._dict[key]
 
-    def __contains__(self, key: Any) -> bool:
+    def __contains__(self, key: K, /) -> bool:
         return key in self._dict
 
-    def __iter__(self) -> Iterator[K]:
+    def __iter__(self, /) -> Iterator[K]:
         return iter(self.keys())
 
-    def __len__(self) -> int:
+    def __len__(self, /) -> int:
         return len(self._dict)
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: Any, /) -> bool:
         if not isinstance(other, self.__class__):
             return False
         return sorted(self._list) == sorted(other._list)
 
-    def __repr__(self) -> str:
+    def __repr__(self, /) -> str:
         class_name = self.__class__.__name__
         items = self.multi_items()
         return f"{class_name}({items!r})"
 
 
-class MultiDict(ImmutableMultiDict[Any, Any]):
-    def __setitem__(self, key: Any, value: Any) -> None:
+class MultiDict[K, V](ImmutableMultiDict[K, V]):
+    def __setitem__(self, key: K, value: V, /) -> None:
         self.setlist(key, [value])
 
-    def __delitem__(self, key: Any) -> None:
+    def __delitem__(self, key: K, /) -> None:
         self._list = [(k, v) for k, v in self._list if k != key]
         del self._dict[key]
 
-    def pop(self, key: Any, default: Any = None) -> Any:
+    def pop(self, key: K, default: V | None = None, /) -> V:
         self._list = [(k, v) for k, v in self._list if k != key]
         return self._dict.pop(key, default)
 
-    def popitem(self) -> tuple[Any, Any]:
+    def popitem(self, /) -> tuple[K, V]:
         key, value = self._dict.popitem()
         self._list = [(k, v) for k, v in self._list if k != key]
         return key, value
 
-    def poplist(self, key: Any) -> list[Any]:
+    def poplist(self, key: K, /) -> list[V]:
         values = [v for k, v in self._list if k == key]
         self.pop(key)
         return values
 
-    def clear(self) -> None:
+    def clear(self, /) -> None:
         self._dict.clear()
         self._list.clear()
 
-    def setdefault(self, key: Any, default: Any = None) -> Any:
+    def setdefault(self, key: K, default: V = None, /) -> V:
         if key not in self:
             self._dict[key] = default
             self._list.append((key, default))
 
         return self[key]
 
-    def setlist(self, key: Any, values: list[Any]) -> None:
+    def setlist(self, key: K, values: Sequence[V], /) -> None:
         if not values:
             self.pop(key, None)
         else:
@@ -108,13 +111,13 @@ class MultiDict(ImmutableMultiDict[Any, Any]):
             self._list = existing_items + [(key, value) for value in values]
             self._dict[key] = values[-1]
 
-    def append(self, key: Any, value: Any) -> None:
+    def append(self, key: K, value: V, /) -> None:
         self._list.append((key, value))
         self._dict[key] = value
 
     def update(
         self,
-        *args: MultiDict | Mapping[Any, Any] | list[tuple[Any, Any]],
+        *args: MultiDict | Mapping[K, V] | Iterable[tuple[K, V]],
         **kwargs: Any,
     ) -> None:
         value = MultiDict(*args, **kwargs)

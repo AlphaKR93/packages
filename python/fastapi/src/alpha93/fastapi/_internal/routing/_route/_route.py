@@ -2,7 +2,6 @@ from enum import IntEnum
 
 from alpha93.fastapi._contextlib import AsyncExitStack
 from alpha93.fastapi._internal._compat.shared import lenient_issubclass
-from commons.types import AwaitableOr
 from fastapi.datastructures import Default, DefaultPlaceholder
 from fastapi.dependencies.utils import (
     get_typed_return_annotation,
@@ -31,6 +30,7 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from typing import Any
 
     from alpha93.fastapi._internal._compat.v2 import ModelField
+    from commons.types import AwaitableOr
     from fastapi.params import Depends
     from fastapi.types import GenerateUniqueIdFunction
     from pydantic.main import IncEx
