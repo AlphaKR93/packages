@@ -1,13 +1,76 @@
 [project]
 name = "fastmcp-minimal"
-version = "0.1.0"
+version = "3.2.4"
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 requires-python = "==3.14.*"
-dependencies = []
+dependencies = [
+    "alpha93",
+    "httpx>=0.28.1,<1.0",
+    "mcp>=1.24.0,<2.0",
+    "py-key-value-aio[keyring,memory]>=0.4.4,<0.5.0",
+    "pydantic>=2.11.7",
+    "starlette-minimal",
+]
+
+[dependency-groups]
+dev = [
+    "fastmcp",
+]
+
+[tool.uv]
+exclude-dependencies = ["uvicorn", "starlette"]
+
+[tool.uv.sources]
+fastmcp = { path = "work/patched" }
+alpha93 = { path = "../alpha93" }
+starlette-minimal = { path = "../starlette" }
 
 [build-system]
-requires = ["uv_build>=0.11.7,<0.12.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.uv.build-backend]
-module-name = "alpha93"
+[tool.hatch.version]
+path = "work/sources/fastmcp/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alpha93"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/fastmcp" = "fastmcp"
+
+[tool.hatch.build.hooks.custom]
+path = "scripts/hooks/hatch_build.py"
+
+[tool.patcher]
+module-source = "src/fastmcp"
+excludes = [
+    "client/**/*",
+    "contrib/**/*",
+    "cli/**/*",
+    "experimental/**/*",
+    "server/telemetry.py",
+    "telemetry.py",
+    "types.py",
+]
+dev-excludes = [
+    ".claude/**/*",
+    ".cursor/**/*",
+    ".github/**/*",
+    "docs/**/*",
+    "examples/**/*",
+    "scripts/**/*",
+    "skills/**/*",
+    "tests/**/*",
+    "v3-notes/**/*",
+    ".ccignore",
+    ".coderabbit.yaml",
+    ".pre-commit-config.yaml",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "CODE_OF_CONDUCT.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "justfile",
+    "logo.py",
+    "loq.toml"
+]

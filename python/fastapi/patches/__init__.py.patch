@@ -1,6 +1,6 @@
 --- work/sources/fastapi/__init__.py	2026-04-30 16:45:51.814075014 +0900
-+++ work/patched/fastapi/__init__.py	2026-05-01 21:49:37.855386284 +0900
-@@ -2,24 +2,10 @@
++++ work/patched/fastapi/__init__.py	2026-05-02 20:52:10.068358953 +0900
+@@ -2,24 +2,9 @@
  
  __version__ = "0.136.1"
  
@@ -26,7 +26,6 @@
 -from .websockets import WebSocket as WebSocket
 -from .websockets import WebSocketDisconnect as WebSocketDisconnect
 +from .applications import FastAPI
-+from .background import BackgroundTasks
 +from .datastructures import UploadFile
 +from .exceptions import HTTPException
 +from .params import Body, Cookie, Depends, Header, Path, Query, Security

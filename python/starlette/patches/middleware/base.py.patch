@@ -1,0 +1,42 @@
+--- work/sources/starlette/middleware/base.py	2026-04-30 16:47:44.146039129 +0900
++++ work/patched/starlette/middleware/base.py	2026-05-02 22:38:01.616282611 +0900
+@@ -1,20 +1,19 @@
+-from __future__ import annotations
+-
+-from collections.abc import AsyncGenerator, AsyncIterable, Awaitable, Callable, Mapping, MutableMapping
+-from typing import Any, TypeVar
+-
+ import anyio
+ 
+ from starlette._utils import collapse_excgroups
+ from starlette.requests import ClientDisconnect, Request
+ from starlette.responses import Response
+-from starlette.types import ASGIApp, Message, Receive, Scope, Send
+ 
+-RequestResponseEndpoint = Callable[[Request], Awaitable[Response]]
+-DispatchFunction = Callable[[Request, RequestResponseEndpoint], Awaitable[Response]]
+-BodyStreamGenerator = AsyncGenerator[bytes | MutableMapping[str, Any], None]
+-AsyncContentStream = AsyncIterable[str | bytes | memoryview | MutableMapping[str, Any]]
+-T = TypeVar("T")
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import AsyncGenerator, AsyncIterable, Awaitable, Callable, Mapping, MutableMapping
++    from typing import Any
++
++    from starlette.types import ASGIApp, Message, Receive, Scope, Send
++
++    type RequestResponseEndpoint = Callable[[Request], Awaitable[Response]]
++    type DispatchFunction = Callable[[Request, RequestResponseEndpoint], Awaitable[Response]]
++    type BodyStreamGenerator = AsyncGenerator[bytes | MutableMapping[str, Any], None]
++    type AsyncContentStream = AsyncIterable[str | bytes | memoryview | MutableMapping[str, Any]]
+ 
+ 
+ class _CachedRequest(Request):
+@@ -116,7 +115,7 @@
+ 
+                 async with anyio.create_task_group() as task_group:
+ 
+-                    async def wrap(func: Callable[[], Awaitable[T]]) -> T:
++                    async def wrap[T](func: Callable[[], Awaitable[T]]) -> T:
+                         result = await func()
+                         task_group.cancel_scope.cancel()
+                         return result

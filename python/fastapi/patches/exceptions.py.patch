@@ -1,5 +1,5 @@
 --- work/sources/fastapi/exceptions.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/exceptions.py	2026-05-02 01:30:24.103211436 +0900
++++ work/patched/fastapi/exceptions.py	2026-05-02 17:01:56.104712923 +0900
 @@ -1,10 +1,11 @@
 -from collections.abc import Mapping, Sequence
 -from typing import Annotated, Any, TypedDict

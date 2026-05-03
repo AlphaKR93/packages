@@ -25,6 +25,9 @@ class Routable(ABC):
     @abstractmethod
     def add_api_route(self, path, endpoint, /, **kwargs): ...
 
+    @abstractmethod
+    def include_router(self, router, /, **kwargs): ...
+
     def api_route(
         self,
         path,

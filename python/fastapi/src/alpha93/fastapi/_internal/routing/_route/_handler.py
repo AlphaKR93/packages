@@ -7,12 +7,11 @@ from typing import Any
 import anyio
 from alpha93.fastapi._contextlib import AsyncExitStack
 from alpha93.fastapi._internal._compat.v2 import ModelField
-from fastapi import HTTPException
+from alpha93.fastapi._internal.dependencies.utils import solve_dependencies
 from fastapi.datastructures import DefaultPlaceholder
 from fastapi.dependencies.models import Dependant
-from fastapi.dependencies.utils import solve_dependencies
 from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import EndpointContext, RequestValidationError, ResponseValidationError
+from fastapi.exceptions import HTTPException, EndpointContext, RequestValidationError, ResponseValidationError
 from fastapi.utils import is_body_allowed_for_status_code
 from pydantic.main import IncEx
 from pydantic_core import PydanticUndefined as Undefined

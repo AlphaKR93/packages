@@ -40,7 +40,7 @@ class FastAPI(Starlette, Routable):
         self.webhooks = webhooks
         self.state = State()
         self.dependency_overrides = {}
-        self.router: APIRouter = APIRouter(**kwargs, dependency_overrides_provider=self)
+        self.router: APIRouter = APIRouter(dependency_overrides_provider=self, **kwargs)
         self.exception_handlers = {} if exception_handlers is None else dict(exception_handlers)
         self.exception_handlers.setdefault(HTTPException, http_exception_handler)
         self.exception_handlers.setdefault(RequestValidationError, request_validation_exception_handler)

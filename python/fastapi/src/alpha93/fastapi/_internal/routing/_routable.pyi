@@ -2,12 +2,13 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable, Sequence, Iterable
 from typing import Any, TypedDict, Unpack
 
+from alpha93.fastapi._internal.routing._router import RouterParameters
 from commons.types import Wrapper
 from fastapi.params import Depends
 from fastapi.types import GenerateUniqueIdFunction
 from pydantic.main import IncEx
 from starlette.responses import Response
-from starlette.routing import BaseRoute
+from starlette.routing import BaseRoute, Router, LiteralMethods, Route
 
 
 class RouteParams(TypedDict, total=False):
@@ -66,7 +67,7 @@ class RouteParams(TypedDict, total=False):
     [FastAPI docs for Dependencies in path operation decorators](https://fastapi.tiangolo.com/tutorial/dependencies/dependencies-in-path-operation-decorators/).
     """
 
-    methods: Iterable[str]
+    methods: Iterable[LiteralMethods]
 
     operation_id: str
     """
@@ -165,6 +166,8 @@ class RouteParams(TypedDict, total=False):
     [FastAPI docs for Custom Response - HTML, Stream, File, others](https://fastapi.tiangolo.com/advanced/custom-response/#redirectresponse).
     """
 
+    route_class: type[Route]
+
     callbacks: list[BaseRoute]
     """
     List of *path operations* that will be used as OpenAPI callbacks.
@@ -205,6 +208,32 @@ type Endpoint = Callable[..., Any]
 class Routable(ABC):
     @abstractmethod
     def add_api_route(self, path: str, endpoint: Callable[..., Any], /, **kwargs: Unpack[RouteParams]): ...
+
+    @abstractmethod
+    def include_router(self, router: Router, /, **kwargs: Unpack[RouterParameters]):
+        """
+        Include another `APIRouter` in the same current `APIRouter`.
+
+        Read more about it in the
+        [FastAPI docs for Bigger Applications](https://fastapi.tiangolo.com/tutorial/bigger-applications/).
+
+        ## Example
+
+        ```python
+        from fastapi import APIRouter, FastAPI
+
+        app = FastAPI()
+        internal_router = APIRouter()
+        users_router = APIRouter()
+
+        @users_router.get("/users/")
+        def read_users():
+            return [{"name": "Rick"}, {"name": "Morty"}]
+
+        internal_router.include_router(users_router)
+        app.include_router(internal_router)
+        ```
+        """
 
     def api_route[T: Endpoint](self, path: str, /, **kwargs: Unpack[RouteParams]) -> Wrapper[T]: ...
 

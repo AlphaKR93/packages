@@ -1,6 +1,6 @@
 --- work/sources/starlette/routing.py	2026-04-30 16:47:44.146039129 +0900
-+++ work/patched/starlette/routing.py	2026-05-02 15:47:15.190363623 +0900
-@@ -1,29 +1,33 @@
++++ work/patched/starlette/routing.py	2026-05-02 21:14:09.239944915 +0900
+@@ -1,29 +1,36 @@
 -from __future__ import annotations
 -
  import contextlib
@@ -29,6 +29,8 @@
 -from starlette.responses import PlainTextResponse, RedirectResponse, Response
 -from starlette.types import ASGIApp, Lifespan, Receive, Scope, Send
 -from starlette.websockets import WebSocket, WebSocketClose
++from alpha93.starlette._internal.methods import Methods
++
 +from ._exception_handler import wrap_app_handling_exceptions
 +from ._utils import get_route_path, is_async_callable
 +from .concurrency import run_in_threadpool
@@ -45,6 +47,7 @@
 +    from re import Pattern
 +    from typing import Any, Final, Self
 +
++    from alpha93.starlette._internal.methods import LiteralMethods
 +    from commons.types import AwaitableOr
 +
 +    from .responses import Response
@@ -52,7 +55,7 @@
  
  
  class NoMatchFound(Exception):
-@@ -43,9 +47,7 @@
+@@ -43,9 +50,7 @@
      FULL = 2
  
  
@@ -63,7 +66,7 @@
      """
      Takes a function or coroutine `func(request) -> response`,
      and returns an ASGI application.
-@@ -54,10 +56,10 @@
+@@ -54,10 +59,10 @@
          func if is_async_callable(func) else functools.partial(run_in_threadpool, func)
      )
  
@@ -76,7 +79,7 @@
              response = await f(request)
              await response(scope, receive, send)
  
-@@ -66,27 +68,8 @@
+@@ -66,27 +71,8 @@
      return app
  
  
@@ -106,7 +109,7 @@
  
  
  def replace_params(
-@@ -107,9 +90,7 @@
+@@ -107,9 +93,7 @@
  PARAM_REGEX = re.compile("{([a-zA-Z_][a-zA-Z0-9_]*)(:[a-zA-Z_][a-zA-Z0-9_]*)?}")
  
  
@@ -117,7 +120,7 @@
      """
      Given a path string, like: "/{username:str}",
      or a host string, like: "{subdomain}.mydomain.org", return a three-tuple
-@@ -163,17 +144,17 @@
+@@ -163,17 +147,17 @@
      return re.compile(path_regex), path_format, param_convertors
  
  
@@ -143,7 +146,7 @@
          """
          A route may be used in isolation as a stand-alone ASGI app.
          This is a somewhat contrived case, as they'll almost always be used
-@@ -181,12 +162,8 @@
+@@ -181,12 +165,8 @@
          """
          match, child_scope = self.matches(scope)
          if match == Match.NONE:
@@ -158,7 +161,7 @@
              return
  
          scope.update(child_scope)
-@@ -198,17 +175,16 @@
+@@ -198,17 +178,16 @@
          self,
          path: str,
          endpoint: Callable[..., Any],
@@ -177,7 +180,7 @@
  
          endpoint_handler = endpoint
          while isinstance(endpoint_handler, functools.partial):
-@@ -235,7 +211,7 @@
+@@ -235,7 +214,7 @@
  
          self.path_regex, self.path_format, self.param_convertors = compile_path(path)
  
@@ -186,7 +189,7 @@
          path_params: dict[str, Any]
          if scope["type"] == "http":
              route_path = get_route_path(scope)
-@@ -264,7 +240,7 @@
+@@ -264,7 +243,7 @@
          assert not remaining_params
          return URLPath(path=path, protocol="http")
  
@@ -195,7 +198,7 @@
          if self.methods and scope["method"] not in self.methods:
              headers = {"Allow": ", ".join(self.methods)}
              if "app" in scope:
-@@ -275,7 +251,7 @@
+@@ -275,7 +254,7 @@
          else:
              await self.app(scope, receive, send)
  
@@ -204,7 +207,7 @@
          return (
              isinstance(other, Route)
              and self.path == other.path
-@@ -283,79 +259,13 @@
+@@ -283,79 +262,13 @@
              and self.methods == other.methods
          )
  
@@ -285,7 +288,7 @@
  class Mount(BaseRoute):
      def __init__(
          self,
-@@ -381,12 +291,12 @@
+@@ -381,12 +294,12 @@
          self.path_regex, self.path_format, self.param_convertors = compile_path(self.path + "/{path:path}")
  
      @property
@@ -301,7 +304,7 @@
              root_path = scope.get("root_path", "")
              route_path = get_route_path(scope)
              match = self.path_regex.match(route_path)
-@@ -444,13 +354,13 @@
+@@ -444,13 +357,13 @@
                      pass
          raise NoMatchFound(name, path_params)
  
@@ -318,7 +321,7 @@
          class_name = self.__class__.__name__
          name = self.name or ""
          return f"{class_name}(path={self.path!r}, name={name!r}, app={self.app!r})"
-@@ -465,11 +375,11 @@
+@@ -465,11 +378,11 @@
          self.host_regex, self.host_format, self.param_convertors = compile_path(host)
  
      @property
@@ -333,7 +336,7 @@
              headers = Headers(scope=scope)
              host = headers.get("host", "").split(":")[0]
              match = self.host_regex.match(host)
-@@ -506,26 +416,23 @@
+@@ -506,26 +419,23 @@
                      pass
          raise NoMatchFound(name, path_params)
  
@@ -366,7 +369,7 @@
          return self._cm.__enter__()
  
      async def __aexit__(
-@@ -533,12 +440,13 @@
+@@ -533,12 +443,13 @@
          exc_type: type[BaseException] | None,
          exc_value: BaseException | None,
          traceback: types.TracebackType | None,
@@ -381,7 +384,7 @@
  ) -> Callable[[Any], AbstractAsyncContextManager[Any]]:
      cmgr = contextlib.contextmanager(lifespan_context)
  
-@@ -559,7 +467,7 @@
+@@ -559,7 +470,7 @@
      async def __aexit__(self, *exc_info: object) -> None:
          pass
  
@@ -390,7 +393,7 @@
          return self
  
  
-@@ -578,37 +486,14 @@
+@@ -578,37 +489,14 @@
          self.routes = [] if routes is None else list(routes)
          self.redirect_slashes = redirect_slashes
          self.default = self.not_found if default is None else default
@@ -430,7 +433,7 @@
          # If we're running inside a starlette application then raise an
          # exception, so that the configurable exception handler can deal with
          # returning the response. For plain ASGI apps, just return the response.
-@@ -626,7 +511,7 @@
+@@ -626,7 +514,7 @@
                  pass
          raise NoMatchFound(name, path_params)
  
@@ -439,7 +442,7 @@
          """
          Handle ASGI lifespan messages, which allows us to manage application
          startup and shutdown events.
-@@ -653,14 +538,14 @@
+@@ -653,14 +541,14 @@
          else:
              await send({"type": "lifespan.shutdown.complete"})
  
@@ -457,7 +460,7 @@
  
          if "router" not in scope:
              scope["router"] = self
-@@ -684,7 +569,7 @@
+@@ -684,7 +572,7 @@
                  partial_scope = child_scope
  
          if partial is not None:
@@ -466,7 +469,7 @@
              # able to handle the request, but is not a preferred option.
              # We use this in particular to deal with "405 Method Not Allowed".
              scope.update(partial_scope)
-@@ -709,39 +594,17 @@
+@@ -709,39 +597,17 @@
  
          await self.default(scope, receive, send)
  

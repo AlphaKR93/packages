@@ -3,7 +3,6 @@ from typing import Unpack, Self, Any, override, final, overload
 
 from commons.types import Wrapper
 from fastapi.routing import APIRouter
-from fastapi.types import GenerateUniqueIdFunction
 from starlette._exception_handler import ExceptionHandlers
 from starlette.applications import Starlette
 from starlette.datastructures import State
@@ -17,7 +16,7 @@ from .routing._router import RouterParameters
 
 
 @final
-class InitializeParameters[T : FastAPI](RouterParameters, total=False):
+class InitializeParameters(RouterParameters, total=False):
     debug: bool
     """
     Boolean indicating if debug tracebacks should be returned on server
@@ -68,15 +67,6 @@ class InitializeParameters[T : FastAPI](RouterParameters, total=False):
 
     Read more in the
     [FastAPI docs for Handling Errors](https://fastapi.tiangolo.com/tutorial/handling-errors/).
-    """
-
-    lifespan: Lifespan[T]
-    """
-    A `Lifespan` context manager handler. This replaces `startup` and
-    `shutdown` functions with a single context manager.
-
-    Read more in the
-    [FastAPI docs for `lifespan`](https://fastapi.tiangolo.com/advanced/events/).
     """
 
     webhooks: APIRouter
@@ -140,6 +130,9 @@ class FastAPI(Starlette, Routable):
     [Starlette docs for Applications](https://www.starlette.dev/applications/#storing-state-on-the-app-instance).
     """
 
+    #override
+    router: APIRouter
+
     dependency_overrides: MutableMapping[Callable[..., Any], Callable[..., Any]]
     """
     A dictionary with overrides for the dependencies.
@@ -154,7 +147,7 @@ class FastAPI(Starlette, Routable):
     [FastAPI docs for Testing Dependencies with Overrides](https://fastapi.tiangolo.com/advanced/testing-dependencies/).
     """
 
-    def __init__(self, /, **kwargs: Unpack[InitializeParameters[Self]]): ...
+    def __init__(self, /, lifespan: Lifespan[Self] | None = None, **kwargs: Unpack[InitializeParameters]): ...
 
     @override
     def build_middleware_stack(self, /) -> ASGIApp: ...
@@ -162,14 +155,8 @@ class FastAPI(Starlette, Routable):
     @override
     def add_api_route(self, path: str, endpoint: Callable[..., Any], /, **kwargs: Unpack[RouteParams]): ...
 
-    def include_router(self, router: APIRouter, /, prefix: str, **kwargs: Unpack[RouterParameters]): ...
-    def attach(self, router: APIRouter, /, prefix: str, **kwargs: Unpack[RouterParameters]):
-        """
-        Attach an `APIRouter` in the same app.
-
-        Read more about it in the
-        [FastAPI docs for Bigger Applications](https://fastapi.tiangolo.com/tutorial/bigger-applications/).
-        """
+    @override
+    def include_router(self, router: APIRouter, /, **kwargs: Unpack[RouterParameters]): ...
 
     def middleware[T: DispatchFunction](self, /) -> Wrapper[T]:
         """

@@ -10,6 +10,11 @@ excludes = [
 ]
 
 [[package]]
+name = "alpha93"
+version = "0.1.0"
+source = { directory = "../alpha93" }
+
+[[package]]
 name = "annotated-types"
 version = "0.7.0"
 source = { registry = "https://pypi.org/simple" }
@@ -185,7 +190,7 @@ translations = [
 name = "fastapi-minimal"
 source = { editable = "." }
 dependencies = [
-    { name = "internals" },
+    { name = "alpha93" },
     { name = "pydantic" },
     { name = "starlette-minimal" },
     { name = "typing-inspection" },
@@ -198,7 +203,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "internals", directory = "../../../../internals" },
+    { name = "alpha93", directory = "../alpha93" },
     { name = "pydantic", specifier = ">=2.9.0" },
     { name = "starlette-minimal", directory = "../starlette" },
     { name = "typing-inspection", specifier = ">=0.4.2" },
@@ -215,11 +220,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/ce/cc/762dfb036166873f0
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5d/13/ad7d7ca3808a898b4612b6fe93cde56b53f3034dcde235acb1f0e1df24c6/idna-3.13-py3-none-any.whl", hash = "sha256:892ea0cde124a99ce773decba204c5552b69c3c67ffd5f232eb7696135bc8bb3", size = 68629, upload-time = "2026-04-22T16:42:40.909Z" },
 ]
-
-[[package]]
-name = "internals"
-version = "0.2.0"
-source = { directory = "../../../../internals" }
 
 [[package]]
 name = "pydantic"
@@ -277,14 +277,14 @@ wheels = [
 name = "starlette-minimal"
 source = { directory = "../starlette" }
 dependencies = [
+    { name = "alpha93" },
     { name = "anyio" },
-    { name = "internals" },
 ]
 
 [package.metadata]
 requires-dist = [
+    { name = "alpha93", directory = "../alpha93" },
     { name = "anyio", specifier = ">=4.13.0" },
-    { name = "internals", directory = "../../../../internals" },
 ]
 
 [package.metadata.requires-dev]

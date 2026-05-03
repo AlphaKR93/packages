@@ -1,5 +1,5 @@
 --- work/sources/fastapi/security/http.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/security/http.py	2026-05-02 01:29:20.923231588 +0900
++++ work/patched/fastapi/security/http.py	2026-05-02 17:01:56.116712919 +0900
 @@ -2,16 +2,25 @@
  from base64 import b64decode
  from typing import Annotated

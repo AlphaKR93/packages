@@ -8,44 +8,44 @@ from pydantic.fields import FieldInfo
 
 
 class PydanticFieldInfoParameters[T](TypedDict, total=False):
-    annotation: type[T] | None
+    annotation: type[T]
     """The type annotation of the field."""
 
-    alias: str | None
+    alias: str
     """The alias name of the field."""
 
-    validation_alias: str | AliasPath | AliasChoices | None
+    validation_alias: str | AliasPath | AliasChoices
     """The validation alias of the field."""
 
-    serialization_alias: str | None
+    serialization_alias: str
     """The serialization alias of the field."""
 
-    title: str | None
+    title: str
     """The title of the field."""
 
-    field_title_generator: Callable[[str, FieldInfo], str] | None
+    field_title_generator: Callable[[str, FieldInfo], str]
     """A callable that takes a field name and returns title for it."""
 
-    description: str | None
+    description: str
     """The description of the field."""
 
-    examples: list[T] | None
+    examples: list[T]
     """List of examples of the field."""
 
-    exclude: bool | None
+    exclude: bool
     """Whether to exclude the field from the model serialization."""
 
-    exclude_if: Callable[[Any], bool] | None
+    exclude_if: Callable[[Any], bool]
     """A callable that determines whether to exclude a field during serialization based on its value."""
 
-    discriminator: str | Discriminator | None
+    discriminator: str | Discriminator
     """Field name or Discriminator for discriminating the type in a tagged union."""
 
-    deprecated: _deprecated | str | bool | None
+    deprecated: _deprecated | str | bool
     """A deprecation message, an instance of `warnings.deprecated` or a boolean.
     If `True`, a default deprecation message will be emitted when accessing the field."""
 
-    json_schema_extra: JsonDict | Callable[[JsonDict], None] | None
+    json_schema_extra: JsonDict | Callable[[JsonDict], None]
     """A dict or callable to provide extra JSON schema properties."""
 
     metadata: list[Any]

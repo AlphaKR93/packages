@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 from typing import override
 
@@ -35,7 +36,7 @@ class CustomBuildHook(BuildHookInterface):
 
         excludes = set()
         for glob in exclude_globs:
-            excludes |= set(str(excluded.relative_to(src)) for excluded in src.rglob(glob))
+            excludes |= set(str(excluded.relative_to(src)) for excluded in src.rglob(glob) if str(excluded.relative_to(src)).startswith(glob.split(os.sep)[0]))
 
         patches = self.__root / "patches"
         if not patches.exists(): raise RuntimeError(f"{patches} not exists")

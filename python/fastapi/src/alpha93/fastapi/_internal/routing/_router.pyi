@@ -1,16 +1,18 @@
 from collections.abc import Sequence
-from typing import TypedDict
+from typing import TypedDict, Callable, Any, Unpack, override
 
 from fastapi.params import Depends
 from fastapi.types import GenerateUniqueIdFunction
 from starlette.responses import Response
-from starlette.routing import BaseRoute, Router
-from starlette.types import Lifespan
+from starlette.routing import BaseRoute, Router, Route
+from starlette.types import Lifespan, ASGIApp
 
-from ._routable import Routable
+from ._routable import Routable, RouteParams
 
 
 class RouterParameters(TypedDict, total=False):
+    name: str
+
     prefix: str
     """An optional path prefix for the router."""
 
@@ -100,4 +102,26 @@ class RouterParameters(TypedDict, total=False):
     """
 
 class APIRouter(Router, Routable):
-    def __init__(self): ...
+    prefix: str
+    name: str | None
+    dependencies: list[Depends]
+    callbacks: list[BaseRoute]
+    dependency_overrides_provider: Any | None
+    route_class: type[Route]
+    default_response: type[Response]
+    generate_unique_id: GenerateUniqueIdFunction
+    strict_content_type: bool
+    deprecated: bool
+
+    def __init__(
+        self,
+        /,
+        dependency_overrides_provider: Any = None,
+        **kwargs: Unpack[RouterParameters]
+    ): ...
+
+    @override
+    def add_api_route(self, path: str, endpoint: Callable[..., Any], /,  **kwargs: Unpack[RouteParams]): ...
+
+    @override
+    def include_router(self, router: Router, /, **kwargs: Unpack[RouterParameters]): ...

@@ -1,0 +1,1 @@
+constant = lambda _: _()

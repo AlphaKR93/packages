@@ -1,5 +1,5 @@
 --- work/sources/fastapi/routing.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/routing.py	2026-05-02 01:15:30.627492814 +0900
++++ work/patched/fastapi/routing.py	2026-05-02 17:01:56.112712919 +0900
 @@ -1,4956 +1,3 @@
 -import contextlib
 -import email.message

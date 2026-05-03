@@ -1,0 +1,10 @@
+--- work/sources/src/fastmcp/server/server.py	2026-05-03 11:35:47.618097206 +0900
++++ work/patched/src/fastmcp/server/server.py	2026-05-03 11:44:56.253942584 +0900
+@@ -71,7 +71,6 @@
+ from fastmcp.server.providers import LocalProvider, Provider
+ from fastmcp.server.providers.aggregate import AggregateProvider
+ from fastmcp.server.tasks.config import TaskConfig, TaskMeta
+-from fastmcp.server.telemetry import server_span
+ from fastmcp.server.transforms import (
+     ToolTransform,
+     Transform,

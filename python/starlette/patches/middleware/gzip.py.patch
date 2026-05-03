@@ -1,0 +1,17 @@
+--- work/sources/starlette/middleware/gzip.py	2026-04-30 16:47:44.146039129 +0900
++++ work/patched/starlette/middleware/gzip.py	2026-05-02 22:38:01.624282609 +0900
+@@ -1,9 +1,12 @@
+ import gzip
+ import io
+-from typing import NoReturn
+ 
+ from starlette.datastructures import Headers, MutableHeaders
+-from starlette.types import ASGIApp, Message, Receive, Scope, Send
++
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from typing import NoReturn
++
++    from starlette.types import ASGIApp, Message, Receive, Scope, Send
+ 
+ DEFAULT_EXCLUDED_CONTENT_TYPES = ("text/event-stream",)
+ 

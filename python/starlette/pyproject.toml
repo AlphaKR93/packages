@@ -4,8 +4,8 @@ dynamic = ["version"]
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 requires-python = "==3.14.*"
 dependencies = [
+    "alpha93",
     "anyio>=4.13.0",
-    "internals>=0.2.0",
 ]
 
 [dependency-groups]
@@ -31,7 +31,7 @@ path = "scripts/hooks/hatch_build.py"
 
 [tool.uv.sources]
 starlette = { path = "work/patched" }
-internals = { path = "../../../../internals" }
+alpha93 = { path = "../alpha93" }
 
 [tool.patcher]
 module-source = "starlette"

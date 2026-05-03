@@ -1,5 +1,5 @@
 --- work/sources/fastapi/dependencies/models.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/dependencies/models.py	2026-05-01 21:49:37.863386281 +0900
++++ work/patched/fastapi/dependencies/models.py	2026-05-02 17:01:56.104712923 +0900
 @@ -1,18 +1,17 @@
  import inspect
 -import sys

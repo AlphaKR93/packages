@@ -4,3 +4,6 @@
 [submodule "python/starlette/ref"]
 	path = python/starlette/work/sources
 	url = git@github.com:Kludex/starlette.git
+[submodule "python/fastmcp/work/sources"]
+	path = python/fastmcp/work/sources
+	url = git@github.com:PrefectHQ/fastmcp.git

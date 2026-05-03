@@ -3,15 +3,6 @@ from enum import IntEnum
 from alpha93.fastapi._contextlib import AsyncExitStack
 from alpha93.fastapi._internal._compat.shared import lenient_issubclass
 from fastapi.datastructures import Default, DefaultPlaceholder
-from fastapi.dependencies.utils import (
-    get_typed_return_annotation,
-    get_stream_item_type,
-    get_dependant,
-    get_parameterless_sub_dependant,
-    get_flat_dependant,
-    _should_embed_body_fields,
-    get_body_field
-)
 from fastapi.exceptions import FastAPIError
 from fastapi.utils import (
     generate_unique_id as _default_generate_unique_id,
@@ -24,6 +15,16 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route, get_name, compile_path, Match
 
 from ._handler import get_request_handler
+from ...dependencies.utils import (
+    get_dependant,
+    get_typed_return_annotation,
+    get_stream_item_type,
+    get_parameterless_sub_dependant,
+    get_flat_dependant,
+    should_embed_body_fields,
+    get_body_field
+)
+
 
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from collections.abc import Callable, Sequence, Coroutine, Awaitable
@@ -200,18 +201,11 @@ class APIRoute(Route):
             self.response_fields = {}
 
         assert callable(endpoint), "An endpoint must be a callable"
-        self.dependant = get_dependant(
-            path=self.path_format, call=self.endpoint, scope="function"
-        )
+        self.dependant = get_dependant(path=self.path_format, call=self.endpoint, scope="function")
         for depends in self.dependencies[::-1]:
-            self.dependant.dependencies.insert(
-                0,
-                get_parameterless_sub_dependant(depends=depends, path=self.path_format),
-            )
+            self.dependant.dependencies.insert(0, get_parameterless_sub_dependant(depends, path=self.path_format))
         self._flat_dependant = get_flat_dependant(self.dependant)
-        self._embed_body_fields = _should_embed_body_fields(
-            self._flat_dependant.body_params
-        )
+        self._embed_body_fields = should_embed_body_fields(self._flat_dependant.body_params)
         self.body_field = get_body_field(
             flat_dependant=self._flat_dependant,
             name=self.unique_id,

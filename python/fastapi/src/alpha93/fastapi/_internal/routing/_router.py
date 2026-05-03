@@ -60,6 +60,7 @@ class APIRouter(Router, Routable):
         self,
         *,
         prefix = "",
+        name = None,
         dependencies = None,
         default_response = Default(JSONResponse),
         callbacks = None,
@@ -84,6 +85,7 @@ class APIRouter(Router, Routable):
             assert prefix.startswith("/"), "A path prefix must start with '/'"
             assert not prefix.endswith("/"), "A path prefix must not end with '/', as the routes will start with '/'"
 
+        self.name = name
         self.prefix = prefix
         self.dependencies = list(dependencies or [])
         self.deprecated = deprecated
@@ -137,13 +139,13 @@ class APIRouter(Router, Routable):
         self,
         router,
         /,
-        *,
         prefix = "",
         dependencies = None,
         default_response = Default(JSONResponse),
         callbacks = None,
         generate_unique_id = Default(_default_generate_unique_id),
         deprecated = None,
+        **kwargs,
     ) -> None:
         """
         Include another `APIRouter` in the same current `APIRouter`.
@@ -182,6 +184,7 @@ class APIRouter(Router, Routable):
                 methods = list(route.methods or [])
                 self.add_route(prefix + route.path, route.endpoint, methods=methods, name=route.name)
             elif isinstance(route, APIRoute):
+                router: APIRouter
                 current_dependencies: list[Depends] = []
                 if dependencies:
                     current_dependencies.extend(dependencies)
@@ -231,9 +234,9 @@ class APIRouter(Router, Routable):
                     response_model_exclude_none=route.response_model_exclude_none,
                     response_class=response_cls,
                     name=route.name,
-                    route_class_override=type(route),
+                    route_class=type(route),
                     callbacks=current_callbacks,
-                    generate_unique_id_function=current_generate_unique_id,
+                    generate_unique_id=current_generate_unique_id,
                     strict_content_type=current_strict_content_type,
                 )
         self.lifespan_context = _merge_lifespan_context(self.lifespan_context, router.lifespan_context)
