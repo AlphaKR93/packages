@@ -1,0 +1,27 @@
+--- work/sources/src/fastmcp/server/providers/openapi/components.py	2026-05-03 12:29:52.959915858 +0900
++++ work/patched/src/fastmcp/server/providers/openapi/components.py	2026-05-03 13:32:59.850864495 +0900
+@@ -151,16 +151,7 @@
+         output_schema: dict[str, Any] | None = None,
+         tags: set[str] | None = None,
+         annotations: ToolAnnotations | None = None,
+-        serializer: Callable[[Any], str] | None = None,  # Deprecated
+     ):
+-        if serializer is not None and fastmcp.settings.deprecation_warnings:
+-            warnings.warn(
+-                "The `serializer` parameter is deprecated. "
+-                "Return ToolResult from your tools for full control over serialization. "
+-                "See https://gofastmcp.com/servers/tools#custom-serialization for migration examples.",
+-                FastMCPDeprecationWarning,
+-                stacklevel=2,
+-            )
+         super().__init__(
+             name=name,
+             description=description,
+@@ -168,7 +159,6 @@
+             output_schema=output_schema,
+             tags=tags or set(),
+             annotations=annotations,
+-            serializer=serializer,
+         )
+         self._client = client
+         self._route = route

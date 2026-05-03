@@ -61,7 +61,7 @@ class Routable(ABC):
 def __decorators():
     def decorator(http_method: str, /):
         def route(self: Routable, path: str, /, **kwargs):
-            return self.api_route(path, method={http_method}, **kwargs)
+            return self.api_route(path, methods={http_method}, **kwargs)
         return route
 
     for method in Methods:

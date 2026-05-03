@@ -1,0 +1,137 @@
+--- work/sources/src/fastmcp/tools/base.py	2026-05-03 12:29:52.963915856 +0900
++++ work/patched/src/fastmcp/tools/base.py	2026-05-03 13:34:42.018835983 +0900
+@@ -1,6 +1,3 @@
+-from __future__ import annotations
+-
+-import warnings
+ from collections.abc import Callable
+ from typing import (
+     TYPE_CHECKING,
+@@ -26,7 +23,6 @@
+ from pydantic import BaseModel, Field, model_validator
+ from pydantic.json_schema import SkipJsonSchema
+ 
+-from fastmcp.exceptions import FastMCPDeprecationWarning
+ from fastmcp.server.auth.authorization import AuthCheck
+ from fastmcp.server.tasks.config import TaskConfig, TaskMeta
+ from fastmcp.utilities.components import FastMCPComponent
+@@ -39,18 +35,7 @@
+     NotSetT,
+ )
+ 
+-try:
+-    from prefab_ui.app import PrefabApp as _PrefabApp
+-    from prefab_ui.components.base import Component as _PrefabComponent
+-
+-    _HAS_PREFAB = True
+-except ImportError:
+-    _HAS_PREFAB = False
+-
+ if TYPE_CHECKING:
+-    from docket import Docket
+-    from docket.execution import Execution
+-
+     from fastmcp.tools.function_tool import FunctionTool
+     from fastmcp.tools.tool_transform import ArgTransform, TransformedTool
+ 
+@@ -91,16 +76,6 @@
+         converted_content: list[ContentBlock] = _convert_to_content(result=content)
+ 
+         if structured_content is not None:
+-            # Convert Prefab types to their wire-format envelope before
+-            # generic serialization, so the renderer gets the right shape.
+-            if _HAS_PREFAB:
+-                if isinstance(structured_content, _PrefabApp):
+-                    structured_content = _prefab_to_json(structured_content)
+-                elif isinstance(structured_content, _PrefabComponent):
+-                    structured_content = _prefab_to_json(
+-                        _PrefabApp(view=structured_content)
+-                    )
+-
+             try:
+                 structured_content = pydantic_core.to_jsonable_python(
+                     value=structured_content
+@@ -276,18 +251,6 @@
+         if isinstance(raw_value, ToolResult):
+             return raw_value
+ 
+-        if _HAS_PREFAB:
+-            if isinstance(raw_value, _PrefabApp):
+-                return _prefab_to_tool_result(
+-                    raw_value,
+-                    fastmcp_app_name=_get_fastmcp_app_name(self),
+-                )
+-            if isinstance(raw_value, _PrefabComponent):
+-                return _prefab_to_tool_result(
+-                    _PrefabApp(view=raw_value),
+-                    fastmcp_app_name=_get_fastmcp_app_name(self),
+-                )
+-
+         content = _convert_to_content(raw_value, serializer=self.serializer)
+ 
+         # Bytes can't be represented as structured JSON content
+@@ -376,35 +339,6 @@
+ 
+         return await self.run(arguments)
+ 
+-    def register_with_docket(self, docket: Docket) -> None:
+-        """Register this tool with docket for background execution."""
+-        if not self.task_config.supports_tasks():
+-            return
+-        docket.register(self.run, names=[self.key])
+-
+-    async def add_to_docket(  # type: ignore[override]
+-        self,
+-        docket: Docket,
+-        arguments: dict[str, Any],
+-        *,
+-        fn_key: str | None = None,
+-        task_key: str | None = None,
+-        **kwargs: Any,
+-    ) -> Execution:
+-        """Schedule this tool for background execution via docket.
+-
+-        Args:
+-            docket: The Docket instance
+-            arguments: Tool arguments
+-            fn_key: Function lookup key in Docket registry (defaults to self.key)
+-            task_key: Redis storage key for the result
+-            **kwargs: Additional kwargs passed to docket.add()
+-        """
+-        lookup_key = fn_key or self.key
+-        if task_key:
+-            kwargs["key"] = task_key
+-        return await docket.add(lookup_key, **kwargs)(arguments)
+-
+     @classmethod
+     def from_tool(
+         cls,
+@@ -583,28 +517,3 @@
+ 
+ 
+ __all__ = ["Tool", "ToolResult"]
+-
+-
+-def __getattr__(name: str) -> Any:
+-    """Deprecated re-exports for backwards compatibility."""
+-    deprecated_exports = {
+-        "FunctionTool": "FunctionTool",
+-        "ParsedFunction": "ParsedFunction",
+-        "tool": "tool",
+-    }
+-
+-    if name in deprecated_exports:
+-        import fastmcp
+-
+-        if fastmcp.settings.deprecation_warnings:
+-            warnings.warn(
+-                f"Importing {name} from fastmcp.tools.tool is deprecated. "
+-                f"Import from fastmcp.tools.function_tool instead.",
+-                FastMCPDeprecationWarning,
+-                stacklevel=2,
+-            )
+-        from fastmcp.tools import function_tool
+-
+-        return getattr(function_tool, name)
+-
+-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

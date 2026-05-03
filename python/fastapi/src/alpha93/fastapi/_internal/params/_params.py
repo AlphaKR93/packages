@@ -44,10 +44,10 @@ class Param(FieldInfo, ABC):    # type: ignore[misc]
             **params,
         }
 
-        if (not kwargs["validation_alias"] or kwargs["validation_alias"] is _Unset):
-            kwargs["validation_alias"] = kwargs["alias"]
-        if (not kwargs["serialization_alias"] or kwargs["serialization_alias"] is _Unset) \
-            and isinstance(kwargs["alias"], str):
+        if (not kwargs.get("validation_alias") or kwargs["validation_alias"] is _Unset):
+            kwargs["validation_alias"] = kwargs.get("alias")
+        if (not kwargs.get("serialization_alias") or kwargs["serialization_alias"] is _Unset) \
+            and isinstance(kwargs.get("alias"), str):
             kwargs["serialization_alias"] = kwargs["alias"]
 
         super().__init__(**{k: v for k, v in kwargs.items() if v is not _Unset})

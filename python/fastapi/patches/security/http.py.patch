@@ -1,11 +1,13 @@
 --- work/sources/fastapi/security/http.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/security/http.py	2026-05-02 17:01:56.116712919 +0900
-@@ -2,16 +2,25 @@
++++ work/patched/fastapi/security/http.py	2026-05-03 13:44:50.198668080 +0900
+@@ -1,17 +1,24 @@
+ import binascii
  from base64 import b64decode
- from typing import Annotated
+-from typing import Annotated
++from typing import Annotated, Literal
  
 -from annotated_doc import Doc
-+from alpha93.fastapi.models import SecuritySchemeType
++from alpha93.fastapi.models import SecurityBase as SecurityBaseModel, SecuritySchemeType
  from fastapi.exceptions import HTTPException
 -from fastapi.openapi.models import HTTPBase as HTTPBaseModel
 -from fastapi.openapi.models import HTTPBearer as HTTPBearerModel
@@ -17,12 +19,10 @@
 +from pydantic import BaseModel, Field
  
 +if __debug__ and __import__("typing").TYPE_CHECKING:
-+    from typing import Literal
-+
 +    from starlette.requests import Request
 +
 +
-+class HTTPBaseModel(SecurityBase):
++class HTTPBaseModel(SecurityBaseModel):
 +    type_: Annotated[SecuritySchemeType, Field(default=SecuritySchemeType.http, alias="type")]
 +    scheme: str
 +
@@ -32,7 +32,7 @@
  
  class HTTPBasicCredentials(BaseModel):
      """
-@@ -22,8 +31,11 @@
+@@ -22,8 +29,11 @@
      [FastAPI docs for HTTP Basic Auth](https://fastapi.tiangolo.com/advanced/security/http-basic-auth/).
      """
  
@@ -46,7 +46,7 @@
  
  
  class HTTPAuthorizationCredentials(BaseModel):
-@@ -48,22 +60,14 @@
+@@ -48,22 +58,14 @@
      * `credentials` will have the value `"deadbeef12346"`
      """
  
@@ -77,7 +77,7 @@
  
  
  class HTTPBase(SecurityBase):
-@@ -86,7 +90,7 @@
+@@ -86,7 +88,7 @@
  
      def make_not_authenticated_error(self) -> HTTPException:
          return HTTPException(
@@ -86,7 +86,7 @@
              detail="Not authenticated",
              headers=self.make_authenticate_headers(),
          )
-@@ -140,54 +144,10 @@
+@@ -140,54 +142,10 @@
      def __init__(
          self,
          *,
@@ -145,7 +145,7 @@
      ):
          self.model = HTTPBaseModel(scheme="basic", description=description)
          self.scheme_name = scheme_name or self.__class__.__name__
-@@ -254,47 +214,10 @@
+@@ -254,47 +212,10 @@
      def __init__(
          self,
          *,
@@ -197,7 +197,7 @@
      ):
          self.model = HTTPBearerModel(bearerFormat=bearerFormat, description=description)
          self.scheme_name = scheme_name or self.__class__.__name__
-@@ -357,45 +280,9 @@
+@@ -357,45 +278,9 @@
      def __init__(
          self,
          *,

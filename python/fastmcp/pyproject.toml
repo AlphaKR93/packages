@@ -1,15 +1,19 @@
 [project]
 name = "fastmcp-minimal"
-version = "3.2.4"
+dynamic = ["version"]
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 requires-python = "==3.14.*"
 dependencies = [
     "alpha93",
+    "authlib>=1.6.11",
+    "griffelib>=2.0.0",
     "httpx>=0.28.1,<1.0",
+    "jsonref>=1.1.0",
     "mcp>=1.24.0,<2.0",
     "py-key-value-aio[keyring,memory]>=0.4.4,<0.5.0",
     "pydantic>=2.11.7",
     "starlette-minimal",
+    "uncalled-for>=0.2.0",
 ]
 
 [dependency-groups]
@@ -30,7 +34,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "work/sources/fastmcp/__init__.py"
+path = "work/patched/src/fastmcp/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/alpha93"]
@@ -44,11 +48,13 @@ path = "scripts/hooks/hatch_build.py"
 [tool.patcher]
 module-source = "src/fastmcp"
 excludes = [
-    "client/**/*",
     "contrib/**/*",
     "cli/**/*",
     "experimental/**/*",
     "server/telemetry.py",
+    "utilities/cli.py",
+    "utilities/version_check.py",
+    "settings.py",
     "telemetry.py",
     "types.py",
 ]

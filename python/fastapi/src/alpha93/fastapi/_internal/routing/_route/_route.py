@@ -12,6 +12,7 @@ from fastapi.utils import (
 from starlette._exception_handler import wrap_app_handling_exceptions
 from starlette._utils import is_async_callable
 from starlette.responses import JSONResponse
+from starlette.responses import Response
 from starlette.routing import Route, get_name, compile_path, Match
 
 from ._handler import get_request_handler
@@ -36,7 +37,6 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from fastapi.types import GenerateUniqueIdFunction
     from pydantic.main import IncEx
     from starlette.requests import Request
-    from starlette.responses import Response
     from starlette.routing import BaseRoute
     from starlette.types import Scope, ASGIApp, Receive, Send
 
@@ -182,23 +182,6 @@ class APIRoute(Route):
         else:
             self.stream_item_field = None
         self.dependencies = list(dependencies or [])
-        response_fields = {}
-        for additional_status_code, response in self.responses.items():
-            assert isinstance(response, dict), "An additional response must be a dict"
-            model = response.get("model")
-            if model:
-                assert is_body_allowed_for_status_code(additional_status_code), (
-                    f"Status code {additional_status_code} must not have a response body"
-                )
-                response_name = f"Response_{additional_status_code}_{self.unique_id}"
-                response_field = create_model_field(
-                    name=response_name, type_=model, mode="serialization"
-                )
-                response_fields[additional_status_code] = response_field
-        if response_fields:
-            self.response_fields: dict[int | str, ModelField] = response_fields
-        else:
-            self.response_fields = {}
 
         assert callable(endpoint), "An endpoint must be a callable"
         self.dependant = get_dependant(path=self.path_format, call=self.endpoint, scope="function")
@@ -206,11 +189,7 @@ class APIRoute(Route):
             self.dependant.dependencies.insert(0, get_parameterless_sub_dependant(depends, path=self.path_format))
         self._flat_dependant = get_flat_dependant(self.dependant)
         self._embed_body_fields = should_embed_body_fields(self._flat_dependant.body_params)
-        self.body_field = get_body_field(
-            flat_dependant=self._flat_dependant,
-            name=self.unique_id,
-            embed_body_fields=self._embed_body_fields,
-        )
+        self.body_field = get_body_field(self._flat_dependant, self.unique_id, self._embed_body_fields)
         # Detect generator endpoints that should stream as JSONL
         is_generator = self.dependant.is_async_gen_callable or self.dependant.is_gen_callable
         self.is_json_stream = is_generator and isinstance(response_class, DefaultPlaceholder)

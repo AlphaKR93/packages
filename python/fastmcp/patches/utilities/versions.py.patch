@@ -1,0 +1,56 @@
+--- work/sources/src/fastmcp/utilities/versions.py	2026-05-03 12:29:52.967915856 +0900
++++ work/patched/src/fastmcp/utilities/versions.py	2026-05-03 12:57:19.583459153 +0900
+@@ -19,8 +19,6 @@
+ from functools import total_ordering
+ from typing import TYPE_CHECKING, Any, TypeVar, cast
+ 
+-from packaging.version import InvalidVersion, Version
+-
+ if TYPE_CHECKING:
+     from fastmcp.utilities.components import FastMCPComponent
+ 
+@@ -130,17 +128,11 @@
+         self._raw = version
+         self._is_none = version is None
+         self._is_pep440 = False
+-        self._parsed: Version | str | None = None
++        self._parsed: str | None = None
+ 
+         if version is not None:
+-            # Strip leading 'v' if present (common convention like "v1.0")
+-            normalized = version.lstrip("v") if version.startswith("v") else version
+-            try:
+-                self._parsed = Version(normalized)
+-                self._is_pep440 = True
+-            except InvalidVersion:
+-                # Fall back to string comparison for non-PEP 440 versions
+-                self._parsed = version
++            # Fall back to string comparison for non-PEP 440 versions
++            self._parsed = version
+ 
+     def __eq__(self, other: object) -> bool:
+         if not isinstance(other, VersionKey):
+@@ -168,20 +160,9 @@
+         if other._is_none:
+             return False  # anything > None
+ 
+-        # Both are not None
+-        if self._is_pep440 and other._is_pep440:
+-            # Both PEP 440 - compare normally
+-            assert isinstance(self._parsed, Version)
+-            assert isinstance(other._parsed, Version)
+-            return self._parsed < other._parsed
+-        if not self._is_pep440 and not other._is_pep440:
+-            # Both strings - lexicographic
+-            assert isinstance(self._parsed, str)
+-            assert isinstance(other._parsed, str)
+-            return self._parsed < other._parsed
+-        # Mixed: PEP 440 sorts before strings
+-        # (arbitrary but consistent choice)
+-        return self._is_pep440
++        # Both strings - lexicographic
++        assert isinstance(self._parsed, str) and isinstance(other._parsed, str)
++        return self._parsed < other._parsed
+ 
+     def __repr__(self) -> str:
+         return f"VersionKey({self._raw!r})"

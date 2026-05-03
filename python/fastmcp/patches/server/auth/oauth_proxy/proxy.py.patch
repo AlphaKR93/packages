@@ -1,0 +1,36 @@
+--- work/sources/src/fastmcp/server/auth/oauth_proxy/proxy.py	2026-05-03 12:29:52.955915859 +0900
++++ work/patched/src/fastmcp/server/auth/oauth_proxy/proxy.py	2026-05-03 13:15:28.379155965 +0900
+@@ -32,11 +32,6 @@
+ from cryptography.fernet import Fernet
+ from key_value.aio.adapters.pydantic import PydanticAdapter
+ from key_value.aio.protocols import AsyncKeyValue
+-from key_value.aio.stores.filetree import (
+-    FileTreeStore,
+-    FileTreeV1CollectionSanitizationStrategy,
+-    FileTreeV1KeySanitizationStrategy,
+-)
+ from key_value.aio.wrappers.encryption import FernetEncryptionWrapper
+ from mcp.server.auth.handlers.metadata import MetadataHandler
+ from mcp.server.auth.provider import (
+@@ -59,7 +54,6 @@
+ from starlette.routing import Route
+ from typing_extensions import override
+ 
+-from fastmcp import settings
+ from fastmcp.server.auth.auth import (
+     OAuthProvider,
+     PrivateKeyJWTClientAuthenticator,
+@@ -453,6 +447,13 @@
+         # different keys won't collide). Decryption errors are treated as cache misses
+         # rather than hard failures, so key rotation just causes re-registration.
+         if client_storage is None:
++            from fastmcp import settings
++            from key_value.aio.stores.filetree import (
++                FileTreeStore,
++                FileTreeV1CollectionSanitizationStrategy,
++                FileTreeV1KeySanitizationStrategy,
++            )
++
+             storage_encryption_key = derive_jwt_key(
+                 high_entropy_material=jwt_signing_key.decode(),
+                 salt="fastmcp-storage-encryption-key",

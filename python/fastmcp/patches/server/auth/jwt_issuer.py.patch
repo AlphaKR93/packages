@@ -1,0 +1,26 @@
+--- work/sources/src/fastmcp/server/auth/jwt_issuer.py	2026-05-03 12:29:52.955915859 +0900
++++ work/patched/src/fastmcp/server/auth/jwt_issuer.py	2026-05-03 13:28:08.138944251 +0900
+@@ -23,7 +23,6 @@
+ logger = get_logger(__name__)
+ 
+ KDF_ITERATIONS = 1_000_000
+-KDF_ITERATIONS_TEST = 10
+ 
+ 
+ @overload
+@@ -59,14 +58,11 @@
+         return base64.urlsafe_b64encode(derived_key)
+ 
+     if low_entropy_material is not None:
+-        iterations = (
+-            KDF_ITERATIONS_TEST if fastmcp.settings.test_mode else KDF_ITERATIONS
+-        )
+         pbkdf2 = PBKDF2HMAC(
+             algorithm=hashes.SHA256(),
+             length=32,
+             salt=salt.encode(),
+-            iterations=iterations,
++            iterations=KDF_ITERATIONS,
+         ).derive(key_material=low_entropy_material.encode())
+ 
+         return base64.urlsafe_b64encode(pbkdf2)

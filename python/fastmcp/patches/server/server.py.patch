@@ -1,6 +1,6 @@
---- work/sources/src/fastmcp/server/server.py	2026-05-03 11:35:47.618097206 +0900
-+++ work/patched/src/fastmcp/server/server.py	2026-05-03 11:44:56.253942584 +0900
-@@ -71,7 +71,6 @@
+--- work/sources/src/fastmcp/server/server.py	2026-05-03 12:29:52.963915856 +0900
++++ work/patched/src/fastmcp/server/server.py	2026-05-03 13:28:08.154944247 +0900
+@@ -71,13 +71,11 @@
  from fastmcp.server.providers import LocalProvider, Provider
  from fastmcp.server.providers.aggregate import AggregateProvider
  from fastmcp.server.tasks.config import TaskConfig, TaskMeta
@@ -8,3 +8,182 @@
  from fastmcp.server.transforms import (
      ToolTransform,
      Transform,
+ )
+ from fastmcp.server.transforms.visibility import apply_session_transforms, is_enabled
+-from fastmcp.settings import DuplicateBehavior as DuplicateBehaviorSetting
+ from fastmcp.tools.base import Tool, ToolResult
+ from fastmcp.tools.function_tool import FunctionTool
+ from fastmcp.tools.tool_transform import ToolTransformConfig
+@@ -298,9 +296,9 @@
+         lifespan: LifespanCallable | Lifespan | None = None,
+         tools: Sequence[Tool | Callable[..., Any]] | None = None,
+         on_duplicate: DuplicateBehavior | None = None,
+-        mask_error_details: bool | None = None,
++        mask_error_details: bool = False,
+         dereference_schemas: bool = True,
+-        strict_input_validation: bool | None = None,
++        strict_input_validation: bool = False,
+         list_page_size: int | None = None,
+         tasks: bool | None = None,
+         session_state_store: AsyncKeyValue | None = None,
+@@ -314,7 +312,7 @@
+         # Initialize Provider (sets up _transforms)
+         super().__init__()
+ 
+-        self._on_duplicate: DuplicateBehaviorSetting = on_duplicate or "warn"
++        self._on_duplicate: DuplicateBehavior = on_duplicate or cast(DuplicateBehavior, "warn")
+ 
+         # Resolve server default for background task support
+         self._support_tasks_by_default: bool = tasks if tasks is not None else False
+@@ -348,11 +346,7 @@
+             self.add_transform(t)
+ 
+         # Store mask_error_details for execution error handling
+-        self._mask_error_details: bool = (
+-            mask_error_details
+-            if mask_error_details is not None
+-            else fastmcp.settings.mask_error_details
+-        )
++        self._mask_error_details: bool = mask_error_details
+ 
+         # Store list_page_size for pagination of list operations
+         if list_page_size is not None and list_page_size <= 0:
+@@ -393,17 +387,9 @@
+                     tool = Tool.from_function(tool)
+                 self.add_tool(tool)
+ 
+-        self.strict_input_validation: bool = (
+-            strict_input_validation
+-            if strict_input_validation is not None
+-            else fastmcp.settings.strict_input_validation
+-        )
++        self.strict_input_validation: bool = strict_input_validation
+ 
+-        self.client_log_level: mcp.types.LoggingLevel | None = (
+-            client_log_level
+-            if client_log_level is not None
+-            else fastmcp.settings.client_log_level
+-        )
++        self.client_log_level: mcp.types.LoggingLevel | None = client_log_level
+ 
+         self.middleware: list[Middleware] = list(middleware or [])
+ 
+@@ -567,38 +553,6 @@
+         """
+         self._transforms.append(transform)
+ 
+-    def add_tool_transformation(
+-        self, tool_name: str, transformation: ToolTransformConfig
+-    ) -> None:
+-        """Add a tool transformation.
+-
+-        .. deprecated::
+-            Use ``add_transform(ToolTransform({...}))`` instead.
+-        """
+-        if fastmcp.settings.deprecation_warnings:
+-            warnings.warn(
+-                "add_tool_transformation is deprecated. Use "
+-                "server.add_transform(ToolTransform({tool_name: config})) instead.",
+-                FastMCPDeprecationWarning,
+-                stacklevel=2,
+-            )
+-        self.add_transform(ToolTransform({tool_name: transformation}))
+-
+-    def remove_tool_transformation(self, _tool_name: str) -> None:
+-        """Remove a tool transformation.
+-
+-        .. deprecated::
+-            Tool transformations are now immutable. Use enable/disable controls instead.
+-        """
+-        if fastmcp.settings.deprecation_warnings:
+-            warnings.warn(
+-                "remove_tool_transformation is deprecated and has no effect. "
+-                "Transforms are immutable once added. Use server.disable(keys=[...]) "
+-                "to hide tools instead.",
+-                FastMCPDeprecationWarning,
+-                stacklevel=2,
+-            )
+-
+     async def list_tools(self, *, run_middleware: bool = True) -> Sequence[Tool]:
+         """List all enabled tools from providers.
+ 
+@@ -1539,35 +1493,6 @@
+         """
+         return self._local_provider.add_tool(tool)
+ 
+-    def remove_tool(self, name: str, version: str | None = None) -> None:
+-        """Remove tool(s) from the server.
+-
+-        .. deprecated::
+-            Use ``mcp.local_provider.remove_tool(name)`` instead.
+-
+-        Args:
+-            name: The name of the tool to remove.
+-            version: If None, removes ALL versions. If specified, removes only that version.
+-
+-        Raises:
+-            NotFoundError: If no matching tool is found.
+-        """
+-        if fastmcp.settings.deprecation_warnings:
+-            warnings.warn(
+-                "remove_tool() is deprecated. Use "
+-                "mcp.local_provider.remove_tool(name) instead.",
+-                FastMCPDeprecationWarning,
+-                stacklevel=2,
+-            )
+-        try:
+-            self._local_provider.remove_tool(name, version)
+-        except KeyError:
+-            if version is None:
+-                raise NotFoundError(f"Tool {name!r} not found") from None
+-            raise NotFoundError(
+-                f"Tool {name!r} version {version!r} not found"
+-            ) from None
+-
+     @overload
+     def tool(
+         self,
+@@ -2304,43 +2229,6 @@
+         return cls(name=server_name, providers=[provider], **settings)
+ 
+     @classmethod
+-    def as_proxy(
+-        cls,
+-        backend: (
+-            Client[ClientTransportT]
+-            | ClientTransport
+-            | FastMCP[Any]
+-            | FastMCP1Server
+-            | AnyUrl
+-            | Path
+-            | MCPConfig
+-            | dict[str, Any]
+-            | str
+-        ),
+-        **settings: Any,
+-    ) -> FastMCPProxy:
+-        """Create a FastMCP proxy server for the given backend.
+-
+-        .. deprecated::
+-            Use :func:`fastmcp.server.create_proxy` instead.
+-            This method will be removed in a future version.
+-
+-        The `backend` argument can be either an existing `fastmcp.client.Client`
+-        instance or any value accepted as the `transport` argument of
+-        `fastmcp.client.Client`. This mirrors the convenience of the
+-        `fastmcp.client.Client` constructor.
+-        """
+-        if fastmcp.settings.deprecation_warnings:
+-            warnings.warn(
+-                "FastMCP.as_proxy() is deprecated. Use create_proxy() from "
+-                "fastmcp.server instead: `from fastmcp.server import create_proxy`",
+-                FastMCPDeprecationWarning,
+-                stacklevel=2,
+-            )
+-        # Call the module-level create_proxy function directly
+-        return create_proxy(backend, **settings)
+-
+-    @classmethod
+     def generate_name(cls, name: str | None = None) -> str:
+         class_name = cls.__name__
+ 

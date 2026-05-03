@@ -1,0 +1,31 @@
+--- work/sources/src/fastmcp/client/transports/http.py	2026-05-03 12:29:52.951915859 +0900
++++ work/patched/src/fastmcp/client/transports/http.py	2026-05-03 13:24:24.027005649 +0900
+@@ -32,7 +32,6 @@
+         url: str | AnyUrl,
+         headers: dict[str, str] | None = None,
+         auth: httpx.Auth | Literal["oauth"] | str | None = None,
+-        sse_read_timeout: datetime.timedelta | float | int | None = None,
+         httpx_client_factory: McpHttpClientFactory | None = None,
+         verify: ssl.SSLContext | bool | str | None = None,
+     ):
+@@ -80,20 +79,6 @@
+ 
+         self._set_auth(auth)
+ 
+-        if sse_read_timeout is not None:
+-            if fastmcp.settings.deprecation_warnings:
+-                import warnings
+-
+-                warnings.warn(
+-                    "The `sse_read_timeout` parameter is deprecated and no longer used. "
+-                    "The new streamable_http_client API does not support this parameter. "
+-                    "Use `read_timeout_seconds` in session_kwargs or configure timeout on "
+-                    "the httpx client via `httpx_client_factory` instead.",
+-                    FastMCPDeprecationWarning,
+-                    stacklevel=2,
+-                )
+-        self.sse_read_timeout = normalize_timeout_to_timedelta(sse_read_timeout)
+-
+         self.forward_incoming_headers: bool = False
+ 
+         self._get_session_id_cb: Callable[[], str | None] | None = None

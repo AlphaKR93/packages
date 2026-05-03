@@ -2,7 +2,7 @@ import dataclasses
 import inspect
 from copy import copy
 from dataclasses import dataclass
-from typing import Annotated, get_args, get_origin
+from typing import Annotated, Any, get_args, get_origin
 
 from alpha93.fastapi._internal._compat.shared import lenient_issubclass
 from alpha93.fastapi._internal._compat.v2 import ModelField
@@ -18,10 +18,6 @@ from starlette.responses import Response
 from typing_inspection.typing_objects import is_typealiastype
 
 from ._pydantic_utils import field_annotation_is_scalar, field_annotation_is_scalar_sequence
-
-
-if __debug__ and __import__("typing").TYPE_CHECKING:
-    from typing import Any
 
 
 @dataclass(frozen=True)

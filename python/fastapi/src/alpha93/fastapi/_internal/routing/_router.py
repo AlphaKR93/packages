@@ -239,4 +239,5 @@ class APIRouter(Router, Routable):
                     generate_unique_id=current_generate_unique_id,
                     strict_content_type=current_strict_content_type,
                 )
-        self.lifespan_context = _merge_lifespan_context(self.lifespan_context, router.lifespan_context)
+        if router.lifespan_context:
+            self.lifespan_context = _merge_lifespan_context(self.lifespan_context, router.lifespan_context)

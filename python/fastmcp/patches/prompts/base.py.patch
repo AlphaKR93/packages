@@ -1,0 +1,46 @@
+--- work/sources/src/fastmcp/prompts/base.py	2026-05-03 12:29:52.955915859 +0900
++++ work/patched/src/fastmcp/prompts/base.py	2026-05-03 13:24:32.291003300 +0900
+@@ -2,7 +2,6 @@
+ 
+ from __future__ import annotations as _annotations
+ 
+-import warnings
+ from collections.abc import Callable
+ from typing import TYPE_CHECKING, Any, ClassVar, Literal, overload
+ 
+@@ -29,7 +28,6 @@
+ from pydantic import Field
+ from pydantic.json_schema import SkipJsonSchema
+ 
+-from fastmcp.exceptions import FastMCPDeprecationWarning
+ from fastmcp.server.auth.authorization import AuthCheck
+ from fastmcp.server.tasks.config import TaskConfig, TaskMeta
+ from fastmcp.utilities.components import FastMCPComponent
+@@ -414,27 +412,3 @@
+     "PromptArgument",
+     "PromptResult",
+ ]
+-
+-
+-def __getattr__(name: str) -> Any:
+-    """Deprecated re-exports for backwards compatibility."""
+-    deprecated_exports = {
+-        "FunctionPrompt": "FunctionPrompt",
+-        "prompt": "prompt",
+-    }
+-
+-    if name in deprecated_exports:
+-        import fastmcp
+-
+-        if fastmcp.settings.deprecation_warnings:
+-            warnings.warn(
+-                f"Importing {name} from fastmcp.prompts.prompt is deprecated. "
+-                f"Import from fastmcp.prompts.function_prompt instead.",
+-                FastMCPDeprecationWarning,
+-                stacklevel=2,
+-            )
+-        from fastmcp.prompts import function_prompt
+-
+-        return getattr(function_prompt, name)
+-
+-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

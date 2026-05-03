@@ -1,0 +1,9 @@
+from typing import overload
+
+
+@overload
+def get(name: str, default: None = None, /) -> str | None: ...
+@overload
+def get(name: str, default: str, /) -> str: ...
+
+def __getattr__(name: str) -> str: ...

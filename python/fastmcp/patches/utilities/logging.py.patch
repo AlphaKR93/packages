@@ -1,0 +1,93 @@
+--- work/sources/src/fastmcp/utilities/logging.py	2026-05-03 12:29:52.963915856 +0900
++++ work/patched/src/fastmcp/utilities/logging.py	2026-05-03 13:32:59.882864486 +0900
+@@ -2,14 +2,13 @@
+ 
+ import contextlib
+ import logging
+-from typing import Any, Literal, cast
+-
+-from rich.console import Console
+-from rich.logging import RichHandler
+-from typing_extensions import override
++from typing import cast, override
+ 
+ import fastmcp
+ 
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from typing import Any, Literal
++
+ 
+ def get_logger(name: str) -> logging.Logger:
+     """Get a logger nested under FastMCP namespace.
+@@ -29,7 +28,8 @@
+ def configure_logging(
+     level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | int = "INFO",
+     logger: logging.Logger | None = None,
+-    enable_rich_tracebacks: bool | None = None,
++    enable_rich_logging: bool = False,
++    enable_rich_tracebacks: bool = False,
+     **rich_kwargs: Any,
+ ) -> None:
+     """
+@@ -40,14 +40,7 @@
+         level: the log level to use
+         rich_kwargs: the parameters to use for creating RichHandler
+     """
+-    # Check if logging is disabled in settings
+-    if not fastmcp.settings.log_enabled:
+-        return
+-
+     # Use settings default if not specified
+-    if enable_rich_tracebacks is None:
+-        enable_rich_tracebacks = fastmcp.settings.enable_rich_tracebacks
+-
+     if logger is None:
+         logger = logging.getLogger("fastmcp")
+ 
+@@ -62,7 +55,7 @@
+         logger.removeHandler(hdlr)
+ 
+     # Use standard logging handlers if rich logging is disabled
+-    if not fastmcp.settings.enable_rich_logging:
++    if not enable_rich_logging:
+         # Create a standard StreamHandler for stderr
+         handler = logging.StreamHandler()
+         handler.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
+@@ -70,6 +63,9 @@
+         return
+ 
+     # Configure the handler for normal logs
++    from rich.console import Console
++    from rich.logging import RichHandler
++
+     handler = RichHandler(
+         console=Console(stderr=True),
+         **rich_kwargs,
+@@ -111,7 +107,7 @@
+ def temporary_log_level(
+     level: str | None,
+     logger: logging.Logger | None = None,
+-    enable_rich_tracebacks: bool | None = None,
++    enable_rich_tracebacks: bool = False,
+     **rich_kwargs: Any,
+ ):
+     """Context manager to temporarily set log level and restore it afterwards.
+@@ -129,9 +125,6 @@
+         # Original log level is restored here
+     """
+     if level:
+-        # Get the original log level from settings
+-        original_level = fastmcp.settings.log_level
+-
+         # Configure with new level
+         # Cast to proper type for type checker
+         log_level_literal = cast(
+@@ -150,7 +143,7 @@
+             # Restore original configuration using configure_logging
+             # This will respect the log_enabled setting
+             configure_logging(
+-                level=original_level,
++                level="INFO",
+                 logger=logger,
+                 enable_rich_tracebacks=enable_rich_tracebacks,
+                 **rich_kwargs,

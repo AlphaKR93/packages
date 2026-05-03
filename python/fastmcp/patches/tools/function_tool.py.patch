@@ -1,0 +1,53 @@
+--- work/sources/src/fastmcp/tools/function_tool.py	2026-05-03 12:29:52.963915856 +0900
++++ work/patched/src/fastmcp/tools/function_tool.py	2026-05-03 13:41:06.518727254 +0900
+@@ -107,7 +107,7 @@
+         annotations: ToolAnnotations | None = None,
+         exclude_args: list[str] | None = None,
+         output_schema: dict[str, Any] | NotSetT | None = NotSet,
+-        serializer: ToolResultSerializerType | None = None,
++        serializer: ToolResultSerializerType | None = None,  # Deprecated
+         meta: dict[str, Any] | None = None,
+         task: bool | TaskConfig | None = None,
+         timeout: float | None = None,
+@@ -126,7 +126,7 @@
+         individual_params_provided = (
+             any(
+                 x is not None and x is not NotSet
+-                for x in [
++                    for x in [
+                     name,
+                     version,
+                     title,
+@@ -170,7 +170,7 @@
+                 auth=auth,
+             )
+ 
+-        if metadata.serializer is not None and fastmcp.settings.deprecation_warnings:
++        if metadata.serializer:
+             warnings.warn(
+                 "The `serializer` parameter is deprecated. "
+                 "Return ToolResult from your tools for full control over serialization. "
+@@ -178,7 +178,7 @@
+                 FastMCPDeprecationWarning,
+                 stacklevel=2,
+             )
+-        if metadata.exclude_args and fastmcp.settings.deprecation_warnings:
++        if metadata.exclude_args:
+             warnings.warn(
+                 "The `exclude_args` parameter is deprecated as of FastMCP 2.14. "
+                 "Use dependency injection with `Depends()` instead for better lifecycle management. "
+@@ -452,14 +452,6 @@
+         return fn
+ 
+     def decorator(fn: F, tool_name: str | None) -> F:
+-        if fastmcp.settings.decorator_mode == "object":
+-            warnings.warn(
+-                "decorator_mode='object' is deprecated and will be removed in a future version. "
+-                "Decorators now return the original function with metadata attached.",
+-                FastMCPDeprecationWarning,
+-                stacklevel=4,
+-            )
+-            return create_tool(fn, tool_name)  # type: ignore[return-value]  # ty:ignore[invalid-return-type]
+         return attach_metadata(fn, tool_name)
+ 
+     if inspect.isroutine(name_or_fn):

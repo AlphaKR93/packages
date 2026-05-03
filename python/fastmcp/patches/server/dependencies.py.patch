@@ -1,0 +1,74 @@
+--- work/sources/src/fastmcp/server/dependencies.py	2026-05-03 12:29:52.959915858 +0900
++++ work/patched/src/fastmcp/server/dependencies.py	2026-05-03 12:57:19.579459156 +0900
+@@ -5,19 +5,16 @@
+ CurrentWorker) and background task execution require fastmcp[tasks].
+ """
+ 
+-from __future__ import annotations
+-
+ import contextlib
+ import importlib.metadata
+ import inspect
+ import weakref
+-from collections.abc import AsyncGenerator, Callable
+ from contextlib import AsyncExitStack, asynccontextmanager
+ from contextvars import ContextVar
+ from datetime import datetime, timezone
+ from functools import lru_cache
+ from types import TracebackType
+-from typing import TYPE_CHECKING, Any, Protocol, cast, get_type_hints, runtime_checkable
++from typing import TYPE_CHECKING, Protocol, cast, get_type_hints, runtime_checkable
+ 
+ from mcp.server.auth.middleware.auth_context import (
+     get_access_token as _sdk_get_access_token,
+@@ -27,7 +24,6 @@
+     AccessToken as _SDKAccessToken,
+ )
+ from mcp.server.lowlevel.server import request_ctx
+-from packaging.version import Version
+ from starlette.requests import Request
+ from uncalled_for import Dependency, get_dependency_parameters
+ from uncalled_for.resolution import _Depends
+@@ -42,6 +38,9 @@
+ from fastmcp.utilities.types import find_kwarg_by_type, is_class_member_of_type
+ 
+ if TYPE_CHECKING:
++    from collections.abc import AsyncGenerator, Callable
++    from typing import Any, Final
++
+     from docket import Docket
+     from docket.worker import Worker
+ 
+@@ -105,10 +104,7 @@
+ 
+ # --- Docket availability check ---
+ 
+-_DOCKET_AVAILABLE: bool | None = None
+-
+-
+-_MIN_DOCKET_VERSION = Version("0.19.0")
++_DOCKET_AVAILABLE: Final[bool] = False
+ 
+ 
+ def is_docket_available() -> bool:
+@@ -125,19 +121,7 @@
+     Any of those failing means we treat docket as unavailable and fall back
+     to the no-tasks code paths instead of crashing deep inside a request.
+     """
+-    global _DOCKET_AVAILABLE
+-    if _DOCKET_AVAILABLE is None:
+-        try:
+-            installed = Version(importlib.metadata.version("pydocket"))
+-            if installed < _MIN_DOCKET_VERSION:
+-                _DOCKET_AVAILABLE = False
+-            else:
+-                import docket  # noqa: F401
+-
+-                _DOCKET_AVAILABLE = True
+-        except (importlib.metadata.PackageNotFoundError, ImportError):
+-            _DOCKET_AVAILABLE = False
+-    return _DOCKET_AVAILABLE
++    return False
+ 
+ 
+ def require_docket(feature: str) -> None:

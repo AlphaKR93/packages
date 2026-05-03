@@ -1,0 +1,17 @@
+--- work/sources/src/fastmcp/prompts/function_prompt.py	2026-05-03 12:29:52.955915859 +0900
++++ work/patched/src/fastmcp/prompts/function_prompt.py	2026-05-03 13:24:24.035005648 +0900
+@@ -486,14 +486,6 @@
+         return fn
+ 
+     def decorator(fn: F, prompt_name: str | None) -> F:
+-        if fastmcp.settings.decorator_mode == "object":
+-            warnings.warn(
+-                "decorator_mode='object' is deprecated and will be removed in a future version. "
+-                "Decorators now return the original function with metadata attached.",
+-                FastMCPDeprecationWarning,
+-                stacklevel=4,
+-            )
+-            return create_prompt(fn, prompt_name)  # type: ignore[return-value]  # ty:ignore[invalid-return-type]
+         return attach_metadata(fn, prompt_name)
+ 
+     if inspect.isroutine(name_or_fn):
