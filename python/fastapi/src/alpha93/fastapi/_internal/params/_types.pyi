@@ -7,9 +7,7 @@ from pydantic.config import JsonDict
 from pydantic.fields import FieldInfo
 
 
-class PydanticFieldInfoParameters[T](TypedDict, total=False):
-    annotation: type[T]
-    """The type annotation of the field."""
+class PydanticFieldInfoParameters(TypedDict, total=False):
 
     alias: str
     """The alias name of the field."""
@@ -28,9 +26,6 @@ class PydanticFieldInfoParameters[T](TypedDict, total=False):
 
     description: str
     """The description of the field."""
-
-    examples: list[T]
-    """List of examples of the field."""
 
     exclude: bool
     """Whether to exclude the field from the model serialization."""

@@ -116,10 +116,10 @@ async def solve_dependencies(
             dependency_cache[sub_dependant.cache_key] = solved
 
     for expect, actual in (
-            (request.path_params, dependant.path_params),
-            (request.query_params, dependant.query_params),
-            (request.headers, dependant.header_params),
-            (request.cookies, dependant.cookie_params),
+            (dependant.path_params, request.path_params),
+            (dependant.query_params, request.query_params),
+            (dependant.header_params, request.headers),
+            (dependant.cookie_params, request.cookies),
     ):
         v_, errors_ = extract_from_params(expect, actual)
         values.update(v_)

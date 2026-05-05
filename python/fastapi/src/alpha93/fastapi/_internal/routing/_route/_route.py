@@ -11,8 +11,8 @@ from fastapi.utils import (
 )
 from starlette._exception_handler import wrap_app_handling_exceptions
 from starlette._utils import is_async_callable
-from starlette.responses import JSONResponse
-from starlette.responses import Response
+from starlette.requests import Request
+from starlette.responses import JSONResponse, Response
 from starlette.routing import Route, get_name, compile_path, Match
 
 from ._handler import get_request_handler
@@ -36,7 +36,6 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from fastapi.params import Depends
     from fastapi.types import GenerateUniqueIdFunction
     from pydantic.main import IncEx
-    from starlette.requests import Request
     from starlette.routing import BaseRoute
     from starlette.types import Scope, ASGIApp, Receive, Send
 
@@ -109,7 +108,6 @@ class APIRoute(Route):
         generate_unique_id: GenerateUniqueIdFunction = Default(_default_generate_unique_id),
         strict_content_type: bool = Default(True),
     ) -> None:
-        self.path = path
         self.endpoint = endpoint
         self.stream_item_type: Any | None = None
         if isinstance(response_model, DefaultPlaceholder):
@@ -140,22 +138,16 @@ class APIRoute(Route):
         self.response_model_exclude_defaults = response_model_exclude_defaults
         self.response_model_exclude_none = response_model_exclude_none
         self.include_in_schema = include_in_schema
-        self.response_class = response_class.value if isinstance(response_class, DefaultPlaceholder) else response_class
+        self.response_class = response_class
         self.dependency_overrides_provider = dependency_overrides_provider
         self.callbacks = callbacks
         self.generate_unique_id_function = generate_unique_id
         self.strict_content_type = strict_content_type
-        self.name = get_name(endpoint) if name is None else name
-        self.path_regex, self.path_format, self.param_convertors = compile_path(path)
-        if methods is None:
-            methods = ["GET"]
+        self.name = name or get_name(endpoint)
+        assert methods, "methods should not be empty or none"
         self.methods: set[str] = {method.upper() for method in methods}
-        if operation_id:
-            self.unique_id = operation_id
-        else:
-            self.unique_id = (generate_unique_id.value
-                              if isinstance(generate_unique_id, DefaultPlaceholder)
-                              else generate_unique_id)(self)
+        self.setup(path, operation_id, generate_unique_id)
+
         # normalize enums e.g. http.HTTPStatus
         if isinstance(status_code, IntEnum):
             status_code = int(status_code)
@@ -194,6 +186,22 @@ class APIRoute(Route):
         is_generator = self.dependant.is_async_gen_callable or self.dependant.is_gen_callable
         self.is_json_stream = is_generator and isinstance(response_class, DefaultPlaceholder)
         self.app = request_response(self.get_route_handler())
+
+    def setup(
+        self,
+        path: str,
+        /,
+        operation_id: str | None,
+        generate_unique_id: GenerateUniqueIdFunction | DefaultPlaceholder[GenerateUniqueIdFunction]
+    ):
+        self.path = path
+        self.path_regex, self.path_format, self.param_convertors = compile_path(path)
+        if operation_id:
+            self.unique_id = operation_id
+        else:
+            self.unique_id = (generate_unique_id.value
+                              if isinstance(generate_unique_id, DefaultPlaceholder)
+                              else generate_unique_id)(self)
 
     def get_route_handler(self) -> Callable[[Request], Coroutine[Any, Any, Response]]:
         return get_request_handler(

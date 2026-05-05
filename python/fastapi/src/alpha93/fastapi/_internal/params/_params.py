@@ -23,6 +23,7 @@ class Param(FieldInfo, ABC):    # type: ignore[misc]
         self,
         default = PydanticUndefined,
         *,
+        alias = None,
         default_factory = _Unset,
         alias_priority = _Unset,
         strict = _Unset,
@@ -30,9 +31,18 @@ class Param(FieldInfo, ABC):    # type: ignore[misc]
         allow_inf_nan = _Unset,
         max_digits = _Unset,
         decimal_places = _Unset,
+        validation_alias = None,
+        serialization_alias = None,
         **params
     ):
+        if alias:
+            if not validation_alias or validation_alias is _Unset:
+                validation_alias = alias
+            if (not serialization_alias or serialization_alias is _Unset) and isinstance(alias, str):
+                serialization_alias = alias
+
         kwargs = {
+            "alias": alias,
             "default": default,
             "default_factory": default_factory,
             "alias_priority": alias_priority,
@@ -41,15 +51,10 @@ class Param(FieldInfo, ABC):    # type: ignore[misc]
             "allow_inf_nan": allow_inf_nan,
             "max_digits": max_digits,
             "decimal_places": decimal_places,
+            "validation_alias": validation_alias,
+            "serialization_alias": serialization_alias,
             **params,
         }
-
-        if (not kwargs.get("validation_alias") or kwargs["validation_alias"] is _Unset):
-            kwargs["validation_alias"] = kwargs.get("alias")
-        if (not kwargs.get("serialization_alias") or kwargs["serialization_alias"] is _Unset) \
-            and isinstance(kwargs.get("alias"), str):
-            kwargs["serialization_alias"] = kwargs["alias"]
-
         super().__init__(**{k: v for k, v in kwargs.items() if v is not _Unset})
 
 class Path(Param):

@@ -141,10 +141,10 @@ class APIRouter(Router, Routable):
         /,
         prefix = "",
         dependencies = None,
-        default_response = Default(JSONResponse),
         callbacks = None,
+        default_response = Default(JSONResponse),
         generate_unique_id = Default(_default_generate_unique_id),
-        deprecated = None,
+        strict_content_type = True,
         **kwargs,
     ) -> None:
         """
@@ -179,65 +179,50 @@ class APIRouter(Router, Routable):
                 path = getattr(r, "path")  # noqa: B009
                 assert path, f"Prefix and path cannot be both empty (path operation: {getattr(r, "name", "unknown")})"
 
+        prefix += self.prefix
         for route in router.routes:
-            if isinstance(route, Route):
-                methods = list(route.methods or [])
-                self.add_route(prefix + route.path, route.endpoint, methods=methods, name=route.name)
-            elif isinstance(route, APIRoute):
+            route.path = prefix + route.path
+            if isinstance(route, APIRoute):
                 router: APIRouter
-                current_dependencies: list[Depends] = []
+
+                current_dependencies = self.dependencies.copy()
                 if dependencies:
                     current_dependencies.extend(dependencies)
                 if route.dependencies:
                     current_dependencies.extend(route.dependencies)
+                route.dependencies = current_dependencies
 
-                current_callbacks = []
+                current_callbacks = self.callbacks.copy()
                 if callbacks:
                     current_callbacks.extend(callbacks)
                 if route.callbacks:
                     current_callbacks.extend(route.callbacks)
+                route.callbacks = current_callbacks
 
-                response_cls = get_value_or_default(
+                route.response_class = get_value_or_default(
                     route.response_class,
                     router.default_response,
                     default_response,
                     self.default_response,
                 )
 
-                current_generate_unique_id = get_value_or_default(
+                generate_unique_id_function = get_value_or_default(
                     route.generate_unique_id_function,
                     router.generate_unique_id,
                     generate_unique_id,
                     self.generate_unique_id,
                 )
 
-                current_strict_content_type = get_value_or_default(
+                route.strict_content_type = get_value_or_default(
                     route.strict_content_type,
                     router.strict_content_type,
+                    strict_content_type,
                     self.strict_content_type
                 )
 
-                self.add_api_route(
-                    prefix + route.path,
-                    route.endpoint,
-                    response_model=route.response_model,
-                    status_code=route.status_code,
-                    dependencies=current_dependencies,
-                    deprecated=route.deprecated or deprecated or self.deprecated,
-                    methods=route.methods,
-                    operation_id=route.operation_id,
-                    response_model_include=route.response_model_include,
-                    response_model_exclude=route.response_model_exclude,
-                    response_model_by_alias=route.response_model_by_alias,
-                    response_model_exclude_unset=route.response_model_exclude_unset,
-                    response_model_exclude_defaults=route.response_model_exclude_defaults,
-                    response_model_exclude_none=route.response_model_exclude_none,
-                    response_class=response_cls,
-                    name=route.name,
-                    route_class=type(route),
-                    callbacks=current_callbacks,
-                    generate_unique_id=current_generate_unique_id,
-                    strict_content_type=current_strict_content_type,
-                )
+                route.setup(route.path, route.operation_id, generate_unique_id_function)
+                self.routes.append(route)
+            elif isinstance(route, Route):
+                self.routes.append(route)
         if router.lifespan_context:
             self.lifespan_context = _merge_lifespan_context(self.lifespan_context, router.lifespan_context)

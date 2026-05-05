@@ -30,7 +30,9 @@ class Param[T](FieldInfo, ABC): # type: ignore[misc]
         allow_inf_nan: bool | None = _Unset,
         max_digits: int | None = _Unset,
         decimal_places: int | None = _Unset,
-        **kwargs: Unpack[PydanticFieldInfoParameters[T]],
+        annotation: type[T] | None = None,
+        examples: list[T] | None = None,
+        **kwargs: Unpack[PydanticFieldInfoParameters],
     ): ...
 
 class Path[T](Param[T]):
@@ -69,7 +71,9 @@ class Path[T](Param[T]):
         allow_inf_nan: bool | None = _Unset,
         max_digits: int | None = _Unset,
         decimal_places: int | None = _Unset,
-        **kwargs: Unpack[PydanticFieldInfoParameters[T]],
+        annotation: type[T] | None = None,
+        examples: list[T] | None = None,
+        **kwargs: Unpack[PydanticFieldInfoParameters],
     ): ...
 
 class Query[T](Param[T]):
@@ -86,7 +90,9 @@ class Query[T](Param[T]):
         allow_inf_nan: bool | None = _Unset,
         max_digits: int | None = _Unset,
         decimal_places: int | None = _Unset,
-        **kwargs: Unpack[PydanticFieldInfoParameters[T]],
+        annotation: type[T] | None = None,
+        examples: list[T] | None = None,
+        **kwargs: Unpack[PydanticFieldInfoParameters],
     ): ...
 
 class Header[T](Param[T]):
@@ -103,7 +109,9 @@ class Header[T](Param[T]):
         allow_inf_nan: bool | None = _Unset,
         max_digits: int | None = _Unset,
         decimal_places: int | None = _Unset,
-        **kwargs: Unpack[PydanticFieldInfoParameters[T]],
+        annotation: type[T] | None = None,
+        examples: list[T] | None = None,
+        **kwargs: Unpack[PydanticFieldInfoParameters],
     ): ...
 
 class Cookie[T](Param[T]):
@@ -120,5 +128,7 @@ class Cookie[T](Param[T]):
         allow_inf_nan: bool | None = _Unset,
         max_digits: int | None = _Unset,
         decimal_places: int | None = _Unset,
-        **kwargs: Unpack[PydanticFieldInfoParameters[T]],
+        annotation: type[T] | None = None,
+        examples: list[T] | None = None,
+        **kwargs: Unpack[PydanticFieldInfoParameters],
     ): ...

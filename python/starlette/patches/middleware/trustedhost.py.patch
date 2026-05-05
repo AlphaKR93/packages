@@ -1,5 +1,5 @@
 --- work/sources/starlette/middleware/trustedhost.py	2026-04-30 16:47:44.146039129 +0900
-+++ work/patched/starlette/middleware/trustedhost.py	2026-05-02 22:38:39.084270432 +0900
++++ work/patched/starlette/middleware/trustedhost.py	2026-05-02 22:44:14.788164536 +0900
 @@ -1,10 +1,11 @@
 -from __future__ import annotations
 +from starlette.datastructures import URL, Headers

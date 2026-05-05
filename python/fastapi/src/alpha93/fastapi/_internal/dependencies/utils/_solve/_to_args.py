@@ -1,6 +1,7 @@
 from copy import deepcopy
 
 from alpha93.fastapi._internal._compat.shared import lenient_issubclass
+from alpha93.fastapi._internal.params._params import Param
 from commons import constant
 from pydantic import BaseModel
 from starlette.datastructures import ImmutableMultiDict, Headers
@@ -122,7 +123,7 @@ def extract_from_params(fields: Sequence[ModelField], params: Mapping[str, Any],
 
     if single_not_embedded_field:
         field_info = first_field.field_info
-        assert isinstance(field_info, params.Param), "Params must be subclasses of Param"
+        assert isinstance(field_info, Param), "Params must be subclasses of Param"
         loc: tuple[str, ...] = (field_info.in_.value,)
         v_, errors_ = _validate_value_with_model_field(first_field, params_to_process, values, loc=loc)
         return {first_field.name: v_}, errors_
@@ -130,7 +131,7 @@ def extract_from_params(fields: Sequence[ModelField], params: Mapping[str, Any],
     for field in fields:
         value = _get_multidict_value(field, params)
         field_info = field.field_info
-        assert isinstance(field_info, params.Param), "Params must be subclasses of Param"
+        assert isinstance(field_info, Param), "Params must be subclasses of Param"
         loc = (field_info.in_.value, get_validation_alias(field))
         v_, errors_ = _validate_value_with_model_field(field, value, values, loc=loc)
         if errors_:

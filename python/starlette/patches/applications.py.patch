@@ -1,5 +1,5 @@
 --- work/sources/starlette/applications.py	2026-04-30 16:47:44.146039129 +0900
-+++ work/patched/starlette/applications.py	2026-05-01 21:16:30.364011463 +0900
++++ work/patched/starlette/applications.py	2026-05-02 22:44:14.772164542 +0900
 @@ -1,31 +1,35 @@
 -from __future__ import annotations
 +__all__ = ("Starlette",)

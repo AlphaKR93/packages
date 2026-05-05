@@ -102,11 +102,8 @@ class FastAPI(Starlette, Routable):
     def add_api_route(self, path: str, endpoint: Callable[..., Any], /, **kwargs):
         self.router.add_api_route(path, endpoint, **kwargs)
 
-    def attach(self, router, /, **kwargs):
-        self.router.include_router(router, **kwargs)
-
     def include_router(self, router, /, **kwargs):
-        self.attach(router, **kwargs)
+        self.router.include_router(router, **kwargs)
 
     def middleware(self, /):
         def decorator(func: DispatchFunction):

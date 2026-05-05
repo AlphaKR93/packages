@@ -13,7 +13,7 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any, Final, Literal
 
-get_validation_alias = lambda field: getattr(field, "validation_alias", field.alias)
+get_validation_alias = lambda field: field.validation_alias or field.alias
 
 @constant
 def add_non_field_param_to_dependency():

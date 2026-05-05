@@ -1,5 +1,5 @@
 --- work/sources/starlette/routing.py	2026-04-30 16:47:44.146039129 +0900
-+++ work/patched/starlette/routing.py	2026-05-02 21:14:09.239944915 +0900
++++ work/patched/starlette/routing.py	2026-05-02 22:44:14.796164535 +0900
 @@ -1,29 +1,36 @@
 -from __future__ import annotations
 -
