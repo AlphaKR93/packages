@@ -1,5 +1,5 @@
---- work/sources/starlette/exceptions.py	2026-05-16 04:16:01.715524108 +0000
-+++ work/patched/starlette/exceptions.py	2026-05-17 11:20:21.141108279 +0000
+--- work/sources/starlette/exceptions.py
++++ work/patched/starlette/exceptions.py
 @@ -1,7 +1,7 @@
 -from __future__ import annotations
 -

@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/sampling/run.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/sampling/run.py	2026-05-17 15:37:31.647669054 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/sampling/run.py
++++ work/patched/fastmcp_slim/fastmcp/server/sampling/run.py
 @@ -1,12 +1,6 @@
  """Sampling types and helper functions for FastMCP servers."""
 -

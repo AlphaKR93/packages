@@ -1,5 +1,5 @@
---- work/sources/starlette/middleware/exceptions.py	2026-05-16 04:16:01.715524108 +0000
-+++ work/patched/starlette/middleware/exceptions.py	2026-05-17 11:20:21.145108279 +0000
+--- work/sources/starlette/middleware/exceptions.py
++++ work/patched/starlette/middleware/exceptions.py
 @@ -1,19 +1,14 @@
 -from __future__ import annotations
 -

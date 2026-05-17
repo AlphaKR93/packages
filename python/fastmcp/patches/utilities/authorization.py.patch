@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/utilities/authorization.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/authorization.py	2026-05-17 10:36:15.641351827 +0000
+--- work/sources/fastmcp_slim/fastmcp/utilities/authorization.py
++++ work/patched/fastmcp_slim/fastmcp/utilities/authorization.py
 @@ -4,22 +4,21 @@
  allow access or False to deny it. They can also raise ``AuthorizationError`` to
  deny with a custom message; other exceptions are masked and treated as denial.

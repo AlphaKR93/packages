@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/event_store.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/event_store.py	2026-05-17 15:37:31.775669036 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/event_store.py
++++ work/patched/fastmcp_slim/fastmcp/server/event_store.py
 @@ -5,9 +5,6 @@
  AsyncKeyValue protocol, allowing users to configure any compatible backend
  (in-memory, Redis, etc.) following the same pattern as ResponseCachingMiddleware.

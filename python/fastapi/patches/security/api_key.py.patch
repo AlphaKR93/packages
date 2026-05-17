@@ -1,5 +1,5 @@
---- work/sources/fastapi/security/api_key.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/security/api_key.py	2026-05-02 17:01:56.112712919 +0900
+--- work/sources/fastapi/security/api_key.py
++++ work/patched/fastapi/security/api_key.py
 @@ -1,13 +1,22 @@
 +from enum import Enum
  from typing import Annotated

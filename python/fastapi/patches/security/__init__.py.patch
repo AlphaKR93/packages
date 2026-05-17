@@ -1,5 +1,5 @@
---- work/sources/fastapi/security/__init__.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/security/__init__.py	2026-05-02 17:01:56.112712919 +0900
+--- work/sources/fastapi/security/__init__.py
++++ work/patched/fastapi/security/__init__.py
 @@ -1,15 +1,2 @@
 -from .api_key import APIKeyCookie as APIKeyCookie
 -from .api_key import APIKeyHeader as APIKeyHeader

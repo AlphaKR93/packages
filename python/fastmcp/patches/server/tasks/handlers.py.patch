@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/tasks/handlers.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/tasks/handlers.py	2026-05-17 15:37:31.863669024 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/tasks/handlers.py
++++ work/patched/fastmcp_slim/fastmcp/server/tasks/handlers.py
 @@ -2,51 +2,11 @@
  
  Handles queuing tool/prompt/resource executions to Docket as background tasks.

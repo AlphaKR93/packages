@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/auth/providers/jwt.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/auth/providers/jwt.py	2026-05-17 10:53:01.577259702 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/auth/providers/jwt.py
++++ work/patched/fastmcp_slim/fastmcp/server/auth/providers/jwt.py
 @@ -1,15 +1,12 @@
  """TokenVerifier implementations for FastMCP."""
 -

@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py	2026-05-17 10:36:15.617351829 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py
++++ work/patched/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py
 @@ -13,7 +13,7 @@
  from fastmcp.server.providers.base import Provider
  from fastmcp.utilities.versions import VersionSpec

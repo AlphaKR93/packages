@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/utilities/token_cache.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/token_cache.py	2026-05-17 10:36:15.649351826 +0000
+--- work/sources/fastmcp_slim/fastmcp/utilities/token_cache.py
++++ work/patched/fastmcp_slim/fastmcp/utilities/token_cache.py
 @@ -19,16 +19,17 @@
              cache.set(raw_token, token)
      ```

@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/transforms/prompts_as_tools.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/transforms/prompts_as_tools.py	2026-05-17 15:37:31.343669100 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/transforms/prompts_as_tools.py
++++ work/patched/fastmcp_slim/fastmcp/server/transforms/prompts_as_tools.py
 @@ -17,22 +17,19 @@
      # Now has list_prompts and get_prompt tools
      ```

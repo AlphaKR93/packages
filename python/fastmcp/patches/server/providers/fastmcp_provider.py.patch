@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/providers/fastmcp_provider.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/providers/fastmcp_provider.py	2026-05-17 15:37:31.455669081 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/providers/fastmcp_provider.py
++++ work/patched/fastmcp_slim/fastmcp/server/providers/fastmcp_provider.py
 @@ -7,30 +7,23 @@
  the wrapped server's middleware, ensuring middleware runs when components are
  executed.

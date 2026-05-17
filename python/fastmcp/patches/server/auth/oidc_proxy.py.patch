@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/auth/oidc_proxy.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/auth/oidc_proxy.py	2026-05-17 10:53:01.517259705 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/auth/oidc_proxy.py
++++ work/patched/fastmcp_slim/fastmcp/server/auth/oidc_proxy.py
 @@ -13,6 +13,7 @@
  from typing import Literal
  

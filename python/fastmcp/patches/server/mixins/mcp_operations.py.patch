@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/mixins/mcp_operations.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/mixins/mcp_operations.py	2026-05-17 15:43:43.023635101 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/mixins/mcp_operations.py
++++ work/patched/fastmcp_slim/fastmcp/server/mixins/mcp_operations.py
 @@ -1,14 +1,7 @@
  """MCP protocol handler setup and wire-format handlers for FastMCP Server."""
  

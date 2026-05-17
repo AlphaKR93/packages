@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/utilities/tasks.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/tasks.py	2026-05-17 10:36:15.649351826 +0000
+--- work/sources/fastmcp_slim/fastmcp/utilities/tasks.py
++++ work/patched/fastmcp_slim/fastmcp/utilities/tasks.py
 @@ -1,7 +1,4 @@
  """Task configuration primitives for FastMCP components."""
 -

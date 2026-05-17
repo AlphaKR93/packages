@@ -1,5 +1,5 @@
---- work/sources/fastapi/requests.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/requests.py	2026-05-02 17:01:56.108712921 +0900
+--- work/sources/fastapi/requests.py
++++ work/patched/fastapi/requests.py
 @@ -1,2 +1,2 @@
 -from starlette.requests import HTTPConnection as HTTPConnection  # noqa: F401
 -from starlette.requests import Request as Request  # noqa: F401

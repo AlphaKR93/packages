@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/mixins/transport.pyi	1970-01-01 00:00:00.000000000 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/mixins/transport.pyi	1970-01-01 00:00:00.000000000 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/mixins/transport.pyi
++++ work/patched/fastmcp_slim/fastmcp/server/mixins/transport.pyi
 @@ -0,0 +1,81 @@
 +from typing import Literal, Any, final
 +

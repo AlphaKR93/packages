@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/sampling/sampling_tool.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/sampling/sampling_tool.py	2026-05-17 15:37:31.847669026 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/sampling/sampling_tool.py
++++ work/patched/fastmcp_slim/fastmcp/server/sampling/sampling_tool.py
 @@ -1,7 +1,4 @@
  """SamplingTool for use during LLM sampling requests."""
 -

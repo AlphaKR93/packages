@@ -1,5 +1,5 @@
---- work/sources/starlette/background.py	2026-05-16 04:16:01.715524108 +0000
-+++ work/patched/starlette/background.py	2026-05-17 11:20:21.137108280 +0000
+--- work/sources/starlette/background.py
++++ work/patched/starlette/background.py
 @@ -1,12 +1,14 @@
 -from __future__ import annotations
 +from typing import override

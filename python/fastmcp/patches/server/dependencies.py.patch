@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/dependencies.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/dependencies.py	2026-05-17 15:37:31.287669109 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/dependencies.py
++++ work/patched/fastmcp_slim/fastmcp/server/dependencies.py
 @@ -4,11 +4,7 @@
  using the uncalled-for DI engine. Only task-related dependencies (CurrentDocket,
  CurrentWorker) and background task execution require fastmcp[tasks].

@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/lifespan.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/lifespan.py	2026-05-17 10:36:15.589351833 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/lifespan.py
++++ work/patched/fastmcp_slim/fastmcp/server/lifespan.py
 @@ -41,31 +41,27 @@
      combined = ContextManagerLifespan(legacy_lifespan) | new_lifespan
      ```

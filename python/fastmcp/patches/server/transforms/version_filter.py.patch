@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/transforms/version_filter.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/transforms/version_filter.py	2026-05-17 10:36:15.633351829 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/transforms/version_filter.py
++++ work/patched/fastmcp_slim/fastmcp/server/transforms/version_filter.py
 @@ -1,24 +1,14 @@
  """Version filter transform for filtering components by version range."""
 -

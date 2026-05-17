@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/utilities/openapi/formatters.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/openapi/formatters.py	2026-05-17 11:12:45.721148955 +0000
+--- work/sources/fastmcp_slim/fastmcp/utilities/openapi/formatters.py
++++ work/patched/fastmcp_slim/fastmcp/utilities/openapi/formatters.py
 @@ -1,9 +1,10 @@
  """Parameter formatting functions for OpenAPI operations."""
  

@@ -1,5 +1,5 @@
---- work/sources/starlette/requests.py	2026-05-16 04:16:01.719524108 +0000
-+++ work/patched/starlette/requests.py	2026-05-17 11:20:21.149108278 +0000
+--- work/sources/starlette/requests.py
++++ work/patched/starlette/requests.py
 @@ -1,38 +1,19 @@
 -from __future__ import annotations
 -

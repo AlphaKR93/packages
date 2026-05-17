@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/auth/oauth_proxy/proxy.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/auth/oauth_proxy/proxy.py	2026-05-17 15:37:31.715669045 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/auth/oauth_proxy/proxy.py
++++ work/patched/fastmcp_slim/fastmcp/server/auth/oauth_proxy/proxy.py
 @@ -60,7 +60,6 @@
  from starlette.routing import Route
  from typing_extensions import override

@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/transforms/resources_as_tools.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/transforms/resources_as_tools.py	2026-05-17 15:37:31.399669090 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/transforms/resources_as_tools.py
++++ work/patched/fastmcp_slim/fastmcp/server/transforms/resources_as_tools.py
 @@ -17,27 +17,28 @@
      # Now has list_resources and read_resource tools
      ```

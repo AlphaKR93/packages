@@ -1,5 +1,5 @@
---- work/sources/fastapi/__init__.py	2026-04-30 16:45:51.814075014 +0900
-+++ work/patched/fastapi/__init__.py	2026-05-02 20:52:10.068358953 +0900
+--- work/sources/fastapi/__init__.py
++++ work/patched/fastapi/__init__.py
 @@ -2,24 +2,9 @@
  
  __version__ = "0.136.1"

@@ -1,5 +1,5 @@
---- work/sources/starlette/types.pyi	1970-01-01 00:00:00.000000000 +0000
-+++ work/patched/starlette/types.pyi	1970-01-01 00:00:00.000000000 +0000
+--- work/sources/starlette/types.pyi
++++ work/patched/starlette/types.pyi
 @@ -0,0 +1,23 @@
 +from collections.abc import Awaitable, Callable, Mapping, MutableMapping
 +from contextlib import AbstractAsyncContextManager

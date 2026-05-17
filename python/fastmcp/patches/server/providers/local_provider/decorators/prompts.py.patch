@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/providers/local_provider/decorators/prompts.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/providers/local_provider/decorators/prompts.py	2026-05-17 15:43:42.991635105 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/providers/local_provider/decorators/prompts.py
++++ work/patched/fastmcp_slim/fastmcp/server/providers/local_provider/decorators/prompts.py
 @@ -3,24 +3,20 @@
  This module provides the PromptDecoratorMixin class that adds prompt
  registration functionality to LocalProvider.

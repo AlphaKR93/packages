@@ -1,5 +1,5 @@
---- work/sources/fastapi/responses.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/responses.py	2026-05-02 17:01:56.108712921 +0900
+--- work/sources/fastapi/responses.py
++++ work/patched/fastapi/responses.py
 @@ -1,98 +1,2 @@
 -import importlib
 -from typing import Any, Protocol, cast

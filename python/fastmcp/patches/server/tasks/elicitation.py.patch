@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/tasks/elicitation.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/tasks/elicitation.py	2026-05-17 15:37:31.523669071 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/tasks/elicitation.py
++++ work/patched/fastmcp_slim/fastmcp/server/tasks/elicitation.py
 @@ -12,25 +12,17 @@
  This uses the public MCP SDK APIs where possible, with minimal use of
  internal APIs for background task coordination.

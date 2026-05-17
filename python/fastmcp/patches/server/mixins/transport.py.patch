@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/mixins/transport.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/mixins/transport.py	2026-05-17 15:37:31.811669031 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/mixins/transport.py
++++ work/patched/fastmcp_slim/fastmcp/server/mixins/transport.py
 @@ -1,204 +1,29 @@
  """Transport-related methods for FastMCP Server."""
 +from fastmcp.utilities.logging import get_logger

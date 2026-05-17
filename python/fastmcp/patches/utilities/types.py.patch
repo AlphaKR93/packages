@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/utilities/types.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/types.py	2026-05-17 15:37:31.703669046 +0000
+--- work/sources/fastmcp_slim/fastmcp/utilities/types.py
++++ work/patched/fastmcp_slim/fastmcp/utilities/types.py
 @@ -1,38 +1,40 @@
  """Common types used across FastMCP."""
  

@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/__init__.py	2026-05-16 04:15:58.919524369 +0000
-+++ work/patched/fastmcp_slim/fastmcp/__init__.py	2026-05-17 10:36:15.565351834 +0000
+--- work/sources/fastmcp_slim/fastmcp/__init__.py
++++ work/patched/fastmcp_slim/fastmcp/__init__.py
 @@ -1,42 +1,14 @@
  """FastMCP - An ergonomic MCP interface."""
  

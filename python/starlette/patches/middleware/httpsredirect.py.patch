@@ -1,5 +1,5 @@
---- work/sources/starlette/middleware/httpsredirect.py	2026-05-16 04:16:01.719524108 +0000
-+++ work/patched/starlette/middleware/httpsredirect.py	2026-05-17 11:20:21.145108279 +0000
+--- work/sources/starlette/middleware/httpsredirect.py
++++ work/patched/starlette/middleware/httpsredirect.py
 @@ -1,6 +1,8 @@
  from starlette.datastructures import URL
  from starlette.responses import RedirectResponse

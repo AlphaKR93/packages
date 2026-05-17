@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/transforms/tool_transform.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/transforms/tool_transform.py	2026-05-17 10:36:15.633351829 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/transforms/tool_transform.py
++++ work/patched/fastmcp_slim/fastmcp/server/transforms/tool_transform.py
 @@ -1,16 +1,13 @@
  """Transform for applying tool transformations."""
 -

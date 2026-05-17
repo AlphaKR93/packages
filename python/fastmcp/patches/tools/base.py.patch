@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/tools/base.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/tools/base.py	2026-05-17 15:37:31.503669074 +0000
+--- work/sources/fastmcp_slim/fastmcp/tools/base.py
++++ work/patched/fastmcp_slim/fastmcp/tools/base.py
 @@ -1,81 +1,34 @@
 -from __future__ import annotations
 +from typing import Any

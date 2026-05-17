@@ -1,6 +1,6 @@
---- work/sources/fastmcp_slim/fastmcp/server/server.py	2026-05-17 05:13:13.887160504 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/server.py	2026-05-17 10:36:15.621351830 +0000
-@@ -1,281 +1,27 @@
+--- work/sources/fastmcp_slim/fastmcp/server/server.py
++++ work/patched/fastmcp_slim/fastmcp/server/server.py
+@@ -1,281 +1,26 @@
  """FastMCP - A more ergonomic interface for MCP servers."""
 -
 -from __future__ import annotations
@@ -289,13 +289,13 @@
 +            return "not listed, no validation" not in record.getMessage()
  
 -        yield fastmcp_server._lifespan_result  # ty:ignore[invalid-yield]
-+    logging.getLogger("mcp.server.lowlevel.server").addFilter(__SuppressUnlistedToolWarning())
- 
+-
 -    return wrap
++    logging.getLogger("mcp.server.lowlevel.server").addFilter(__SuppressUnlistedToolWarning())
  
  
  class StateValue(FastMCPBaseModel):
-@@ -284,2218 +30,6 @@
+@@ -284,2197 +29,6 @@
      value: Any
  
  
@@ -306,27 +306,6 @@
 -    TransportMixin,
 -    Generic[LifespanResultT],
 -):
--    __slots__ = (
--        "__provider",
--        "__support_tasks_by_default",
--        "_lifespan",
--        "_lifespan_result",
--        "_lifespan_result_set",
--        "_lifespan_ref_count",
--        "_started",
--        "_mask_error_details",
--        "_list_page_size",
--        "_state_store",
--        "_mcp_server",
--        "auth",
--        "strict_input_validation",
--        "client_log_level",
--        "experimental_capabilities",
--        "middleware",
--        "sampling_handler",
--        "sampling_handler_behavior",
--    )
--
 -    def __init__(
 -        self,
 -        name: str | None = None,

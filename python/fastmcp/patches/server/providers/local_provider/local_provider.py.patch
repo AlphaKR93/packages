@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/providers/local_provider/local_provider.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/providers/local_provider/local_provider.py	2026-05-17 10:36:15.609351830 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/providers/local_provider/local_provider.py
++++ work/patched/fastmcp_slim/fastmcp/server/providers/local_provider/local_provider.py
 @@ -27,16 +27,15 @@
  from collections.abc import Sequence
  from typing import Literal, TypeVar

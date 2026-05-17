@@ -1,5 +1,5 @@
---- work/sources/starlette/_exception_handler.py	2026-05-16 04:16:01.715524108 +0000
-+++ work/patched/starlette/_exception_handler.py	2026-05-17 11:20:21.133108281 +0000
+--- work/sources/starlette/_exception_handler.py
++++ work/patched/starlette/_exception_handler.py
 @@ -1,26 +1,27 @@
 -from __future__ import annotations
 +from ._utils import is_async_callable

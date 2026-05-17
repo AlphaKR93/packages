@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/middleware/authorization.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/middleware/authorization.py	2026-05-17 15:37:31.615669058 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/middleware/authorization.py
++++ work/patched/fastmcp_slim/fastmcp/server/middleware/authorization.py
 @@ -29,21 +29,21 @@
  import mcp.types as mt
  

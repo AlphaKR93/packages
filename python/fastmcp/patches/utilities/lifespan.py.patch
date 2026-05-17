@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/utilities/lifespan.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/lifespan.py	2026-05-17 10:36:15.645351827 +0000
+--- work/sources/fastmcp_slim/fastmcp/utilities/lifespan.py
++++ work/patched/fastmcp_slim/fastmcp/utilities/lifespan.py
 @@ -1,15 +1,13 @@
  """Lifespan utilities for combining async context manager lifespans."""
 +from contextlib import AsyncExitStack, asynccontextmanager

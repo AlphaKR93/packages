@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/middleware/dereference.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/middleware/dereference.py	2026-05-17 15:37:31.307669105 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/middleware/dereference.py
++++ work/patched/fastmcp_slim/fastmcp/server/middleware/dereference.py
 @@ -6,9 +6,9 @@
  import mcp.types as mt
  from typing_extensions import override

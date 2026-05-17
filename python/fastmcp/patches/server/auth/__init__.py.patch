@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/auth/__init__.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/auth/__init__.py	2026-05-17 10:36:15.577351833 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/auth/__init__.py
++++ work/patched/fastmcp_slim/fastmcp/server/auth/__init__.py
 @@ -1,5 +1,3 @@
 -from typing import TYPE_CHECKING
 -

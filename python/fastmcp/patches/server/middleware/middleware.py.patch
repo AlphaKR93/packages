@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/middleware/middleware.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/middleware/middleware.py	2026-05-17 15:37:31.691669048 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/middleware/middleware.py
++++ work/patched/fastmcp_slim/fastmcp/server/middleware/middleware.py
 @@ -1,12 +1,9 @@
 -from __future__ import annotations
 -

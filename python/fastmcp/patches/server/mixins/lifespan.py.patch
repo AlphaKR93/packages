@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/mixins/lifespan.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/mixins/lifespan.py	2026-05-17 10:36:15.597351831 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/mixins/lifespan.py
++++ work/patched/fastmcp_slim/fastmcp/server/mixins/lifespan.py
 @@ -1,22 +1,15 @@
  """Lifespan and Docket task infrastructure for FastMCP Server."""
 -

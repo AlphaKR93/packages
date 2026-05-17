@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/transforms/search/base.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/transforms/search/base.py	2026-05-17 10:36:15.629351828 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/transforms/search/base.py
++++ work/patched/fastmcp_slim/fastmcp/server/transforms/search/base.py
 @@ -26,16 +26,20 @@
      # The original tools are discoverable via search.
      mcp.add_transform(RegexSearchTransform())

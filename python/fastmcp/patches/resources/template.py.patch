@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/resources/template.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/resources/template.py	2026-05-17 10:36:15.573351834 +0000
+--- work/sources/fastmcp_slim/fastmcp/resources/template.py
++++ work/patched/fastmcp_slim/fastmcp/resources/template.py
 @@ -1,46 +1,22 @@
  """Resource template functionality."""
 -

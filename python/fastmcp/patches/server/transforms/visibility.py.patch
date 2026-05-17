@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/transforms/visibility.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/transforms/visibility.py	2026-05-17 15:43:43.031635101 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/transforms/visibility.py
++++ work/patched/fastmcp_slim/fastmcp/server/transforms/visibility.py
 @@ -4,33 +4,23 @@
  visibility transforms can be stacked - later transforms override earlier ones.
  Final filtering happens at the Provider level.

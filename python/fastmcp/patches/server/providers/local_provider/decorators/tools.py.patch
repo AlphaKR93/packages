@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/providers/local_provider/decorators/tools.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/providers/local_provider/decorators/tools.py	2026-05-17 15:43:42.971635108 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/providers/local_provider/decorators/tools.py
++++ work/patched/fastmcp_slim/fastmcp/server/providers/local_provider/decorators/tools.py
 @@ -3,23 +3,14 @@
  This module provides the ToolDecoratorMixin class that adds tool
  registration functionality to LocalProvider.

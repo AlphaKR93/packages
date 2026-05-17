@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-
+import re
 import subprocess
 import tomllib
 
@@ -10,6 +10,12 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
 
 
 def main():
+    TIMESTAMP = re.compile(r"\t\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d{9} \+\d{4}")
+    ARGS = (
+        "--ignore-trailing-space",
+        "--strip-trailing-cr",
+    )
+
     root: Final = Path(__import__("os").getcwd())
 
     def __load_config():
@@ -48,7 +54,7 @@ def main():
         origin = (ref / rel_file).relative_to(root)
 
         result = subprocess.run(
-            ("diff", "--unified", "--new-file", str(origin), str(edited)),
+            ("diff", "--unified", *ARGS, "--new-file", str(origin), str(edited)),
             capture_output=True,
             text=True,
         )
@@ -61,7 +67,10 @@ def main():
             patch = patches / rel_file.with_suffix(rel_file.suffix + ".patch")
             patch.parent.mkdir(parents=True, exist_ok=True)
             with open(patch, "x") as f:
-                f.write(result.stdout)
+                l = result.stdout.splitlines(keepends=True)
+                l[0] = TIMESTAMP.sub("", l[0])
+                l[1] = TIMESTAMP.sub("", l[1])
+                f.write(''.join(l))
 
 if __name__ == "__main__":
     main()

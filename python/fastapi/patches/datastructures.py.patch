@@ -1,5 +1,5 @@
---- work/sources/fastapi/datastructures.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/datastructures.py	2026-05-02 17:01:56.100712924 +0900
+--- work/sources/fastapi/datastructures.py
++++ work/patched/fastapi/datastructures.py
 @@ -1,21 +1,16 @@
 -from collections.abc import Callable, Mapping
 -from typing import (

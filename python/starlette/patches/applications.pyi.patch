@@ -1,5 +1,5 @@
---- work/sources/starlette/applications.pyi	1970-01-01 00:00:00.000000000 +0000
-+++ work/patched/starlette/applications.pyi	1970-01-01 00:00:00.000000000 +0000
+--- work/sources/starlette/applications.pyi
++++ work/patched/starlette/applications.pyi
 @@ -0,0 +1,94 @@
 +from collections.abc import Sequence, Callable, MutableSequence, Iterable
 +from typing import Any, Self, ParamSpec, overload

@@ -1,5 +1,5 @@
---- work/sources/fastapi/security/base.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/security/base.py	2026-05-02 20:38:04.132625668 +0900
+--- work/sources/fastapi/security/base.py
++++ work/patched/fastapi/security/base.py
 @@ -1,4 +1,4 @@
 -from fastapi.openapi.models import SecurityBase as SecurityBaseModel
 +from alpha93.fastapi.models import SecurityBase as SecurityBaseModel

@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/utilities/json_schema.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/json_schema.py	2026-05-17 10:36:15.645351827 +0000
+--- work/sources/fastmcp_slim/fastmcp/utilities/json_schema.py
++++ work/patched/fastmcp_slim/fastmcp/utilities/json_schema.py
 @@ -1,12 +1,13 @@
 -from __future__ import annotations
 -

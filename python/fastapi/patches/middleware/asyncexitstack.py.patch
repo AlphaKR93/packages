@@ -1,5 +1,5 @@
---- work/sources/fastapi/middleware/asyncexitstack.py	2026-04-30 16:45:51.818075012 +0900
-+++ work/patched/fastapi/middleware/asyncexitstack.py	2026-05-02 22:32:36.836387294 +0900
+--- work/sources/fastapi/middleware/asyncexitstack.py
++++ work/patched/fastapi/middleware/asyncexitstack.py
 @@ -1,18 +1,17 @@
  from contextlib import AsyncExitStack
  

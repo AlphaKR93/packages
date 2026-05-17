@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/tools/function_parsing.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/tools/function_parsing.py	2026-05-17 15:43:43.051635099 +0000
+--- work/sources/fastmcp_slim/fastmcp/tools/function_parsing.py
++++ work/patched/fastmcp_slim/fastmcp/tools/function_parsing.py
 @@ -1,20 +1,19 @@
  """Function introspection and schema generation for FastMCP tools."""
 -

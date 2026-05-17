@@ -1,5 +1,5 @@
---- work/sources/starlette/authentication.py	2026-05-16 04:16:01.715524108 +0000
-+++ work/patched/starlette/authentication.py	2026-05-17 11:21:50.469098559 +0000
+--- work/sources/starlette/authentication.py
++++ work/patched/starlette/authentication.py
 @@ -1,18 +1,13 @@
 -from __future__ import annotations
 -

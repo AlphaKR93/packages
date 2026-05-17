@@ -1,5 +1,5 @@
---- work/sources/fastmcp_slim/fastmcp/server/providers/skills/skill_provider.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/providers/skills/skill_provider.py	2026-05-17 10:53:01.557259702 +0000
+--- work/sources/fastmcp_slim/fastmcp/server/providers/skills/skill_provider.py
++++ work/patched/fastmcp_slim/fastmcp/server/providers/skills/skill_provider.py
 @@ -1,17 +1,13 @@
  """Basic skill provider for handling a single skill folder."""
 -
