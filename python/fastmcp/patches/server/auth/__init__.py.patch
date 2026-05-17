@@ -1,11 +1,58 @@
 --- work/sources/fastmcp_slim/fastmcp/server/auth/__init__.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/auth/__init__.py	2026-05-17 03:46:17.155650112 +0000
-@@ -16,7 +16,7 @@
-     run_auth_checks,
++++ work/patched/fastmcp_slim/fastmcp/server/auth/__init__.py	2026-05-17 10:36:15.577351833 +0000
+@@ -1,5 +1,3 @@
+-from typing import TYPE_CHECKING
+-
+ from .auth import (
+     OAuthProvider,
+     TokenVerifier,
+@@ -8,18 +6,10 @@
+     AccessToken,
+     AuthProvider,
  )
+-from .authorization import (
+-    AuthCheck,
+-    AuthContext,
+-    require_scopes,
+-    restrict_tag,
+-    run_auth_checks,
+-)
  
 -if TYPE_CHECKING:
 +if __debug__ and __import__("typing").TYPE_CHECKING:
      from .oauth_proxy import OAuthProxy as OAuthProxy
      from .oidc_proxy import OIDCProxy as OIDCProxy
-     from .providers.debug import DebugTokenVerifier as DebugTokenVerifier
+-    from .providers.debug import DebugTokenVerifier as DebugTokenVerifier
+     from .providers.jwt import JWTVerifier as JWTVerifier
+     from .providers.jwt import StaticTokenVerifier as StaticTokenVerifier
+ 
+@@ -32,10 +22,6 @@
+ 
+ 
+ def __getattr__(name: str) -> object:
+-    if name == "DebugTokenVerifier":
+-        from .providers.debug import DebugTokenVerifier
+-
+-        return DebugTokenVerifier
+     if name == "JWTVerifier":
+         from .providers.jwt import JWTVerifier
+ 
+@@ -57,10 +43,7 @@
+ 
+ __all__ = [
+     "AccessToken",
+-    "AuthCheck",
+-    "AuthContext",
+     "AuthProvider",
+-    "DebugTokenVerifier",
+     "JWTVerifier",
+     "MultiAuth",
+     "OAuthProvider",
+@@ -69,7 +52,4 @@
+     "RemoteAuthProvider",
+     "StaticTokenVerifier",
+     "TokenVerifier",
+-    "require_scopes",
+-    "restrict_tag",
+-    "run_auth_checks",
+ ]

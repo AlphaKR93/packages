@@ -1,0 +1,290 @@
+--- work/sources/fastmcp_slim/fastmcp/server/mixins/mcp_operations.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/mixins/mcp_operations.py	2026-05-17 15:43:43.023635101 +0000
+@@ -1,14 +1,7 @@
+ """MCP protocol handler setup and wire-format handlers for FastMCP Server."""
+ 
+-from __future__ import annotations
+-
+-from collections.abc import Awaitable, Callable, Sequence
+-from typing import TYPE_CHECKING, Any, TypeVar, cast
+-
+ import mcp.types
+ from mcp.shared.exceptions import McpError
+-from mcp.types import ContentBlock
+-from pydantic import AnyUrl
+ 
+ from fastmcp.exceptions import DisabledError, NotFoundError
+ from fastmcp.server.tasks.config import TaskMeta
+@@ -16,15 +9,19 @@
+ from fastmcp.utilities.pagination import paginate_sequence
+ from fastmcp.utilities.versions import VersionSpec, dedupe_with_versions
+ 
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Awaitable, Callable, Sequence
++    from typing import Any
++
++    from mcp.types import ContentBlock
++    from pydantic import AnyUrl
++
+     from fastmcp.server.server import FastMCP
+ 
+ logger = get_logger(__name__)
+ 
+-PaginateT = TypeVar("PaginateT")
+-
+ 
+-def _apply_pagination(
++def _apply_pagination[PaginateT](
+     items: Sequence[PaginateT],
+     cursor: str | None,
+     page_size: int | None,
+@@ -51,7 +48,7 @@
+     These methods use untyped `self` to avoid this issue.
+     """
+ 
+-    def _setup_handlers(self: FastMCP) -> None:
++    def _setup_handlers(self: FastMCP, /) -> None:
+         """Set up core MCP protocol handlers.
+ 
+         List handlers use SDK decorators that pass the request object to our handler
+@@ -96,7 +93,7 @@
+         return wrapper
+ 
+     async def _list_tools_mcp(
+-        self, request: mcp.types.ListToolsRequest
++        self: FastMCP, /, request: mcp.types.ListToolsRequest
+     ) -> mcp.types.ListToolsResult:
+         """
+         List all available tools, in the format expected by the low-level MCP
+@@ -104,31 +101,29 @@
+         """
+         # Cast self to FastMCP for type checking (see class docstring for why
+         # we can't use `self: FastMCP` annotation on SDK-registered handlers)
+-        server = cast("FastMCP", self)
+-        logger.debug(f"[{server.name}] Handler called: list_tools")
++        logger.debug(f"[{self.name}] Handler called: list_tools")
+ 
+-        tools = dedupe_with_versions(list(await server.list_tools()), lambda t: t.name)
++        tools = dedupe_with_versions(list(await self.list_tools()), lambda t: t.name)
+         sdk_tools = [tool.to_mcp_tool(name=tool.name) for tool in tools]
+ 
+         # SDK may pass None for internal cache refresh despite type hint
+         cursor = (
+             request.params.cursor if request is not None and request.params else None
+         )
+-        page, next_cursor = _apply_pagination(sdk_tools, cursor, server._list_page_size)
++        page, next_cursor = _apply_pagination(sdk_tools, cursor, self._list_page_size)
+         return mcp.types.ListToolsResult(tools=page, nextCursor=next_cursor)
+ 
+     async def _list_resources_mcp(
+-        self, request: mcp.types.ListResourcesRequest
++        self: FastMCP, /, request: mcp.types.ListResourcesRequest
+     ) -> mcp.types.ListResourcesResult:
+         """
+         List all available resources, in the format expected by the low-level MCP
+         server. Supports pagination when list_page_size is configured.
+         """
+-        server = cast("FastMCP", self)
+-        logger.debug(f"[{server.name}] Handler called: list_resources")
++        logger.debug(f"[{self.name}] Handler called: list_resources")
+ 
+         resources = dedupe_with_versions(
+-            list(await server.list_resources()), lambda r: str(r.uri)
++            list(await self.list_resources()), lambda r: str(r.uri)
+         )
+         sdk_resources = [
+             resource.to_mcp_resource(uri=str(resource.uri)) for resource in resources
+@@ -136,22 +131,21 @@
+ 
+         cursor = request.params.cursor if request.params else None
+         page, next_cursor = _apply_pagination(
+-            sdk_resources, cursor, server._list_page_size
++            sdk_resources, cursor, self._list_page_size
+         )
+         return mcp.types.ListResourcesResult(resources=page, nextCursor=next_cursor)
+ 
+     async def _list_resource_templates_mcp(
+-        self, request: mcp.types.ListResourceTemplatesRequest
++        self: FastMCP, /, request: mcp.types.ListResourceTemplatesRequest
+     ) -> mcp.types.ListResourceTemplatesResult:
+         """
+         List all available resource templates, in the format expected by the low-level MCP
+         server. Supports pagination when list_page_size is configured.
+         """
+-        server = cast("FastMCP", self)
+-        logger.debug(f"[{server.name}] Handler called: list_resource_templates")
++        logger.debug(f"[{self.name}] Handler called: list_resource_templates")
+ 
+         templates = dedupe_with_versions(
+-            list(await server.list_resource_templates()), lambda t: t.uri_template
++            list(await self.list_resource_templates()), lambda t: t.uri_template
+         )
+         sdk_templates = [
+             template.to_mcp_template(uriTemplate=template.uri_template)
+@@ -159,34 +153,33 @@
+         ]
+         cursor = request.params.cursor if request.params else None
+         page, next_cursor = _apply_pagination(
+-            sdk_templates, cursor, server._list_page_size
++            sdk_templates, cursor, self._list_page_size
+         )
+         return mcp.types.ListResourceTemplatesResult(
+             resourceTemplates=page, nextCursor=next_cursor
+         )
+ 
+     async def _list_prompts_mcp(
+-        self, request: mcp.types.ListPromptsRequest
++        self: FastMCP, /, request: mcp.types.ListPromptsRequest
+     ) -> mcp.types.ListPromptsResult:
+         """
+         List all available prompts, in the format expected by the low-level MCP
+         server. Supports pagination when list_page_size is configured.
+         """
+-        server = cast("FastMCP", self)
+-        logger.debug(f"[{server.name}] Handler called: list_prompts")
++        logger.debug(f"[{self.name}] Handler called: list_prompts")
+ 
+         prompts = dedupe_with_versions(
+-            list(await server.list_prompts()), lambda p: p.name
++            list(await self.list_prompts()), lambda p: p.name
+         )
+         sdk_prompts = [prompt.to_mcp_prompt(name=prompt.name) for prompt in prompts]
+         cursor = request.params.cursor if request.params else None
+         page, next_cursor = _apply_pagination(
+-            sdk_prompts, cursor, server._list_page_size
++            sdk_prompts, cursor, self._list_page_size
+         )
+         return mcp.types.ListPromptsResult(prompts=page, nextCursor=next_cursor)
+ 
+     async def _call_tool_mcp(
+-        self, key: str, arguments: dict[str, Any]
++        self: FastMCP, /, key: str, arguments: dict[str, Any]
+     ) -> (
+         list[ContentBlock]
+         | tuple[list[ContentBlock], dict[str, Any]]
+@@ -207,9 +200,8 @@
+         Returns:
+             Tool result or CreateTaskResult for background execution
+         """
+-        server = cast("FastMCP", self)
+         logger.debug(
+-            f"[{server.name}] Handler called: call_tool %s with %s", key, arguments
++            f"[{self.name}] Handler called: call_tool %s with %s", key, arguments
+         )
+ 
+         try:
+@@ -218,7 +210,7 @@
+             version_str: str | None = None
+             task_meta: TaskMeta | None = None
+             try:
+-                ctx = server._mcp_server.request_context
++                ctx = self._mcp_server.request_context
+                 # Extract version from _meta.fastmcp
+                 if ctx.meta:
+                     meta_dict = ctx.meta.model_dump(exclude_none=True)
+@@ -232,7 +224,7 @@
+                 pass
+ 
+             version = VersionSpec(eq=version_str) if version_str else None
+-            result = await server.call_tool(
++            result = await self.call_tool(
+                 key, arguments, version=version, task_meta=task_meta
+             )
+ 
+@@ -246,7 +238,7 @@
+             raise NotFoundError(f"Unknown tool: {key!r}") from e
+ 
+     async def _read_resource_mcp(
+-        self, uri: AnyUrl | str
++        self: FastMCP, /, uri: AnyUrl | str
+     ) -> mcp.types.ReadResourceResult | mcp.types.CreateTaskResult:
+         """Handle MCP 'readResource' requests.
+ 
+@@ -260,15 +252,14 @@
+         Returns:
+             ReadResourceResult or CreateTaskResult for background execution
+         """
+-        server = cast("FastMCP", self)
+-        logger.debug(f"[{server.name}] Handler called: read_resource %s", uri)
++        logger.debug(f"[{self.name}] Handler called: read_resource %s", uri)
+ 
+         try:
+             # Extract version and task metadata from request context.
+             version_str: str | None = None
+             task_meta: TaskMeta | None = None
+             try:
+-                ctx = server._mcp_server.request_context
++                ctx = self._mcp_server.request_context
+                 # Extract version from _meta.fastmcp.version if provided
+                 if ctx.meta:
+                     meta_dict = ctx.meta.model_dump(exclude_none=True)
+@@ -283,7 +274,7 @@
+                 pass
+ 
+             version = VersionSpec(eq=version_str) if version_str else None
+-            result = await server.read_resource(
++            result = await self.read_resource(
+                 str(uri), version=version, task_meta=task_meta
+             )
+ 
+@@ -302,7 +293,7 @@
+             ) from e
+ 
+     async def _get_prompt_mcp(
+-        self, name: str, arguments: dict[str, Any] | None
++        self: FastMCP, /, name: str, arguments: dict[str, Any] | None
+     ) -> mcp.types.GetPromptResult | mcp.types.CreateTaskResult:
+         """Handle MCP 'getPrompt' requests.
+ 
+@@ -317,9 +308,8 @@
+         Returns:
+             GetPromptResult or CreateTaskResult for background execution
+         """
+-        server = cast("FastMCP", self)
+         logger.debug(
+-            f"[{server.name}] Handler called: get_prompt %s with %s", name, arguments
++            f"[{self.name}] Handler called: get_prompt %s with %s", name, arguments
+         )
+ 
+         try:
+@@ -328,7 +318,7 @@
+             version_str: str | None = None
+             task_meta: TaskMeta | None = None
+             try:
+-                ctx = server._mcp_server.request_context
++                ctx = self._mcp_server.request_context
+                 # Extract version from request-level _meta.fastmcp.version
+                 if ctx.meta:
+                     meta_dict = ctx.meta.model_dump(exclude_none=True)
+@@ -342,7 +332,7 @@
+                 pass
+ 
+             version = VersionSpec(eq=version_str) if version_str else None
+-            result = await server.render_prompt(
++            result = await self.render_prompt(
+                 name, arguments, version=version, task_meta=task_meta
+             )
+ 
+@@ -354,7 +344,7 @@
+         except NotFoundError:
+             raise
+ 
+-    async def _set_logging_level_mcp(self, level: mcp.types.LoggingLevel) -> None:
++    async def _set_logging_level_mcp(self: FastMCP, /, level: mcp.types.LoggingLevel) -> None:
+         """Handle MCP 'logging/setLevel' requests.
+ 
+         Stores the requested minimum log level on the session so that
+@@ -362,10 +352,9 @@
+         """
+         from fastmcp.server.low_level import MiddlewareServerSession
+ 
+-        server = cast("FastMCP", self)
+-        logger.debug(f"[{server.name}] Handler called: set_logging_level %s", level)
++        logger.debug(f"[{self.name}] Handler called: set_logging_level %s", level)
+         try:
+-            ctx = server._mcp_server.request_context
++            ctx = self._mcp_server.request_context
+             session = ctx.session
+             if isinstance(session, MiddlewareServerSession):
+                 session._minimum_logging_level = level

@@ -1,11 +1,125 @@
 --- work/sources/fastmcp_slim/fastmcp/server/lifespan.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/lifespan.py	2026-05-17 03:46:17.163650112 +0000
-@@ -48,7 +48,7 @@
- from contextlib import AbstractAsyncContextManager, asynccontextmanager
- from typing import TYPE_CHECKING, Any
++++ work/patched/fastmcp_slim/fastmcp/server/lifespan.py	2026-05-17 10:36:15.589351833 +0000
+@@ -41,31 +41,27 @@
+     combined = ContextManagerLifespan(legacy_lifespan) | new_lifespan
+     ```
+ """
++from contextlib import asynccontextmanager
+ 
+-from __future__ import annotations
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import AsyncIterator, Callable, Mapping
++    from contextlib import AbstractAsyncContextManager, asynccontextmanager
++    from typing import Any
+ 
+-from collections.abc import AsyncIterator, Callable
+-from contextlib import AbstractAsyncContextManager, asynccontextmanager
+-from typing import TYPE_CHECKING, Any
++    from .server import FastMCP
  
 -if TYPE_CHECKING:
-+if __debug__ and __import__("typing").TYPE_CHECKING:
-     from fastmcp.server.server import FastMCP
+-    from fastmcp.server.server import FastMCP
++    type LifespanFn[T] = Callable[[FastMCP[T]], AsyncIterator[Mapping[str, Any] | None]]
++    type LifespanCM[T] = Callable[[FastMCP[T]], AbstractAsyncContextManager[Mapping[str, Any] | None]]
  
  
+-LifespanFn = Callable[["FastMCP[Any]"], AsyncIterator[dict[str, Any] | None]]
+-LifespanContextManagerFn = Callable[
+-    ["FastMCP[Any]"], AbstractAsyncContextManager[dict[str, Any] | None]
+-]
+-
+-
+-class Lifespan:
++class Lifespan[T]:
+     """Composable lifespan wrapper.
+ 
+     Wraps an async generator function and enables composition via the `|` operator.
+     The wrapped function should yield a dict that becomes part of the lifespan context.
+     """
+ 
+-    def __init__(self, fn: LifespanFn) -> None:
++    def __init__(self, fn: LifespanFn[T], /) -> None:
+         """Initialize a Lifespan wrapper.
+ 
+         Args:
+@@ -75,7 +71,7 @@
+         self._fn = fn
+ 
+     @asynccontextmanager
+-    async def __call__(self, server: FastMCP[Any]) -> AsyncIterator[dict[str, Any]]:
++    async def __call__(self, server: FastMCP[T], /) -> AsyncIterator[Mapping[str, Any]]:
+         """Execute the lifespan as an async context manager.
+ 
+         Args:
+@@ -87,7 +83,7 @@
+         async with asynccontextmanager(self._fn)(server) as result:
+             yield result if result is not None else {}
+ 
+-    def __or__(self, other: Lifespan) -> ComposedLifespan:
++    def __or__(self, other: Lifespan, /) -> ComposedLifespan:
+         """Compose with another lifespan using the | operator.
+ 
+         Args:
+@@ -107,20 +103,21 @@
+         return ComposedLifespan(self, other)
+ 
+ 
+-class ContextManagerLifespan(Lifespan):
++class ContextManagerLifespan[T](Lifespan[T]):
+     """Lifespan wrapper for already-wrapped context manager functions.
+ 
+     Use this for functions already decorated with @asynccontextmanager.
+     """
+ 
+-    _fn: LifespanContextManagerFn  # Override type for this subclass
++    _fn: LifespanCM[T]
+ 
+-    def __init__(self, fn: LifespanContextManagerFn) -> None:
++    # noinspection PyMissingConstructor
++    def __init__(self, fn: LifespanCM[T], /) -> None:
+         """Initialize with a context manager factory function."""
+         self._fn = fn
+ 
+     @asynccontextmanager
+-    async def __call__(self, server: FastMCP[Any]) -> AsyncIterator[dict[str, Any]]:
++    async def __call__(self, server: FastMCP[Any], /):
+         """Execute the lifespan as an async context manager.
+ 
+         Args:
+@@ -141,7 +138,8 @@
+     Results are shallow-merged into a single dict.
+     """
+ 
+-    def __init__(self, left: Lifespan, right: Lifespan) -> None:
++    # noinspection PyMissingConstructor
++    def __init__(self, left: Lifespan, right: Lifespan, /) -> None:
+         """Initialize a composed lifespan.
+ 
+         Args:
+@@ -153,7 +151,7 @@
+         self._right = right
+ 
+     @asynccontextmanager
+-    async def __call__(self, server: FastMCP[Any]) -> AsyncIterator[dict[str, Any]]:
++    async def __call__(self, server: FastMCP, /) -> AsyncIterator[Mapping[str, Any]]:
+         """Execute both lifespans, merging their results.
+ 
+         Args:
+@@ -162,14 +160,12 @@
+         Yields:
+             The merged lifespan context dict from both lifespans.
+         """
+-        async with (
+-            self._left(server) as left_result,
+-            self._right(server) as right_result,
+-        ):
++        # noinspection PyTypeChecker
++        async with (self._left(server) as left_result, self._right(server) as right_result):
+             yield {**left_result, **right_result}
+ 
+ 
+-def lifespan(fn: LifespanFn) -> Lifespan:
++def lifespan(fn: LifespanFn, /) -> Lifespan:
+     """Decorator to create a composable lifespan.
+ 
+     Use this decorator on an async generator function to make it composable

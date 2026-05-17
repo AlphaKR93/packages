@@ -1,5 +1,5 @@
 --- work/sources/fastmcp_slim/fastmcp/tools/tool_transform.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/tools/tool_transform.py	2026-05-17 03:46:17.179650111 +0000
++++ work/patched/fastmcp_slim/fastmcp/tools/tool_transform.py	2026-05-17 15:37:31.751669039 +0000
 @@ -1,7 +1,4 @@
 -from __future__ import annotations
 -

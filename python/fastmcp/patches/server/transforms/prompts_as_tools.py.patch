@@ -1,0 +1,43 @@
+--- work/sources/fastmcp_slim/fastmcp/server/transforms/prompts_as_tools.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/transforms/prompts_as_tools.py	2026-05-17 15:37:31.343669100 +0000
+@@ -17,22 +17,19 @@
+     # Now has list_prompts and get_prompt tools
+     ```
+ """
+-
+-from __future__ import annotations
+-
+-import json
+ from collections.abc import Sequence
+ from typing import TYPE_CHECKING, Annotated, Any
+ 
++import pydantic_core
+ from mcp.types import TextContent
+ 
+ from fastmcp.server.dependencies import get_context
+ from fastmcp.server.transforms import GetToolNext, Transform
+-from fastmcp.tools.base import Tool
++from fastmcp.tools import Tool
+ from fastmcp.utilities.versions import VersionSpec
+ 
+ if TYPE_CHECKING:
+-    from fastmcp.server.providers.base import Provider
++    from fastmcp.server.providers import Provider
+ 
+ 
+ class PromptsAsTools(Transform):
+@@ -119,7 +116,7 @@
+                     }
+                 )
+ 
+-            return json.dumps(result, indent=2)
++            return pydantic_core.to_json(result, indent=2).decode()
+ 
+         return Tool.from_function(fn=list_prompts)
+ 
+@@ -166,4 +163,4 @@
+             }
+         )
+ 
+-    return json.dumps({"messages": messages}, indent=2)
++    return pydantic_core.to_json({"messages": messages}, indent=2).decode()

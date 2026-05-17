@@ -1,7 +1,7 @@
---- work/sources/starlette/applications.pyi	1970-01-01 09:00:00.000000000 +0900
-+++ work/patched/starlette/applications.pyi	2026-05-02 22:44:14.772164542 +0900
-@@ -0,0 +1,97 @@
-+from collections.abc import Sequence, Mapping, MutableMapping, Callable, Awaitable, MutableSequence, Iterable
+--- work/sources/starlette/applications.pyi	1970-01-01 00:00:00.000000000 +0000
++++ work/patched/starlette/applications.pyi	1970-01-01 00:00:00.000000000 +0000
+@@ -0,0 +1,94 @@
++from collections.abc import Sequence, Callable, MutableSequence, Iterable
 +from typing import Any, Self, ParamSpec, overload
 +
 +from commons.types import AwaitableOr
@@ -11,9 +11,6 @@
 +from .responses import Response
 +from .routing import BaseRoute, Router
 +from .types import ASGIApp, ExceptionHandler, ExceptionHandlers, Lifespan, Send, Receive, Scope
-+
-+
-+P = ParamSpec("P")
 +
 +class Starlette:
 +    """A Starlette ASGI application."""
@@ -59,7 +56,7 @@
 +
 +    def build_middleware_stack(self, /) -> ASGIApp: ...
 +    def url_path_for(self, name: str, /, **path_params: Any) -> URLPath: ...
-+    def add_middleware(self, cls: _MiddlewareFactory[P], *args: P.args, **kwargs: P.kwargs) -> None: ...
++    def add_middleware[**P](self, cls: _MiddlewareFactory[P], *args: P.args, **kwargs: P.kwargs) -> None: ...
 +
 +    def mount(self, path: str, app: ASGIApp, name: str | None = None, /) -> None: ...
 +    def host(self, host: str, app: ASGIApp, name: str | None = None, /) -> None: ...

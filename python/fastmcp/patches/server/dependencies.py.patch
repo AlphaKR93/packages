@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/server/dependencies.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/dependencies.py	2026-05-17 03:53:27.351603747 +0000
-@@ -4,9 +4,6 @@
++++ work/patched/fastmcp_slim/fastmcp/server/dependencies.py	2026-05-17 15:37:31.287669109 +0000
+@@ -4,11 +4,7 @@
  using the uncalled-for DI engine. Only task-related dependencies (CurrentDocket,
  CurrentWorker) and background task execution require fastmcp[tasks].
  """
@@ -8,17 +8,29 @@
 -from __future__ import annotations
 -
  import contextlib
- import importlib.metadata
+-import importlib.metadata
  import inspect
-@@ -18,6 +15,7 @@
+ import weakref
+ from collections.abc import AsyncGenerator, Callable
+@@ -17,7 +13,8 @@
+ from datetime import datetime, timezone
  from functools import lru_cache
  from types import TracebackType
- from typing import TYPE_CHECKING, Any, Protocol, cast, get_type_hints, runtime_checkable
+-from typing import TYPE_CHECKING, Any, Protocol, cast, get_type_hints, runtime_checkable
++from typing import Any, Protocol, cast, get_type_hints, runtime_checkable
 +from warnings import deprecated
  
  from mcp.server.auth.middleware.auth_context import (
      get_access_token as _sdk_get_access_token,
-@@ -41,9 +39,8 @@
+@@ -27,7 +24,6 @@
+     AccessToken as _SDKAccessToken,
+ )
+ from mcp.server.lowlevel.server import request_ctx
+-from packaging.version import Version
+ from starlette.requests import Request
+ from uncalled_for import Dependency, get_dependency_parameters
+ from uncalled_for.resolution import _Depends
+@@ -41,9 +37,8 @@
  )
  from fastmcp.utilities.types import find_kwarg_by_type, is_class_member_of_type
  
@@ -30,7 +42,7 @@
  
      from fastmcp.server.context import Context
      from fastmcp.server.server import FastMCP
-@@ -96,18 +93,11 @@
+@@ -96,18 +91,11 @@
      "server", default=None
  )
  
@@ -50,7 +62,7 @@
  def is_docket_available() -> bool:
      """Check if a compatible pydocket (>= 0.19.0) is installed and importable.
  
-@@ -122,56 +112,18 @@
+@@ -122,56 +110,18 @@
      Any of those failing means we treat docket as unavailable and fall back
      to the no-tasks code paths instead of crashing deep inside a request.
      """
@@ -111,7 +123,7 @@
  
  
  # --- Context utilities ---
-@@ -618,7 +570,7 @@
+@@ -618,7 +568,7 @@
      }
      wrapper.__name__ = getattr(fn, "__name__", "wrapper")
      wrapper.__doc__ = getattr(fn, "__doc__", None)
@@ -120,7 +132,7 @@
      wrapper.__qualname__ = getattr(fn, "__qualname__", wrapper.__qualname__)
  
      return wrapper
-@@ -870,37 +822,8 @@
+@@ -870,37 +820,8 @@
      return cast("Context | None", _OptionalCurrentContext())
  
  
@@ -160,7 +172,7 @@
      """Get the current Docket instance managed by FastMCP.
  
      This dependency provides access to the Docket instance that FastMCP
-@@ -924,39 +847,10 @@
+@@ -924,39 +845,10 @@
          ```
      """
      require_docket("CurrentDocket()")
@@ -202,7 +214,7 @@
      """Get the current Docket Worker instance managed by FastMCP.
  
      This dependency provides access to the Worker instance that FastMCP
-@@ -979,7 +873,6 @@
+@@ -979,7 +871,6 @@
          ```
      """
      require_docket("CurrentWorker()")
@@ -210,7 +222,7 @@
  
  
  class _CurrentFastMCP(Dependency["FastMCP"]):
-@@ -1216,16 +1109,6 @@
+@@ -1216,16 +1107,6 @@
              raise RuntimeError("Progress dependency requires a FastMCP server context.")
  
          instance = Progress()

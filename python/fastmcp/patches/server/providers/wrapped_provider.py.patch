@@ -1,5 +1,5 @@
 --- work/sources/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py	2026-05-17 03:46:17.171650111 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py	2026-05-17 10:36:15.617351829 +0000
 @@ -13,7 +13,7 @@
  from fastmcp.server.providers.base import Provider
  from fastmcp.utilities.versions import VersionSpec
@@ -9,3 +9,17 @@
      from fastmcp.prompts.base import Prompt
      from fastmcp.resources.base import Resource
      from fastmcp.resources.template import ResourceTemplate
+@@ -104,10 +104,9 @@
+     async def get_tasks(self) -> Sequence[FastMCPComponent]:
+         """Delegate to inner's get_tasks and apply wrapper's transforms."""
+         # Import here to avoid circular imports
+-        from fastmcp.prompts.base import Prompt
+-        from fastmcp.resources.base import Resource
+-        from fastmcp.resources.template import ResourceTemplate
+-        from fastmcp.tools.base import Tool
++        from fastmcp.prompts import Prompt
++        from fastmcp.resources import Resource, ResourceTemplate
++        from fastmcp.tools import Tool
+ 
+         # Get tasks from inner (already has inner's transforms)
+         components = list(await self._inner.get_tasks())

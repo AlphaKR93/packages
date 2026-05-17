@@ -1,0 +1,28 @@
+--- work/sources/fastmcp_slim/fastmcp/server/transforms/search/bm25.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/transforms/search/bm25.py	2026-05-17 10:36:15.629351828 +0000
+@@ -1,18 +1,20 @@
+ """BM25-based search transform."""
+-
+ import hashlib
+ import math
+ import re
+-from collections.abc import Sequence
+-from typing import Annotated, Any
+ 
+-from fastmcp.server.context import Context
+ from fastmcp.server.transforms.search.base import (
+     BaseSearchTransform,
+     SearchResultSerializer,
+     _extract_searchable_text,
+ )
+-from fastmcp.tools.base import Tool
++from fastmcp.tools import Tool
++
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Sequence
++    from typing import Annotated, Any
++
++    from fastmcp.server.context import Context
+ 
+ 
+ def _tokenize(text: str) -> list[str]:

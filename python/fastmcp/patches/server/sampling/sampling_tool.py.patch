@@ -1,0 +1,25 @@
+--- work/sources/fastmcp_slim/fastmcp/server/sampling/sampling_tool.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/sampling/sampling_tool.py	2026-05-17 15:37:31.847669026 +0000
+@@ -1,7 +1,4 @@
+ """SamplingTool for use during LLM sampling requests."""
+-
+-from __future__ import annotations
+-
+ import inspect
+ from collections.abc import Callable
+ from typing import Any
+@@ -11,12 +8,11 @@
+ from pydantic import ConfigDict
+ 
+ from fastmcp.exceptions import AuthorizationError
+-from fastmcp.server.auth.authorization import AuthContext, run_auth_checks
+ from fastmcp.server.dependencies import get_access_token
+-from fastmcp.tools.base import ToolResult
++from fastmcp.tools import FunctionTool, ToolResult
+ from fastmcp.tools.function_parsing import ParsedFunction
+-from fastmcp.tools.function_tool import FunctionTool
+ from fastmcp.tools.tool_transform import TransformedTool
++from fastmcp.utilities.authorization import AuthContext, run_auth_checks
+ from fastmcp.utilities.types import FastMCPBaseModel
+ 
+ 

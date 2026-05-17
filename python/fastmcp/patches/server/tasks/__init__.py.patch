@@ -1,0 +1,39 @@
+--- work/sources/fastmcp_slim/fastmcp/server/tasks/__init__.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/tasks/__init__.py	2026-05-17 10:36:15.621351830 +0000
+@@ -4,35 +4,11 @@
+ """
+ 
+ from fastmcp.server.tasks.capabilities import get_task_capabilities
+-from fastmcp.server.tasks.config import TaskConfig, TaskMeta, TaskMode
+-from fastmcp.server.tasks.elicitation import (
+-    elicit_for_task,
+-    handle_task_input,
+-    relay_elicitation,
+-)
+-from fastmcp.server.tasks.keys import (
+-    build_task_key,
+-    get_client_task_id_from_key,
+-    parse_task_key,
+-)
+-from fastmcp.server.tasks.notifications import (
+-    ensure_subscriber_running,
+-    push_notification,
+-    stop_subscriber,
+-)
++from fastmcp.server.tasks.elicitation import elicit_for_task, handle_task_input, relay_elicitation
+ 
+ __all__ = [
+-    "TaskConfig",
+-    "TaskMeta",
+-    "TaskMode",
+-    "build_task_key",
+     "elicit_for_task",
+-    "ensure_subscriber_running",
+-    "get_client_task_id_from_key",
+     "get_task_capabilities",
+     "handle_task_input",
+-    "parse_task_key",
+-    "push_notification",
+     "relay_elicitation",
+-    "stop_subscriber",
+ ]

@@ -1,5 +1,23 @@
 --- work/sources/fastmcp_slim/fastmcp/server/auth/cimd.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/auth/cimd.py	2026-05-17 03:46:17.159650112 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/auth/cimd.py	2026-05-17 11:11:32.717156832 +0000
+@@ -16,15 +16,15 @@
+ 
+ from __future__ import annotations
+ 
+-import json
+ import time
+ from collections.abc import Mapping
+ from dataclasses import dataclass
+ from datetime import timezone
+ from email.utils import parsedate_to_datetime
+-from typing import TYPE_CHECKING, Any, Literal
++from typing import Any, Literal
+ from urllib.parse import urlparse
+ 
++import pydantic_core
+ from pydantic import AnyHttpUrl, BaseModel, Field, field_validator
+ 
+ from fastmcp.server.auth.redirect_validation import matches_allowed_pattern
 @@ -36,7 +36,7 @@
  )
  from fastmcp.utilities.logging import get_logger
@@ -9,3 +27,32 @@
      from fastmcp.server.auth.providers.jwt import JWTVerifier
  
  logger = get_logger(__name__)
+@@ -374,8 +374,8 @@
+         policy = self._parse_cache_policy(response.headers, now)
+ 
+         try:
+-            data = json.loads(response.content)
+-        except json.JSONDecodeError as e:
++            data = pydantic_core.from_json(response.content)
++        except ValueError as e:
+             raise CIMDValidationError(f"CIMD document is not valid JSON: {e}") from e
+ 
+         try:
+@@ -630,7 +630,7 @@
+             ValueError: If key cannot be found or extracted
+         """
+         import base64
+-        import json
++        import pydantic_core
+ 
+         from authlib.jose import JsonWebKey
+ 
+@@ -638,7 +638,7 @@
+         try:
+             header_b64 = token.split(".")[0]
+             header_b64 += "=" * (4 - len(header_b64) % 4)  # Add padding
+-            header = json.loads(base64.urlsafe_b64decode(header_b64))
++            header = pydantic_core.from_json(base64.urlsafe_b64decode(header_b64))
+             kid = header.get("kid")
+         except Exception as e:
+             raise ValueError(f"Failed to extract key ID from token: {e}") from e

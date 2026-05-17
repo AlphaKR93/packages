@@ -15,12 +15,14 @@ from fastmcp.utilities.types import get_cached_typeadapter
 from .base import ResourceTemplate
 from ..base import Resource
 
+
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from mcp.types import CreateTaskResult
 
     from fastmcp.resources.base import ResourceResult
 
 
+# noinspection RegExpUnnecessaryNonCapturingGroup
 PATTERN = re.compile(r"{([\w-]+)(?:\*)?}")
 
 class FunctionResourceTemplate(ResourceTemplate):

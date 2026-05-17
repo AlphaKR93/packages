@@ -1,0 +1,31 @@
+--- work/sources/fastmcp_slim/fastmcp/server/providers/skills/skill_provider.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/providers/skills/skill_provider.py	2026-05-17 10:53:01.557259702 +0000
+@@ -1,17 +1,13 @@
+ """Basic skill provider for handling a single skill folder."""
+-
+-from __future__ import annotations
+-
+-import json
+ import mimetypes
+ from collections.abc import Sequence
+ from pathlib import Path
+ from typing import Any, Literal, cast
+ 
++import pydantic_core
+ from pydantic import AnyUrl
+ 
+-from fastmcp.resources.base import Resource, ResourceResult
+-from fastmcp.resources.template import ResourceTemplate
++from fastmcp.resources import Resource, ResourceResult, ResourceTemplate
+ from fastmcp.server.providers.base import Provider
+ from fastmcp.server.providers.skills._common import (
+     SkillInfo,
+@@ -64,7 +60,7 @@
+                 for f in self.skill_info.files
+             ],
+         }
+-        return json.dumps(manifest, indent=2)
++        return pydantic_core.to_json(manifest, indent=2).decode()
+ 
+ 
+ class SkillFileTemplate(ResourceTemplate):

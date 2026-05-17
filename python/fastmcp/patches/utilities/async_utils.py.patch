@@ -1,5 +1,5 @@
 --- work/sources/fastmcp_slim/fastmcp/utilities/async_utils.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/async_utils.py	2026-05-17 03:52:16.891610943 +0000
++++ work/patched/fastmcp_slim/fastmcp/utilities/async_utils.py	2026-05-17 10:36:15.641351827 +0000
 @@ -2,16 +2,16 @@
  
  import functools

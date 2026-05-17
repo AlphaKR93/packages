@@ -1,11 +1,234 @@
 --- work/sources/fastmcp_slim/fastmcp/server/providers/aggregate.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/providers/aggregate.py	2026-05-17 03:53:23.151604141 +0000
-@@ -32,7 +32,7 @@
- from fastmcp.utilities.components import FastMCPComponent
- from fastmcp.utilities.versions import VersionSpec, version_sort_key
++++ work/patched/fastmcp_slim/fastmcp/server/providers/aggregate.py	2026-05-17 10:36:15.601351832 +0000
+@@ -17,30 +17,27 @@
+     tools = await combined.list_tools()
+     ```
+ """
+-
+-from __future__ import annotations
+-
+ import logging
+-from collections.abc import AsyncIterator, Sequence
+ from contextlib import AsyncExitStack, asynccontextmanager
+-from typing import TYPE_CHECKING, TypeVar
+ 
+ from fastmcp.exceptions import NotFoundError
+ from fastmcp.server.providers.base import Provider
+ from fastmcp.server.transforms import Namespace
+ from fastmcp.utilities.async_utils import gather
+-from fastmcp.utilities.components import FastMCPComponent
+-from fastmcp.utilities.versions import VersionSpec, version_sort_key
++from fastmcp.utilities.versions import version_sort_key
  
 -if TYPE_CHECKING:
+-    from fastmcp.prompts.base import Prompt
+-    from fastmcp.resources.base import Resource
+-    from fastmcp.resources.template import ResourceTemplate
+-    from fastmcp.tools.base import Tool
+ 
+-logger = logging.getLogger(__name__)
 +if __debug__ and __import__("typing").TYPE_CHECKING:
-     from fastmcp.prompts.base import Prompt
-     from fastmcp.resources.base import Resource
-     from fastmcp.resources.template import ResourceTemplate
++    from collections.abc import AsyncIterator, Sequence
+ 
+-T = TypeVar("T")
++    from fastmcp.prompts import Prompt
++    from fastmcp.resources import Resource, ResourceTemplate
++    from fastmcp.tools import Tool
++    from fastmcp.utilities.components import FastMCPComponent
++    from fastmcp.utilities.versions import VersionSpec
++
++
++logger = logging.getLogger(__name__)
+ 
+ 
+ class AggregateProvider(Provider):
+@@ -65,7 +62,7 @@
+         ```
+     """
+ 
+-    def __init__(self, providers: Sequence[Provider] | None = None) -> None:
++    def __init__(self, providers: Sequence[Provider] | None = None, /) -> None:
+         """Initialize with an optional sequence of providers.
+ 
+         Args:
+@@ -73,9 +70,9 @@
+                 For namespaced providers, use add_provider() instead.
+         """
+         super().__init__()
+-        self.providers: list[Provider] = list(providers or [])
++        self.__providers: list[Provider] = list(providers or [])
+ 
+-    def add_provider(self, provider: Provider, *, namespace: str = "") -> None:
++    def add_provider(self, provider: Provider, /, *, namespace: str = "") -> None:
+         """Add a provider with optional namespace.
+ 
+         If the provider is a FastMCP server, it's automatically wrapped in
+@@ -101,11 +98,9 @@
+         if namespace:
+             provider = provider.wrap_transform(Namespace(namespace))
+ 
+-        self.providers.append(provider)
++        self.__providers.append(provider)
+ 
+-    def _collect_list_results(
+-        self, results: list[Sequence[T] | BaseException], operation: str
+-    ) -> list[T]:
++    def _collect_list_results[T](self, results: list[Sequence[T] | BaseException], operation: str, /) -> list[T]:
+         """Collect successful list results, logging any exceptions.
+ 
+         Emits a warning when the same MCP identity is returned by more than
+@@ -123,7 +118,7 @@
+             if isinstance(result, BaseException):
+                 logger.warning(
+                     f"Error during {operation} from provider "
+-                    f"{self.providers[i]}: {result}"
++                    f"{self.__providers[i]}: {result}"
+                 )
+                 continue
+             for item in result:
+@@ -133,8 +128,8 @@
+                     if first != i:
+                         logger.warning(
+                             f"Duplicate {operation} component {key!r} "
+-                            f"from provider {self.providers[i]} "
+-                            f"(first seen from provider {self.providers[first]})"
++                            f"from provider {self.__providers[i]} "
++                            f"(first seen from provider {self.__providers[first]})"
+                         )
+                 collected.append(item)
+         return collected
+@@ -143,6 +138,7 @@
+         self,
+         results: list[FastMCPComponent | None | BaseException],
+         operation: str,
++        /,
+     ) -> FastMCPComponent | None:
+         """Get the highest version from successful non-None results.
+ 
+@@ -155,7 +151,7 @@
+                 if not isinstance(result, NotFoundError):
+                     logger.warning(
+                         f"Error during {operation} from provider "
+-                        f"{self.providers[i]}: {result}"
++                        f"{self.__providers[i]}: {result}"
+                     )
+                 continue
+             if result is not None:
+@@ -164,8 +160,8 @@
+             return None
+         return max(valid, key=version_sort_key)
+ 
+-    def __repr__(self) -> str:
+-        return f"AggregateProvider(providers={self.providers!r})"
++    def __repr__(self, /) -> str:
++        return f"AggregateProvider(providers={self.__providers!r})"
+ 
+     # -------------------------------------------------------------------------
+     # Tools
+@@ -174,7 +170,7 @@
+     async def _list_tools(self) -> Sequence[Tool]:
+         """List all tools from all providers."""
+         results = await gather(
+-            *[p.list_tools() for p in self.providers],
++            *[p.list_tools() for p in self.__providers],
+             return_exceptions=True,
+         )
+         return self._collect_list_results(results, "list_tools")
+@@ -184,7 +180,7 @@
+     ) -> Tool | None:
+         """Get tool by name from providers."""
+         results = await gather(
+-            *[p.get_tool(name, version) for p in self.providers],
++            *[p.get_tool(name, version) for p in self.__providers],
+             return_exceptions=True,
+         )
+         return self._get_highest_version_result(results, f"get_tool({name!r})")  # type: ignore[return-value]  # ty:ignore[invalid-argument-type, invalid-return-type]
+@@ -192,7 +188,7 @@
+     async def get_app_tool(self, app_name: str, tool_name: str) -> Tool | None:
+         """Query all child providers for an app tool."""
+         results = await gather(
+-            *[p.get_app_tool(app_name, tool_name) for p in self.providers],
++            *[p.get_app_tool(app_name, tool_name) for p in self.__providers],
+             return_exceptions=True,
+         )
+         for r in results:
+@@ -205,7 +201,7 @@
+     async def get_tool_by_hash(self, tool_hash: str, tool_name: str) -> Tool | None:
+         """Query all child providers for a tool matching a hash."""
+         results = await gather(
+-            *[p.get_tool_by_hash(tool_hash, tool_name) for p in self.providers],
++            *[p.get_tool_by_hash(tool_hash, tool_name) for p in self.__providers],
+             return_exceptions=True,
+         )
+         for r in results:
+@@ -222,7 +218,7 @@
+     async def _list_resources(self) -> Sequence[Resource]:
+         """List all resources from all providers."""
+         results = await gather(
+-            *[p.list_resources() for p in self.providers],
++            *[p.list_resources() for p in self.__providers],
+             return_exceptions=True,
+         )
+         return self._collect_list_results(results, "list_resources")
+@@ -232,7 +228,7 @@
+     ) -> Resource | None:
+         """Get resource by URI from providers."""
+         results = await gather(
+-            *[p.get_resource(uri, version) for p in self.providers],
++            *[p.get_resource(uri, version) for p in self.__providers],
+             return_exceptions=True,
+         )
+         return self._get_highest_version_result(results, f"get_resource({uri!r})")  # type: ignore[return-value]  # ty:ignore[invalid-argument-type, invalid-return-type]
+@@ -244,7 +240,7 @@
+     async def _list_resource_templates(self) -> Sequence[ResourceTemplate]:
+         """List all resource templates from all providers."""
+         results = await gather(
+-            *[p.list_resource_templates() for p in self.providers],
++            *[p.list_resource_templates() for p in self.__providers],
+             return_exceptions=True,
+         )
+         return self._collect_list_results(results, "list_resource_templates")
+@@ -254,7 +250,7 @@
+     ) -> ResourceTemplate | None:
+         """Get resource template by URI from providers."""
+         results = await gather(
+-            *[p.get_resource_template(uri, version) for p in self.providers],
++            *[p.get_resource_template(uri, version) for p in self.__providers],
+             return_exceptions=True,
+         )
+         return self._get_highest_version_result(
+@@ -268,7 +264,7 @@
+     async def _list_prompts(self) -> Sequence[Prompt]:
+         """List all prompts from all providers."""
+         results = await gather(
+-            *[p.list_prompts() for p in self.providers],
++            *[p.list_prompts() for p in self.__providers],
+             return_exceptions=True,
+         )
+         return self._collect_list_results(results, "list_prompts")
+@@ -278,7 +274,7 @@
+     ) -> Prompt | None:
+         """Get prompt by name from providers."""
+         results = await gather(
+-            *[p.get_prompt(name, version) for p in self.providers],
++            *[p.get_prompt(name, version) for p in self.__providers],
+             return_exceptions=True,
+         )
+         return self._get_highest_version_result(results, f"get_prompt({name!r})")  # type: ignore[return-value]  # ty:ignore[invalid-argument-type, invalid-return-type]
+@@ -290,7 +286,7 @@
+     async def get_tasks(self) -> Sequence[FastMCPComponent]:
+         """Get all task-eligible components from all providers."""
+         results = await gather(
+-            *[p.get_tasks() for p in self.providers],
++            *[p.get_tasks() for p in self.__providers],
+             return_exceptions=True,
+         )
+         return self._collect_list_results(results, "get_tasks")
+@@ -303,6 +299,6 @@
+     async def lifespan(self) -> AsyncIterator[None]:
+         """Combine lifespans of all providers."""
+         async with AsyncExitStack() as stack:
+-            for p in self.providers:
++            for p in self.__providers:
+                 await stack.enter_async_context(p.lifespan())
+             yield

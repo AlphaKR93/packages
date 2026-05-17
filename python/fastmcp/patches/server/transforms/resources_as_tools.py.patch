@@ -1,0 +1,65 @@
+--- work/sources/fastmcp_slim/fastmcp/server/transforms/resources_as_tools.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/transforms/resources_as_tools.py	2026-05-17 15:37:31.399669090 +0000
+@@ -17,27 +17,28 @@
+     # Now has list_resources and read_resource tools
+     ```
+ """
+-
+-from __future__ import annotations
+-
+ import base64
+-import json
+-from collections.abc import Sequence
+-from typing import TYPE_CHECKING, Annotated, Any
+ 
++import pydantic_core
+ from mcp.types import ToolAnnotations
+ 
+ from fastmcp.server.dependencies import get_context
+-from fastmcp.server.transforms import GetToolNext, Transform
+-from fastmcp.tools.base import Tool
++from fastmcp.server.transforms import Transform
+ from fastmcp.utilities.versions import VersionSpec
+ 
+-_DEFAULT_ANNOTATIONS = ToolAnnotations(readOnlyHint=True)
+ 
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Sequence
++    from typing import Annotated, Any
++
++    from fastmcp.server.transforms import GetToolNext
++    from fastmcp.tools import Tool
+     from fastmcp.server.providers.base import Provider
+ 
+ 
++_DEFAULT_ANNOTATIONS = ToolAnnotations(readOnlyHint=True)
++
++
+ class ResourcesAsTools(Transform):
+     """Transform that adds tools for listing and reading resources.
+ 
+@@ -128,7 +129,7 @@
+                     }
+                 )
+ 
+-            return json.dumps(result, indent=2)
++            return pydantic_core.to_json(result, indent=2).decode()
+ 
+         return Tool.from_function(fn=list_resources, annotations=_DEFAULT_ANNOTATIONS)
+ 
+@@ -165,7 +166,7 @@
+             return base64.b64encode(content).decode()
+         return content
+ 
+-    return json.dumps(
++    return pydantic_core.to_json(
+         [
+             {
+                 "content": (
+@@ -177,4 +178,4 @@
+             }
+             for c in result.contents
+         ]
+-    )
++    ).decode()

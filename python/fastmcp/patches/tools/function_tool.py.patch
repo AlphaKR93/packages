@@ -1,5 +1,5 @@
 --- work/sources/fastmcp_slim/fastmcp/tools/function_tool.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/tools/function_tool.py	2026-05-17 03:52:16.863610946 +0000
++++ work/patched/fastmcp_slim/fastmcp/tools/function_tool.py	2026-05-17 15:37:31.379669094 +0000
 @@ -1,67 +1,16 @@
  """Standalone @tool decorator for FastMCP."""
 -

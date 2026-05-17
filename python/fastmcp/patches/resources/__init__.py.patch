@@ -1,5 +1,5 @@
 --- work/sources/fastmcp_slim/fastmcp/resources/__init__.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/resources/__init__.py	2026-05-17 03:46:17.151650113 +0000
++++ work/patched/fastmcp_slim/fastmcp/resources/__init__.py	2026-05-17 10:36:15.569351835 +0000
 @@ -1,8 +1,6 @@
 -import sys
 +from alpha93.fastmcp._internal.components.resources import Resource, ResourceTemplate, FunctionResource, resource

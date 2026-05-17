@@ -45,7 +45,6 @@ excludes = [
     "schemas.py",
     "formparsers.py",
     "config.py",
-    "authentication.py",
     "middleware/sessions.py",
     "middleware/wsgi.py",
 ]

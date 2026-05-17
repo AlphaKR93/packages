@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/prompts/base.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/prompts/base.py	2026-05-17 03:52:16.851610947 +0000
-@@ -1,47 +1,19 @@
++++ work/patched/fastmcp_slim/fastmcp/prompts/base.py	2026-05-17 15:37:31.359669097 +0000
+@@ -1,47 +1,18 @@
  """Base classes for FastMCP prompts."""
 +from typing import Any, Literal
  
@@ -12,14 +12,16 @@
 -
 -import pydantic
  import pydantic_core
--
++from mcp.types import AudioContent, EmbeddedResource, ImageContent, PromptMessage, TextContent, GetPromptResult
++from pydantic import BaseModel, Field
+ 
 -if TYPE_CHECKING:
 -    from docket import Docket
 -    from docket.execution import Execution
 -
 -    from fastmcp.prompts.function_prompt import FunctionPrompt
 -import mcp.types
- from mcp import GetPromptResult
+-from mcp import GetPromptResult
 -from mcp.types import (
 -    AudioContent,
 -    EmbeddedResource,
@@ -36,9 +38,6 @@
 -from fastmcp.exceptions import FastMCPDeprecationWarning
 -from fastmcp.utilities.authorization import AuthCheck
 -from fastmcp.utilities.components import FastMCPComponent
-+from mcp.types import AudioContent, EmbeddedResource, ImageContent, PromptMessage, TextContent
-+from pydantic import BaseModel, Field
-+
  from fastmcp.utilities.logging import get_logger
 -from fastmcp.utilities.tasks import TaskConfig, TaskMeta
 -from fastmcp.utilities.types import (
@@ -55,7 +54,7 @@
      """Wrapper for prompt message with auto-serialization.
  
      Accepts any content - strings pass through, other types
-@@ -113,7 +85,7 @@
+@@ -113,7 +84,7 @@
      )
  
  
@@ -64,7 +63,7 @@
      """Canonical result type for prompt rendering.
  
      Provides explicit control over prompt responses: multiple messages,
-@@ -195,246 +167,9 @@
+@@ -195,246 +166,9 @@
          )
  
  

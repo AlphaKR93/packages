@@ -2,14 +2,14 @@ from abc import ABC, abstractmethod
 from typing import ClassVar, Annotated
 
 import pydantic_core
-from mcp.types import Annotations
-from mcp.types import Resource as SDKResource
+from mcp.types import Annotations, Resource as SDKResource
 from pydantic import ConfigDict, AnyUrl, UrlConstraints, Field, field_validator, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 from fastmcp.resources.base import ResourceContent, ResourceResult
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
+
 
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from collections.abc import Callable
@@ -44,7 +44,7 @@ class Resource(ABC, FastMCPComponent):
 
     @classmethod
     def from_function(cls, fn: Callable[..., Any], uri: str | AnyUrl, /, **kwargs):
-        from fastmcp.resources.function_resource import FunctionResource
+        from .function_resource import FunctionResource
 
         return FunctionResource.from_function(fn, uri, **kwargs)
 

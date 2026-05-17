@@ -1,0 +1,41 @@
+--- work/sources/fastmcp_slim/fastmcp/server/auth/oauth_proxy/proxy.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/auth/oauth_proxy/proxy.py	2026-05-17 15:37:31.715669045 +0000
+@@ -60,7 +60,6 @@
+ from starlette.routing import Route
+ from typing_extensions import override
+ 
+-from fastmcp import settings
+ from fastmcp.server.auth.auth import (
+     OAuthProvider,
+     PrivateKeyJWTClientAuthenticator,
+@@ -483,14 +482,19 @@
+         # keys get isolated directories (e.g. two servers on the same machine with
+         # different keys won't collide). Decryption errors are treated as cache misses
+         # rather than hard failures, so key rotation just causes re-registration.
+-        if client_storage is None:
++        if __debug__ and client_storage is None:
++            from pathlib import Path
++            from platformdirs import user_data_dir
++
++            logger.warning("Using local storage for development; deploy with own implementation for production.")
++
+             storage_encryption_key = derive_jwt_key(
+                 high_entropy_material=jwt_signing_key.decode(),
+                 salt="fastmcp-storage-encryption-key",
+             )
+ 
+             key_fingerprint = hashlib.sha256(storage_encryption_key).hexdigest()[:12]
+-            storage_dir = settings.home / "oauth-proxy" / key_fingerprint
++            storage_dir = Path(user_data_dir("fastmcp", appauthor=False)) / "oauth-proxy" / key_fingerprint
+             storage_dir.mkdir(parents=True, exist_ok=True)
+ 
+             file_store = FileTreeStore(
+@@ -508,6 +512,8 @@
+                 fernet=Fernet(key=storage_encryption_key),
+                 raise_on_decryption_error=False,
+             )
++        if not client_storage:
++            raise ValueError("client_storage is not implemented")
+ 
+         self._client_storage: AsyncKeyValue = client_storage
+ 

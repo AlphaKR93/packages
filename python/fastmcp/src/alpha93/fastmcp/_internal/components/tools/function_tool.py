@@ -3,8 +3,8 @@ from collections.abc import Callable
 from typing import Any, Annotated
 
 import anyio
-from mcp import McpError, ErrorData
-from mcp.types import ToolAnnotations
+from mcp.types import ErrorData, ToolAnnotations
+from mcp.shared.exceptions import McpError
 from pydantic import Field
 from pydantic.json_schema import SkipJsonSchema
 

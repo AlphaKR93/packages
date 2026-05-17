@@ -1,6 +1,14 @@
 --- work/sources/fastmcp_slim/fastmcp/server/providers/openapi/provider.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/providers/openapi/provider.py	2026-05-17 03:46:17.171650111 +0000
-@@ -28,7 +28,7 @@
++++ work/patched/fastmcp_slim/fastmcp/server/providers/openapi/provider.py	2026-05-17 10:36:15.613351831 +0000
+@@ -1,7 +1,4 @@
+ """OpenAPIProvider for creating MCP components from OpenAPI specifications."""
+-
+-from __future__ import annotations
+-
+ from collections import Counter
+ from collections.abc import AsyncIterator, Sequence
+ from contextlib import asynccontextmanager
+@@ -28,7 +25,7 @@
      RouteMapFn,
      _determine_route_type,
  )

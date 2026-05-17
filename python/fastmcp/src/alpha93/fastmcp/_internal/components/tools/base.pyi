@@ -3,17 +3,18 @@ from collections.abc import Callable
 from typing import ClassVar, Any, Annotated, overload
 from warnings import deprecated
 
-from mcp.types import ToolAnnotations, ToolExecution, Icon, CreateTaskResult
-from mcp.types import Tool as MCPTool
+from mcp.types import Tool as MCPTool, ToolAnnotations, ToolExecution, Icon, CreateTaskResult
 from pydantic import Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 from fastmcp.tools.base import ToolResultSerializerType, ToolResult
-from fastmcp.tools.tool_transform import ArgTransform
+from fastmcp.tools.tool_transform import ArgTransform, TransformedTool
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
 from fastmcp.utilities.tasks import TaskConfig, TaskMeta
 from fastmcp.utilities.types import NotSetT, NotSet
+
+from .function_tool import FunctionTool
 
 
 class Tool(ABC, FastMCPComponent):
@@ -103,7 +104,6 @@ class Tool(ABC, FastMCPComponent):
             run_in_thread: bool | None = None,
     ) -> FunctionTool:
         """Create a Tool from a function."""
-        from fastmcp.tools.function_tool import FunctionTool
 
         return FunctionTool.from_function(
             fn=fn,

@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/utilities/json_schema_type.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/json_schema_type.py	2026-05-17 03:46:17.187650109 +0000
-@@ -49,26 +49,15 @@
++++ work/patched/fastmcp_slim/fastmcp/utilities/json_schema_type.py	2026-05-17 10:53:01.613259698 +0000
+@@ -49,26 +49,14 @@
      # Creates a validated dataclass with name, age, and optional email fields
      ```
  """
@@ -8,7 +8,7 @@
 -from __future__ import annotations
 -
  import hashlib
- import json
+-import json
  import keyword
  import re
  import warnings
@@ -28,7 +28,7 @@
  
  from pydantic import (
      AnyUrl,
-@@ -83,12 +72,16 @@
+@@ -83,12 +71,16 @@
      model_validator,
  )
  from pydantic_core import SchemaError as _PydanticSchemaError
@@ -47,7 +47,7 @@
      """Convert YAML-parsed types back to JSON-native types.
  
      ``yaml.safe_load`` converts ISO date-time strings to ``datetime``/``date``
-@@ -109,14 +102,14 @@
+@@ -109,14 +101,14 @@
      return obj
  
  
@@ -64,7 +64,7 @@
  
  FORMAT_TYPES: dict[str, Any] = {
      "date-time": datetime,
-@@ -128,42 +121,43 @@
+@@ -128,42 +120,43 @@
  _classes: dict[tuple[str, Any], type | None] = {}
  
  
@@ -139,7 +139,7 @@
  ) -> type:
      """Convert JSON schema to appropriate Python type with validation.
  
-@@ -239,7 +233,7 @@
+@@ -239,7 +232,7 @@
      return result  # type: ignore[return-value]  # ty:ignore[invalid-return-type]
  
  
@@ -148,7 +148,16 @@
      """Generate a deterministic hash for schema caching.
  
      Handles non-JSON-native types (datetime, date, bool keys) that can
-@@ -255,7 +249,7 @@
+@@ -247,6 +240,8 @@
+     Uses ``default=str`` for unserializable values and drops ``sort_keys``
+     to avoid ``TypeError`` when dicts mix ``bool`` and ``str`` keys.
+     """
++    import json
++
+     try:
+         raw = json.dumps(schema, sort_keys=True, default=str)
+     except TypeError:
+@@ -255,7 +250,7 @@
      return hashlib.sha256(raw.encode()).hexdigest()
  
  
@@ -157,7 +166,7 @@
      """Resolve JSON Schema reference to target schema."""
      path = ref.replace("#/", "").split("/")
      current = schemas
-@@ -264,7 +258,7 @@
+@@ -264,7 +259,7 @@
      return current
  
  
@@ -166,7 +175,7 @@
      """Create string type with optional constraints."""
      if "const" in schema:
          return Literal[schema["const"]]  # type: ignore
-@@ -316,7 +310,7 @@
+@@ -316,7 +311,7 @@
  
  
  def _create_numeric_type(
@@ -175,7 +184,7 @@
  ) -> type | Annotated[Any, ...]:
      """Create numeric type with optional constraints."""
      if "const" in schema:
-@@ -337,7 +331,7 @@
+@@ -337,7 +332,7 @@
      return Annotated[base, Field(**constraints)] if constraints else base  # type: ignore[return-value]  # ty:ignore[invalid-type-form]
  
  
@@ -184,7 +193,7 @@
      """Create enum type from list of values."""
      if not values:
          # Empty enum means no value is valid (same semantics as ``false``
-@@ -349,7 +343,7 @@
+@@ -349,7 +344,7 @@
  
  
  def _create_array_type(
@@ -193,7 +202,7 @@
  ) -> type | Annotated[Any, ...]:
      """Create list/set type with optional constraints."""
      items = schema.get("items", {})
-@@ -376,14 +370,11 @@
+@@ -376,14 +371,11 @@
      return Annotated[base, Field(**constraints)] if constraints else base  # type: ignore[return-value]  # ty:ignore[invalid-type-form]
  
  
@@ -209,7 +218,7 @@
  ) -> type:
      """Convert an object schema to the appropriate Python type.
  
-@@ -421,7 +412,7 @@
+@@ -421,7 +413,7 @@
  
  
  def _get_from_type_handler(
@@ -218,7 +227,7 @@
  ) -> Callable[..., Any]:
      """Get the appropriate type handler for the schema."""
  
-@@ -434,12 +425,13 @@
+@@ -434,12 +426,13 @@
          "array": lambda s: _create_array_type(s, schemas),
          "object": lambda s: _object_schema_to_type(s, schemas),
      }
@@ -233,7 +242,7 @@
  ) -> type | ForwardRef:
      """Convert schema to appropriate Python type."""
      # Boolean schemas are valid in JSON Schema draft-06+:
-@@ -516,7 +508,7 @@
+@@ -516,7 +509,7 @@
      return _get_from_type_handler(schema, schemas)(schema)
  
  
@@ -242,7 +251,7 @@
      """Convert string to valid Python identifier."""
      original_name = name
      # Step 1: replace everything except [0-9a-zA-Z_] with underscores
-@@ -541,6 +533,7 @@
+@@ -541,6 +534,7 @@
      schema: dict[str, Any],
      prop_name: str,
      parent_default: dict[str, Any] | None = None,
@@ -250,7 +259,7 @@
  ) -> Any:
      """Get default value with proper priority ordering.
      1. Value from parent's default if it exists
-@@ -556,6 +549,7 @@
+@@ -556,6 +550,7 @@
      field_type: type,
      default_value: Any,
      schema: dict[str, Any],
@@ -258,7 +267,7 @@
  ) -> Any:
      """Create a field with simplified default handling."""
      # Always use None as default for complex types
-@@ -570,6 +564,7 @@
+@@ -570,6 +565,7 @@
      schema: Mapping[str, Any],
      name: str | None = None,
      schemas: Mapping[str, Any] | None = None,
@@ -266,7 +275,7 @@
  ) -> type:
      """Create Pydantic BaseModel from object schema with additionalProperties."""
      name = name or schema.get("title", "Root")
-@@ -634,6 +629,7 @@
+@@ -634,6 +630,7 @@
      schema: Mapping[str, Any],
      name: str | None = None,
      schemas: Mapping[str, Any] | None = None,
@@ -274,7 +283,7 @@
  ) -> type:
      """Create dataclass from object schema."""
      name = name or schema.get("title", "Root")
-@@ -733,6 +729,7 @@
+@@ -733,6 +730,7 @@
      data: Mapping[str, Any],
      schema: Mapping[str, Any],
      parent_default: Mapping[str, Any] | None = None,

@@ -1,6 +1,24 @@
 --- work/sources/fastmcp_slim/fastmcp/server/auth/handlers/authorize.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/auth/handlers/authorize.py	2026-05-17 03:46:17.159650112 +0000
-@@ -32,7 +32,7 @@
++++ work/patched/fastmcp_slim/fastmcp/server/auth/handlers/authorize.py	2026-05-17 15:37:31.419669087 +0000
+@@ -10,15 +10,8 @@
+ - Styled HTML error pages with registration links/forms
+ - Link headers pointing to registration endpoints
+ """
+-
+-from __future__ import annotations
+-
+-import json
+-from typing import TYPE_CHECKING
+-
+-from mcp.server.auth.handlers.authorize import (
+-    AuthorizationHandler as SDKAuthorizationHandler,
+-)
++import pydantic_core
++from mcp.server.auth.handlers.authorize import AuthorizationHandler as SDKAuthorizationHandler
+ from pydantic import AnyHttpUrl
+ from starlette.requests import Request
+ from starlette.responses import Response
+@@ -32,7 +25,7 @@
      create_secure_html_response,
  )
  
@@ -9,3 +27,12 @@
      from mcp.server.auth.provider import OAuthAuthorizationServerProvider
  
  logger = get_logger(__name__)
+@@ -228,7 +221,7 @@
+                 try:
+                     # Check if response body contains "not found" error
+                     if hasattr(response, "body"):
+-                        body = json.loads(bytes(response.body))
++                        body = pydantic_core.from_json(response.body)
+                         if (
+                             body.get("error") == "invalid_request"
+                             and "not found" in body.get("error_description", "").lower()

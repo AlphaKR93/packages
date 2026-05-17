@@ -1,0 +1,105 @@
+--- work/sources/fastmcp_slim/fastmcp/server/elicitation.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/elicitation.py	2026-05-17 15:37:31.659669052 +0000
+@@ -1,22 +1,21 @@
+-from __future__ import annotations
+-
+ from dataclasses import dataclass
+ from enum import Enum
+-from typing import Any, Generic, Literal, cast, get_origin
++from typing import get_origin
+ 
+-from mcp.server.elicitation import (
+-    CancelledElicitation,
+-    DeclinedElicitation,
+-)
++from mcp.server.elicitation import CancelledElicitation, DeclinedElicitation
+ from pydantic import BaseModel
+-from pydantic.json_schema import GenerateJsonSchema, JsonSchemaValue
++from pydantic.json_schema import GenerateJsonSchema
+ from pydantic_core import core_schema
+-from typing_extensions import TypeVar
+ 
+ from fastmcp.utilities.json_schema import compress_schema
+ from fastmcp.utilities.logging import get_logger
+ from fastmcp.utilities.types import get_cached_typeadapter
+ 
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from typing import Any, Literal
++
++    from pydantic.json_schema import JsonSchemaValue
++
+ __all__ = [
+     "AcceptedElicitation",
+     "CancelledElicitation",
+@@ -30,8 +29,6 @@
+ 
+ logger = get_logger(__name__)
+ 
+-T = TypeVar("T", default=Any)
+-
+ 
+ class ElicitationJsonSchema(GenerateJsonSchema):
+     """Custom JSON schema generator for MCP elicitation that always inlines enums.
+@@ -41,7 +38,7 @@
+     Optionally adds enumNames for better UI display when available.
+     """
+ 
+-    def generate_inner(self, schema: core_schema.CoreSchema) -> JsonSchemaValue:  # type: ignore[override]  # ty:ignore[invalid-method-override]
++    def generate_inner(self, schema: core_schema.CoreSchema, /) -> JsonSchemaValue:  # type: ignore[override]  # ty:ignore[invalid-method-override]
+         """Override to prevent ref generation for enums and handle list schemas."""
+         # For enum schemas, bypass the ref mechanism entirely
+         if schema["type"] == "enum":
+@@ -54,7 +51,7 @@
+         # For all other types, use the default implementation
+         return super().generate_inner(schema)
+ 
+-    def list_schema(self, schema: core_schema.ListSchema) -> JsonSchemaValue:
++    def list_schema(self, schema: core_schema.ListSchema, /) -> JsonSchemaValue:
+         """Generate schema for list types, detecting enum items for multi-select."""
+         items_schema = schema.get("items_schema")
+ 
+@@ -91,7 +88,7 @@
+         # Default behavior for non-enum arrays
+         return super().list_schema(schema)
+ 
+-    def enum_schema(self, schema: core_schema.EnumSchema) -> JsonSchemaValue:
++    def enum_schema(self, schema: core_schema.EnumSchema, /) -> JsonSchemaValue:
+         """Generate inline enum schema.
+ 
+         Always generates enum pattern: `{"enum": [value, ...]}`
+@@ -102,7 +99,7 @@
+ 
+ 
+ # we can't use the low-level AcceptedElicitation because it only works with BaseModels
+-class AcceptedElicitation(BaseModel, Generic[T]):
++class AcceptedElicitation[T](BaseModel):
+     """Result when user accepts the elicitation."""
+ 
+     action: Literal["accept"] = "accept"
+@@ -110,7 +107,7 @@
+ 
+ 
+ @dataclass
+-class ScalarElicitationType(Generic[T]):
++class ScalarElicitationType[T]:
+     value: T
+ 
+ 
+@@ -275,7 +272,7 @@
+     if lst and all(isinstance(item, str) for item in lst):
+         # Construct Literal type from tuple - use cast since we can't construct Literal dynamically
+         # but we know the values are all strings
+-        choice_literal: type[Any] = cast(type[Any], Literal[tuple(lst)])  # type: ignore[valid-type]  # ty:ignore[invalid-type-form]
++        choice_literal: type[Any] = Literal[tuple(lst)]  # type: ignore[valid-type]  # ty:ignore[invalid-type-form]
+         wrapped = ScalarElicitationType[choice_literal]  # type: ignore[valid-type]  # ty:ignore[invalid-type-form]
+         return ElicitConfig(
+             schema=get_elicitation_schema(wrapped),
+@@ -365,7 +362,7 @@
+     return result
+ 
+ 
+-def get_elicitation_schema(response_type: type[T]) -> dict[str, Any]:
++def get_elicitation_schema[T](response_type: type[T]) -> dict[str, Any]:
+     """Get the schema for an elicitation response.
+ 
+     Args:

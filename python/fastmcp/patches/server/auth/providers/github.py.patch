@@ -1,0 +1,26 @@
+--- work/sources/fastmcp_slim/fastmcp/server/auth/providers/github.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/auth/providers/github.py	2026-05-17 10:53:01.585259701 +0000
+@@ -18,13 +18,11 @@
+     mcp = FastMCP("My Protected Server", auth=auth)
+     ```
+ """
+-
+-from __future__ import annotations
+-
+ import contextlib
+ from typing import Literal
+ 
+ import httpx
++import pydantic_core
+ from key_value.aio.protocols import AsyncKeyValue
+ from pydantic import AnyHttpUrl
+ 
+@@ -110,7 +108,7 @@
+                     )
+                     return None
+ 
+-                user_data = response.json()
++                user_data = pydantic_core.from_json(response.content)
+ 
+                 # Get token scopes from GitHub API
+                 # GitHub includes scopes in the X-OAuth-Scopes header

@@ -1,0 +1,18 @@
+--- work/sources/fastmcp_slim/fastmcp/server/middleware/logging.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/middleware/logging.py	2026-05-17 10:53:01.541259704 +0000
+@@ -1,6 +1,5 @@
+ """Comprehensive logging middleware for FastMCP servers."""
+ 
+-import json
+ import logging
+ import time
+ from collections.abc import Callable
+@@ -49,7 +48,7 @@
+     def _format_message(self, message: dict[str, str | int | float]) -> str:
+         """Format a message for logging."""
+         if self.structured_logging:
+-            return json.dumps(message)
++            return pydantic_core.to_json(message).decode()
+         else:
+             return " ".join([f"{k}={v}" for k, v in message.items()])
+ 

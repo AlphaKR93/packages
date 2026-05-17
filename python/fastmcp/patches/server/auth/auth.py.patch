@@ -1,6 +1,18 @@
 --- work/sources/fastmcp_slim/fastmcp/server/auth/auth.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/auth/auth.py	2026-05-17 03:46:17.155650112 +0000
-@@ -45,7 +45,7 @@
++++ work/patched/fastmcp_slim/fastmcp/server/auth/auth.py	2026-05-17 15:37:31.435669084 +0000
+@@ -1,9 +1,7 @@
+-from __future__ import annotations
+-
+-import json
+-from typing import TYPE_CHECKING, Any
++from typing import Any
+ from urllib.parse import urlparse
+ 
++import pydantic_core
+ from mcp.server.auth.handlers.token import TokenErrorResponse
+ from mcp.server.auth.handlers.token import TokenHandler as _SDKTokenHandler
+ from mcp.server.auth.json_response import PydanticJSONResponse
+@@ -45,7 +43,7 @@
  
  from fastmcp.utilities.logging import get_logger
  
@@ -9,3 +21,38 @@
      from fastmcp.server.auth.cimd import CIMDClientManager
  
  logger = get_logger(__name__)
+@@ -80,7 +78,7 @@
+         # Transform 401 unauthorized_client -> invalid_client
+         if response.status_code == 401:
+             try:
+-                body = json.loads(response.body)
++                body = pydantic_core.from_json(response.body)
+                 if body.get("error") == "unauthorized_client":
+                     return PydanticJSONResponse(
+                         content=TokenErrorResponse(
+@@ -93,14 +91,14 @@
+                             "Pragma": "no-cache",
+                         },
+                     )
+-            except (json.JSONDecodeError, AttributeError):
++            except (ValueError, AttributeError):
+                 pass  # Not JSON or unexpected format, return as-is
+ 
+         # Transform 400 invalid_grant -> 401 for expired/invalid tokens
+         # Per MCP spec: "Invalid or expired tokens MUST receive a HTTP 401 response."
+         if response.status_code == 400:
+             try:
+-                body = json.loads(response.body)
++                body = pydantic_core.from_json(response.body)
+                 if body.get("error") == "invalid_grant":
+                     return PydanticJSONResponse(
+                         content=TokenErrorResponse(
+@@ -113,7 +111,7 @@
+                             "Pragma": "no-cache",
+                         },
+                     )
+-            except (json.JSONDecodeError, AttributeError):
++            except (ValueError, AttributeError):
+                 pass  # Not JSON or unexpected format, return as-is
+ 
+         return response

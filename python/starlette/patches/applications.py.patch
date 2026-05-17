@@ -1,28 +1,12 @@
---- work/sources/starlette/applications.py	2026-04-30 16:47:44.146039129 +0900
-+++ work/patched/starlette/applications.py	2026-05-02 22:44:14.772164542 +0900
-@@ -1,31 +1,35 @@
+--- work/sources/starlette/applications.py	2026-05-16 04:16:01.715524108 +0000
++++ work/patched/starlette/applications.py	2026-05-17 11:21:50.457098560 +0000
+@@ -1,31 +1,33 @@
 -from __future__ import annotations
 +__all__ = ("Starlette",)
  
 -from collections.abc import Awaitable, Callable, Mapping, Sequence
 -from typing import Any, ParamSpec, TypeVar
-+from .datastructures import State
-+from .middleware import Middleware
-+from .middleware.errors import ServerErrorMiddleware
-+from .middleware.exceptions import ExceptionMiddleware
-+from .routing import Router
-+
-+if __debug__ and __import__("typing").TYPE_CHECKING:
-+    from collections.abc import Awaitable, Callable, Mapping, Sequence
-+    from typing import Any, Self, ParamSpec
-+
-+    from .datastructures import URLPath
-+    from .middleware import _MiddlewareFactory
-+    from .requests import Request
-+    from .responses import Response
-+    from .routing import BaseRoute
-+    from .types import ASGIApp, ExceptionHandler, Lifespan, Receive, Scope, Send
- 
+-
 -from starlette.datastructures import State, URLPath
 -from starlette.middleware import Middleware, _MiddlewareFactory
 -from starlette.middleware.errors import ServerErrorMiddleware
@@ -34,7 +18,22 @@
 -
 -AppType = TypeVar("AppType", bound="Starlette")
 -P = ParamSpec("P")
-+    P = ParamSpec("P")
++from .datastructures import State
++from .middleware import Middleware
++from .middleware.errors import ServerErrorMiddleware
++from .middleware.exceptions import ExceptionMiddleware
++from .routing import Router
++
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Awaitable, Callable, Mapping, Sequence
++    from typing import Any, Self
++
++    from .datastructures import URLPath
++    from .middleware import _MiddlewareFactory
++    from .requests import Request
++    from .responses import Response
++    from .routing import BaseRoute
++    from .types import ASGIApp, ExceptionHandler, Lifespan, Receive, Scope, Send
  
  
  class Starlette:
@@ -52,7 +51,7 @@
      ) -> None:
          """Initializes the application.
  
-@@ -54,7 +58,7 @@
+@@ -54,7 +56,7 @@
          self.user_middleware = [] if middleware is None else list(middleware)
          self.middleware_stack: ASGIApp | None = None
  
@@ -61,7 +60,7 @@
          debug = self.debug
          error_handler = None
          exception_handlers: dict[Any, ExceptionHandler] = {}
-@@ -77,23 +81,23 @@
+@@ -77,42 +79,42 @@
          return app
  
      @property
@@ -89,9 +88,11 @@
 +    def host(self, host: str, app: ASGIApp, name: str | None = None, /) -> None:
 +        self.router.host(host, app, name)  # pragma: no cover
  
-     def add_middleware(self, middleware_class: _MiddlewareFactory[P], *args: P.args, **kwargs: P.kwargs) -> None:
+-    def add_middleware(self, middleware_class: _MiddlewareFactory[P], *args: P.args, **kwargs: P.kwargs) -> None:
++    def add_middleware[**P](self, middleware_class: _MiddlewareFactory[P], *args: P.args, **kwargs: P.kwargs) -> None:
          if self.middleware_stack is not None:  # pragma: no cover
-@@ -102,17 +106,17 @@
+             raise RuntimeError("Cannot add middleware after an application has started")
+         self.user_middleware.insert(0, Middleware(middleware_class, *args, **kwargs))
  
      def add_exception_handler(
          self,

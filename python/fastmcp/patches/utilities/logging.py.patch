@@ -1,5 +1,5 @@
 --- work/sources/fastmcp_slim/fastmcp/utilities/logging.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/logging.py	2026-05-17 03:46:17.187650109 +0000
++++ work/patched/fastmcp_slim/fastmcp/utilities/logging.py	2026-05-17 10:36:15.645351827 +0000
 @@ -1,17 +1,15 @@
  """Logging utilities for FastMCP."""
 -
@@ -215,7 +215,7 @@
 -    min_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = None,
 -    max_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] | None = None,
 -) -> None:
-+def _clamp_logger(logger: logging.Logger, min_level: LogLevel | None = None, max_level: LogLevel | None = None, /) -> None:
++def _clamp_logger(logger: logging.Logger, /, min_level: LogLevel | None = None, max_level: LogLevel | None = None) -> None:
      """Clamp the logger to a minimum and maximum level.
  
      If min_level is provided, messages logged at a lower level than `min_level` will have their level increased to `min_level`.

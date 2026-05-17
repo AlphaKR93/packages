@@ -1,5 +1,5 @@
 --- work/sources/fastmcp_slim/fastmcp/tools/__init__.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/tools/__init__.py	2026-05-17 03:46:17.175650110 +0000
++++ work/patched/fastmcp_slim/fastmcp/tools/__init__.py	2026-05-17 10:36:15.633351829 +0000
 @@ -1,15 +1,8 @@
 -import sys
 +from alpha93.fastmcp._internal.components.tools import Tool, FunctionTool, tool

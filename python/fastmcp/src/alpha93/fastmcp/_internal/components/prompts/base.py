@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import ClassVar
 
-from mcp.types import Prompt as SDKPrompt
-from mcp.types import PromptArgument as SDKPromptArgument
+from mcp.types import Prompt as SDKPrompt, PromptArgument as SDKPromptArgument
 from pydantic import Field
 from pydantic.json_schema import SkipJsonSchema
 

@@ -1,0 +1,84 @@
+--- work/sources/fastmcp_slim/fastmcp/server/mixins/transport.pyi	1970-01-01 00:00:00.000000000 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/mixins/transport.pyi	1970-01-01 00:00:00.000000000 +0000
+@@ -0,0 +1,81 @@
++from typing import Literal, Any, final
++
++from starlette.middleware import Middleware as ASGIMiddleware
++
++from fastmcp.server import FastMCP
++from fastmcp.server.event_store import EventStore
++from fastmcp.server.http import StarletteWithLifespan
++from fastmcp.utilities.logging import LogLevel
++
++type Transport = Literal[
++    "stdio",
++    "http",
++    # "streamable-http",
++    # "sse",
++]
++
++
++class TransportMixin:
++    """Mixin providing transport-related methods for FastMCP.
++
++    Includes HTTP/stdio/SSE transport handling and custom HTTP routes.
++    """
++
++    @final
++    async def run_async(self, transport: Literal["stdio"] = "stdio", /, **transport_kwargs: Any) -> None:
++        """Run the FastMCP server asynchronously.
++
++        Args:
++            transport: Transport protocol to use. Only `stdio` is supported in fastmcp-minimal
++        """
++
++    @final
++    def run(self, transport: Literal["stdio"] = "stdio", /, **transport_kwargs: Any) -> None:
++        """Run the FastMCP server. Note this is a synchronous function.
++
++        Args:
++            transport: Transport protocol to use. Only `stdio` is supported in fastmcp-minimal
++        """
++
++    @final
++    async def stdio(self: FastMCP, /, log_level: LogLevel | None = None, stateless: bool = False) -> None:
++        """Run the server using stdio transport.
++
++        Args:
++            log_level: Log level for the server
++            stateless: Whether to run in stateless mode (no session initialization)
++        """
++
++    @final
++    def http_app(
++        self: FastMCP,
++        path: str = "/mcp",
++        /,
++        middleware: list[ASGIMiddleware] | None = None,
++        retry_interval: int | None = None,
++        event_store: EventStore | None = None,
++        json_response: bool = False,
++        stateless_http: bool = False,
++        transport: Literal["http"] = "http",
++        debug: bool = False,
++    ) -> StarletteWithLifespan:
++        """Create a Starlette app using the specified HTTP transport.
++
++        Args:
++            path: The path for the HTTP endpoint
++            middleware: A list of middleware to apply to the app
++            retry_interval: Optional retry interval in milliseconds for SSE polling.
++                Controls how quickly clients should reconnect after server-initiated
++                disconnections. Requires event_store to be set. Only used with
++                streamable-http transport.
++            event_store: Optional event store for SSE polling/resumability. When set,
++                enables clients to reconnect and resume receiving events after
++                server-initiated disconnections. Only used with streamable-http transport.
++            json_response: Whether to use JSON response format
++            stateless_http: Whether to use stateless mode (new transport per request)
++            transport: Transport protocol to use. Only `http` is supported in fastmcp-minimal
++            debug: Boolean indicating if debug tracebacks should be returned on errors.
++
++        Returns:
++            A Starlette application configured with the specified transport
++        """

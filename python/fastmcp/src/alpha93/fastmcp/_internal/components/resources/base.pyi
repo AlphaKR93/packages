@@ -2,16 +2,16 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from typing import Any, ClassVar, Annotated, Self, overload
 
-from mcp.types import Annotations, Icon, CreateTaskResult
-from mcp.types import Resource as SDKResource
+from mcp.types import Annotations, Icon, CreateTaskResult, Resource as SDKResource
 from pydantic import ConfigDict, UrlConstraints, Field, AnyUrl, field_validator, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
 from fastmcp.resources import ResourceResult
-from fastmcp.resources.function_resource import FunctionResource
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
 from fastmcp.utilities.tasks import TaskConfig, TaskMeta
+
+from .function_resource import FunctionResource
 
 
 class Resource(ABC, FastMCPComponent):

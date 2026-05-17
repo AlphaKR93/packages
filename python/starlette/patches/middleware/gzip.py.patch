@@ -1,5 +1,5 @@
---- work/sources/starlette/middleware/gzip.py	2026-04-30 16:47:44.146039129 +0900
-+++ work/patched/starlette/middleware/gzip.py	2026-05-02 22:44:14.788164536 +0900
+--- work/sources/starlette/middleware/gzip.py	2026-05-16 04:16:01.719524108 +0000
++++ work/patched/starlette/middleware/gzip.py	2026-05-17 11:20:21.145108279 +0000
 @@ -1,9 +1,12 @@
  import gzip
  import io

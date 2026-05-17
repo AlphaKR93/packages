@@ -1,5 +1,5 @@
 --- work/sources/fastmcp_slim/fastmcp/prompts/__init__.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/prompts/__init__.py	2026-05-17 03:46:17.147650114 +0000
++++ work/patched/fastmcp_slim/fastmcp/prompts/__init__.py	2026-05-17 10:36:15.565351834 +0000
 @@ -1,13 +1,6 @@
 -import sys
 +from alpha93.fastmcp._internal.components.prompts import FunctionPrompt, Prompt, prompt

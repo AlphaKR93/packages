@@ -1,24 +1,48 @@
 --- work/sources/fastmcp_slim/fastmcp/utilities/pagination.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/pagination.py	2026-05-17 03:46:17.187650109 +0000
-@@ -1,15 +1,11 @@
++++ work/patched/fastmcp_slim/fastmcp/utilities/pagination.py	2026-05-17 11:12:45.697148958 +0000
+@@ -1,15 +1,12 @@
  """Pagination utilities for MCP list operations."""
 -
 -from __future__ import annotations
 -
  import base64
  import binascii
- import json
+-import json
 -from collections.abc import Sequence
  from dataclasses import dataclass
 -from typing import TypeVar
  
 -T = TypeVar("T")
++import pydantic_core
++
 +if __debug__ and __import__("typing").TYPE_CHECKING:
 +    from collections.abc import Sequence
  
  
  @dataclass
-@@ -47,7 +43,7 @@
+@@ -24,8 +21,7 @@
+ 
+     def encode(self) -> str:
+         """Encode cursor state to an opaque string."""
+-        data = json.dumps({"o": self.offset})
+-        return base64.urlsafe_b64encode(data.encode()).decode()
++        return base64.urlsafe_b64encode(pydantic_core.to_json({"o": self.offset})).decode()
+ 
+     @classmethod
+     def decode(cls, cursor: str) -> CursorState:
+@@ -35,10 +31,9 @@
+             ValueError: If the cursor is invalid or malformed.
+         """
+         try:
+-            data = json.loads(base64.urlsafe_b64decode(cursor.encode()).decode())
++            data = pydantic_core.from_json(base64.urlsafe_b64decode(cursor.encode()).decode())
+             return cls(offset=data["o"])
+         except (
+-            json.JSONDecodeError,
+             KeyError,
+             ValueError,
+             TypeError,
+@@ -47,7 +42,7 @@
              raise ValueError(f"Invalid cursor: {cursor}") from e
  
  

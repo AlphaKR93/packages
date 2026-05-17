@@ -1,0 +1,25 @@
+--- work/sources/fastmcp_slim/fastmcp/server/transforms/tool_transform.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/transforms/tool_transform.py	2026-05-17 10:36:15.633351829 +0000
+@@ -1,16 +1,13 @@
+ """Transform for applying tool transformations."""
+-
+-from __future__ import annotations
+-
+-from collections.abc import Sequence
+-from typing import TYPE_CHECKING
+-
+-from fastmcp.server.transforms import GetToolNext, Transform
++from fastmcp.server.transforms import Transform
+ from fastmcp.tools.tool_transform import ToolTransformConfig
+ from fastmcp.utilities.versions import VersionSpec
+ 
+-if TYPE_CHECKING:
+-    from fastmcp.tools.base import Tool
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Sequence
++
++    from fastmcp.server.transforms import GetToolNext
++    from fastmcp.tools import Tool
+ 
+ 
+ class ToolTransform(Transform):

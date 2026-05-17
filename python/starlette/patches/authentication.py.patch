@@ -1,0 +1,62 @@
+--- work/sources/starlette/authentication.py	2026-05-16 04:16:01.715524108 +0000
++++ work/patched/starlette/authentication.py	2026-05-17 11:21:50.469098559 +0000
+@@ -1,18 +1,13 @@
+-from __future__ import annotations
+-
+ import functools
+ import inspect
+ from collections.abc import Callable, Sequence
+-from typing import Any, ParamSpec
++from typing import Any
+ from urllib.parse import urlencode
+ 
+ from starlette._utils import is_async_callable
+ from starlette.exceptions import HTTPException
+ from starlette.requests import HTTPConnection, Request
+ from starlette.responses import RedirectResponse
+-from starlette.websockets import WebSocket
+-
+-_P = ParamSpec("_P")
+ 
+ 
+ def has_required_scope(conn: HTTPConnection, scopes: Sequence[str]) -> bool:
+@@ -22,7 +17,7 @@
+     return True
+ 
+ 
+-def requires(
++def requires[**_P](
+     scopes: str | Sequence[str],
+     status_code: int = 403,
+     redirect: str | None = None,
+@@ -34,27 +29,13 @@
+     ) -> Callable[_P, Any]:
+         sig = inspect.signature(func)
+         for idx, parameter in enumerate(sig.parameters.values()):
+-            if parameter.name == "request" or parameter.name == "websocket":
++            if parameter.name == "request":
+                 type_ = parameter.name
+                 break
+         else:
+-            raise Exception(f'No "request" or "websocket" argument on function "{func}"')
+-
+-        if type_ == "websocket":
+-            # Handle websocket functions. (Always async)
+-            @functools.wraps(func)
+-            async def websocket_wrapper(*args: _P.args, **kwargs: _P.kwargs) -> None:
+-                websocket = kwargs.get("websocket", args[idx] if idx < len(args) else None)
+-                assert isinstance(websocket, WebSocket)
+-
+-                if not has_required_scope(websocket, scopes_list):
+-                    await websocket.close()
+-                else:
+-                    await func(*args, **kwargs)
+-
+-            return websocket_wrapper
++            raise Exception(f'No "request" argument on function "{func}"')
+ 
+-        elif is_async_callable(func):
++        if is_async_callable(func):
+             # Handle async request/response functions.
+             @functools.wraps(func)
+             async def async_wrapper(*args: _P.args, **kwargs: _P.kwargs) -> Any:

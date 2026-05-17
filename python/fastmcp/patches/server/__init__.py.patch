@@ -1,0 +1,23 @@
+--- work/sources/fastmcp_slim/fastmcp/server/__init__.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/__init__.py	2026-05-17 10:36:15.573351834 +0000
+@@ -1,12 +1,7 @@
+ import importlib
+ 
+-from fastmcp import _install_hints
+-
+-try:
+-    from .context import Context
+-    from .server import FastMCP, create_proxy
+-except ImportError as exc:
+-    raise ImportError(_install_hints.SERVER_SUPPORT) from exc
++from .context import Context
++from .server import FastMCP
+ 
+ 
+ def __getattr__(name: str) -> object:
+@@ -15,4 +10,4 @@
+     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+ 
+ 
+-__all__ = ["Context", "FastMCP", "create_proxy"]
++__all__ = ["Context", "FastMCP"]

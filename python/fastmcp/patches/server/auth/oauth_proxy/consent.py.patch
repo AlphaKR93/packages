@@ -1,5 +1,21 @@
 --- work/sources/fastmcp_slim/fastmcp/server/auth/oauth_proxy/consent.py	2026-05-16 04:15:58.923524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/auth/oauth_proxy/consent.py	2026-05-17 03:46:17.159650112 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/auth/oauth_proxy/consent.py	2026-05-17 10:36:15.581351834 +0000
+@@ -10,13 +10,13 @@
+ import base64
+ import hashlib
+ import hmac
+-import json
+ import secrets
+ import time
+ from base64 import urlsafe_b64encode
+-from typing import TYPE_CHECKING, Any
++from typing import Any
+ from urllib.parse import urlencode, urlparse
+ 
++import pydantic_core
+ from pydantic import AnyUrl
+ from starlette.requests import Request
+ from starlette.responses import HTMLResponse, RedirectResponse
 @@ -26,7 +26,7 @@
  from fastmcp.utilities.logging import get_logger
  from fastmcp.utilities.ui import create_secure_html_response
@@ -9,3 +25,41 @@
      from fastmcp.server.auth.oauth_proxy.proxy import OAuthProxy
  
  # Maximum number of remembered client approvals/denials stored in cookies.
+@@ -132,7 +132,7 @@
+ 
+             # Decode payload
+             data = base64.b64decode(payload.encode())
+-            value = json.loads(data.decode())
++            value = pydantic_core.from_json(data.decode())
+             if isinstance(value, list):
+                 return [str(x) for x in value]
+         except Exception:
+@@ -144,8 +144,7 @@
+ 
+         Returns: signed cookie value (payload.signature)
+         """
+-        payload = json.dumps(values, separators=(",", ":")).encode()
+-        payload_b64 = base64.b64encode(payload).decode()
++        payload_b64 = base64.b64encode(pydantic_core.to_json(values)).decode()
+         return self._sign_cookie(payload_b64)
+ 
+     def _set_list_cookie(
+@@ -184,7 +183,7 @@
+         if not payload:
+             return {}
+         try:
+-            data = json.loads(base64.b64decode(payload.encode()).decode())
++            data = pydantic_core.from_json(base64.b64decode(payload.encode()).decode())
+             if isinstance(data, dict):
+                 return {str(k): str(v) for k, v in data.items()}
+         except Exception:
+@@ -209,8 +208,7 @@
+                 path="/",
+             )
+             return
+-        payload_bytes = json.dumps(bindings, separators=(",", ":")).encode()
+-        payload_b64 = base64.b64encode(payload_bytes).decode()
++        payload_b64 = base64.b64encode(pydantic_core.to_json(bindings)).decode()
+         signed_value = self._sign_cookie(payload_b64)
+         response.set_cookie(
+             name,

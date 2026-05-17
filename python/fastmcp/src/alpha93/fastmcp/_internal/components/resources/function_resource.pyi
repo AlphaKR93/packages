@@ -9,6 +9,7 @@ from fastmcp.resources import ResourceResult
 from fastmcp.resources.function_resource import ResourceMeta
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.tasks import TaskConfig
+
 from .base import Resource
 
 

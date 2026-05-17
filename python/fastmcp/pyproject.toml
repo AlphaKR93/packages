@@ -26,8 +26,8 @@ exclude-dependencies = ["uvicorn", "starlette"]
 
 [tool.uv.sources]
 fastmcp-slim = { path = "work/patched/fastmcp_slim" }
-alpha93 = { path = "../alpha93" }
 starlette-minimal = { path = "../starlette" }
+alpha93 = { path = "../alpha93" }
 
 [build-system]
 requires = ["hatchling"]
@@ -70,10 +70,21 @@ excludes = [
     "server/auth/providers/supabase.py",
     "server/auth/providers/workos.py",
     "server/auth/authorization.py",
+    "server/openapi/**/*",
+    "server/providers/skills/claude_provider.py",
+    "server/providers/skills/vendor_providers.py",
+    "server/providers/addressing.py",
+    "server/providers/proxy.py",
     "server/providers/prefab_synthesis.py",
+    "server/tasks/config.py",
+    "server/tasks/keys.py",
+    "server/tasks/notifications.py",
+    "server/tasks/requests.py",
+    "server/tasks/subscriptions.py",
     "server/apps.py",
     "server/app.py",
     "server/telemetry.py",
+    "server/proxy.py",
     "utilities/mcp_server_config/**/*",
     "utilities/cli.py",
     "utilities/docstring_parsing.py",

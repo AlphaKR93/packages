@@ -1,5 +1,5 @@
 --- work/sources/fastmcp_slim/fastmcp/utilities/versions.py	2026-05-16 04:15:58.931524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/utilities/versions.py	2026-05-17 03:46:17.195650109 +0000
++++ work/patched/fastmcp_slim/fastmcp/utilities/versions.py	2026-05-17 10:36:15.653351827 +0000
 @@ -11,20 +11,15 @@
      - "2025-01-15" → not valid PEP 440, compared as strings
      - None → sorts lowest (unversioned components)

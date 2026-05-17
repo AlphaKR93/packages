@@ -1,0 +1,12 @@
+--- work/sources/fastmcp_slim/fastmcp/server/middleware/rate_limiting.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/middleware/rate_limiting.py	2026-05-17 15:37:31.259669113 +0000
+@@ -6,8 +6,7 @@
+ from typing import Any
+ 
+ import anyio
+-from mcp import McpError
+-from mcp.types import ErrorData
++from mcp.types import McpError, ErrorData
+ 
+ from .middleware import CallNext, Middleware, MiddlewareContext
+ 

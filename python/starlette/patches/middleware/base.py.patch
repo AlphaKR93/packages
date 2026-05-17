@@ -1,5 +1,5 @@
---- work/sources/starlette/middleware/base.py	2026-04-30 16:47:44.146039129 +0900
-+++ work/patched/starlette/middleware/base.py	2026-05-02 22:44:14.784164538 +0900
+--- work/sources/starlette/middleware/base.py	2026-05-16 04:16:01.715524108 +0000
++++ work/patched/starlette/middleware/base.py	2026-05-17 11:20:21.141108279 +0000
 @@ -1,20 +1,19 @@
 -from __future__ import annotations
 -

@@ -1,0 +1,28 @@
+--- work/sources/fastmcp_slim/fastmcp/server/auth/middleware.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/auth/middleware.py	2026-05-17 15:37:31.267669112 +0000
+@@ -4,14 +4,8 @@
+ that return more helpful error messages for developers troubleshooting
+ authentication issues.
+ """
+-
+-from __future__ import annotations
+-
+-import json
+-
+-from mcp.server.auth.middleware.bearer_auth import (
+-    RequireAuthMiddleware as SDKRequireAuthMiddleware,
+-)
++import pydantic_core
++from mcp.server.auth.middleware.bearer_auth import RequireAuthMiddleware as SDKRequireAuthMiddleware
+ from starlette.types import Send
+ 
+ from fastmcp.utilities.logging import get_logger
+@@ -68,7 +62,7 @@
+ 
+         # Send response
+         body = {"error": error, "error_description": enhanced_description}
+-        body_bytes = json.dumps(body).encode()
++        body_bytes = pydantic_core.to_json(body)
+ 
+         await send(
+             {

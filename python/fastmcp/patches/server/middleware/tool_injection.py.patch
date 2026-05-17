@@ -1,0 +1,27 @@
+--- work/sources/fastmcp_slim/fastmcp/server/middleware/tool_injection.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/middleware/tool_injection.py	2026-05-17 15:43:42.999635104 +0000
+@@ -15,10 +15,10 @@
+ from fastmcp.resources.base import ResourceResult
+ from fastmcp.server.context import Context
+ from fastmcp.server.middleware.middleware import CallNext, Middleware, MiddlewareContext
+-from fastmcp.tools.base import Tool, ToolResult
++from fastmcp.tools import Tool, ToolResult
+ from fastmcp.utilities.logging import get_logger
+ 
+-logger: Logger = get_logger(name=__name__)
++logger: Logger = get_logger(__name__)
+ 
+ 
+ class ToolInjectionMiddleware(Middleware):
+@@ -70,9 +70,10 @@
+     arguments: Annotated[
+         dict[str, Any] | None, "The arguments to pass to the prompt."
+     ] = None,
++    /,
+ ) -> mcp.types.GetPromptResult:
+     """Render a prompt available on the server."""
+-    return await context.get_prompt(name=name, arguments=arguments)
++    return await context.get_prompt(name ,arguments)
+ 
+ 
+ get_prompt_tool = Tool.from_function(

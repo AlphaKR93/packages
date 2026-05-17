@@ -1,0 +1,23 @@
+--- work/sources/fastmcp_slim/fastmcp/utilities/openapi/formatters.py	2026-05-16 04:15:58.931524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/utilities/openapi/formatters.py	2026-05-17 11:12:45.721148955 +0000
+@@ -1,9 +1,10 @@
+ """Parameter formatting functions for OpenAPI operations."""
+ 
+-import json
+ import logging
+ from typing import Any
+ 
++import pydantic_core
++
+ from .models import JsonSchema, ParameterInfo, RequestBodyInfo
+ 
+ logger = logging.getLogger(__name__)
+@@ -183,7 +184,7 @@
+ def format_json_for_description(data: Any, indent: int = 2) -> str:
+     """Formats Python data as a JSON string block for Markdown."""
+     try:
+-        json_str = json.dumps(data, indent=indent)
++        json_str = pydantic_core.to_json(data, indent=indent).decode()
+         return f"```json\n{json_str}\n```"
+     except TypeError:
+         return f"```\nCould not serialize to JSON: {data}\n```"

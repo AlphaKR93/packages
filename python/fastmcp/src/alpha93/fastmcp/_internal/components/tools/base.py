@@ -4,13 +4,11 @@ from warnings import deprecated
 
 import pydantic_core
 from mcp.shared.tool_name_validation import validate_and_warn_tool_name
-from mcp.types import ToolAnnotations, ToolExecution
-from mcp.types import Tool as MCPTool
+from mcp.types import Tool as MCPTool, ToolAnnotations, ToolExecution
 from pydantic import Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
-from fastmcp.tools.base import ToolResultSerializerType, ToolResult, _convert_to_content
-from fastmcp.utilities.authorization import AuthCheck
+from fastmcp.tools.base import ToolResult, _convert_to_content
 from fastmcp.utilities.components import FastMCPComponent
 from fastmcp.utilities.types import File, Image, Audio, ContentBlock
 
@@ -19,6 +17,8 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
 
     from mcp.types import CreateTaskResult
 
+    from fastmcp.tools.base import ToolResultSerializerType
+    from fastmcp.utilities.authorization import AuthCheck
     from fastmcp.utilities.tasks import TaskMeta
 
 
@@ -92,7 +92,7 @@ class Tool(ABC, FastMCPComponent):
     @classmethod
     def from_function(cls, fn, /, **kwargs):
         """Create a Tool from a function."""
-        from fastmcp.tools.function_tool import FunctionTool
+        from fastmcp.tools import FunctionTool
 
         return FunctionTool.from_function(fn, **kwargs)
 

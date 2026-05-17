@@ -1,0 +1,149 @@
+--- work/sources/fastmcp_slim/fastmcp/server/sampling/run.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/sampling/run.py	2026-05-17 15:37:31.647669054 +0000
+@@ -1,12 +1,6 @@
+ """Sampling types and helper functions for FastMCP servers."""
+-
+-from __future__ import annotations
+-
+ import inspect
+-import json
+-from collections.abc import Callable, Sequence
+ from dataclasses import dataclass
+-from typing import TYPE_CHECKING, Any, Generic, Literal, cast
+ 
+ import anyio
+ from mcp.types import (
+@@ -27,12 +21,10 @@
+ from mcp.types import CreateMessageRequestParams as SamplingParams
+ from mcp.types import Tool as SDKTool
+ from pydantic import ValidationError
+-from typing_extensions import TypeVar
+ 
+-from fastmcp import settings
+ from fastmcp.exceptions import ToolError
+ from fastmcp.server.sampling.sampling_tool import SamplingTool
+-from fastmcp.tools.function_tool import FunctionTool
++from fastmcp.tools import FunctionTool
+ from fastmcp.tools.tool_transform import TransformedTool
+ from fastmcp.utilities.async_utils import gather
+ from fastmcp.utilities.json_schema import compress_schema
+@@ -41,24 +33,25 @@
+ 
+ logger = get_logger(__name__)
+ 
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Callable, Sequence
++    from typing import Any, Literal, cast
++
+     from fastmcp.server.context import Context
+ 
+-ResultT = TypeVar("ResultT")
++    # Simplified tool choice type - just the mode string instead of the full MCP object
++    type ToolChoiceOption = Literal["auto", "required", "none"]
+ 
+ # Maximum number of consecutive final_response validation retries (not
+ # counting the initial attempt) before aborting.  Total attempts = N + 1.
+ _MAX_VALIDATION_RETRIES = 3
+ 
+-# Simplified tool choice type - just the mode string instead of the full MCP object
+-ToolChoiceOption = Literal["auto", "required", "none"]
+-
+ # How many times we retry when the LLM returns text instead of calling final_response
+ _MAX_TEXT_RESPONSE_RETRIES = 3
+ 
+ 
+ @dataclass
+-class SamplingResult(Generic[ResultT]):
++class SamplingResult[T]:
+     """Result of a sampling operation.
+ 
+     Attributes:
+@@ -68,7 +61,7 @@
+     """
+ 
+     text: str | None
+-    result: ResultT
++    result: T
+     history: list[SamplingMessage]
+ 
+ 
+@@ -508,9 +501,7 @@
+                 f"Invalid tool_choice: {tool_choice!r}. "
+                 "Must be 'auto', 'required', or 'none'."
+             )
+-        effective_tool_choice = ToolChoice(
+-            mode=cast(Literal["auto", "required", "none"], tool_choice)
+-        )
++        effective_tool_choice = ToolChoice(mode=tool_choice)
+ 
+     # Effective max_tokens
+     effective_max_tokens = max_tokens if max_tokens is not None else 512
+@@ -529,7 +520,7 @@
+         )
+     else:
+         response = await context.session.create_message(
+-            messages=current_messages,
++            current_messages,
+             system_prompt=system_prompt,
+             temperature=temperature,
+             max_tokens=effective_max_tokens,
+@@ -559,15 +550,10 @@
+     # Execute tools and add results to history
+     step_tool_calls = extract_tool_calls(response)
+     if step_tool_calls:
+-        effective_mask = (
+-            mask_error_details
+-            if mask_error_details is not None
+-            else settings.mask_error_details
+-        )
+         tool_results: list[ToolResultContent] = await execute_tools(
+             step_tool_calls,
+             tool_map,
+-            mask_error_details=effective_mask,
++            mask_error_details=mask_error_details,
+             tool_concurrency=tool_concurrency,
+         )
+ 
+@@ -582,7 +568,7 @@
+     return SampleStep(response=response, history=current_messages)
+ 
+ 
+-async def sample_impl(
++async def sample_impl[T](
+     context: Context,
+     messages: str | Sequence[str | SamplingMessage],
+     *,
+@@ -592,10 +578,10 @@
+     model_preferences: ModelPreferences | str | list[str] | None = None,
+     tools: Sequence[SamplingTool | FunctionTool | TransformedTool | Callable[..., Any]]
+     | None = None,
+-    result_type: type[ResultT] | None = None,
++    result_type: type[T] | None = None,
+     mask_error_details: bool | None = None,
+     tool_concurrency: int | None = None,
+-) -> SamplingResult[ResultT]:
++) -> SamplingResult[T]:
+     """Implementation of Context.sample().
+ 
+     Send a sampling request to the client and await the response. This method
+@@ -662,9 +648,7 @@
+ 
+                     try:
+                         validated_result = type_adapter.validate_python(input_data)
+-                        text = json.dumps(
+-                            type_adapter.dump_python(validated_result, mode="json")
+-                        )
++                        text = type_adapter.dump_json(validated_result).decode()
+                         return SamplingResult(
+                             text=text,
+                             result=validated_result,
+@@ -733,7 +717,7 @@
+                 continue
+             return SamplingResult(
+                 text=step.text,
+-                result=cast(ResultT, step.text if step.text else ""),
++                result=step.text if step.text else "",
+                 history=step.history,
+             )
+ 

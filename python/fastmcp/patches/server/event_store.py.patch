@@ -1,0 +1,68 @@
+--- work/sources/fastmcp_slim/fastmcp/server/event_store.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/event_store.py	2026-05-17 15:37:31.775669036 +0000
+@@ -5,9 +5,6 @@
+ AsyncKeyValue protocol, allowing users to configure any compatible backend
+ (in-memory, Redis, etc.) following the same pattern as ResponseCachingMiddleware.
+ """
+-
+-from __future__ import annotations
+-
+ from uuid import uuid4
+ 
+ from key_value.aio.adapters.pydantic import PydanticAdapter
+@@ -70,30 +67,34 @@
+     def __init__(
+         self,
+         storage: AsyncKeyValue | None = None,
++        /,
+         max_events_per_stream: int = 100,
+         ttl: int | None = 3600,
+     ):
+-        self._storage: AsyncKeyValue = storage or MemoryStore()
++        if not storage:
++            try:
++                from key_value.aio.stores.memory import MemoryStore
++
++                storage = MemoryStore()
++            except ImportError as e:
++                raise e
++        self._storage: AsyncKeyValue = storage
+         self._max_events_per_stream = max_events_per_stream
+         self._ttl = ttl
+ 
+         # PydanticAdapter for type-safe storage (following OAuth proxy pattern)
+-        self._event_store: PydanticAdapter[EventEntry] = PydanticAdapter[EventEntry](
++        self._event_store = PydanticAdapter[EventEntry](
+             key_value=self._storage,
+             pydantic_model=EventEntry,
+             default_collection="fastmcp_events",
+         )
+-        self._stream_store: PydanticAdapter[StreamEventList] = PydanticAdapter[
+-            StreamEventList
+-        ](
++        self._stream_store = PydanticAdapter[StreamEventList](
+             key_value=self._storage,
+             pydantic_model=StreamEventList,
+             default_collection="fastmcp_streams",
+         )
+ 
+-    async def store_event(
+-        self, stream_id: StreamId, message: JSONRPCMessage | None
+-    ) -> EventId:
++    async def store_event(self, stream_id: StreamId, message: JSONRPCMessage | None, /) -> EventId:
+         """Store an event and return its ID.
+ 
+         Args:
+@@ -132,11 +133,7 @@
+ 
+         return event_id
+ 
+-    async def replay_events_after(
+-        self,
+-        last_event_id: EventId,
+-        send_callback: EventCallback,
+-    ) -> StreamId | None:
++    async def replay_events_after(self, last_event_id: EventId, send_callback: EventCallback, /) -> StreamId | None:
+         """Replay events that occurred after the specified event ID.
+ 
+         Args:

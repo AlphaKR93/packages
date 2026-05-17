@@ -1,11 +1,106 @@
 --- work/sources/fastmcp_slim/fastmcp/server/providers/openapi/components.py	2026-05-16 04:15:58.927524368 +0000
-+++ work/patched/fastmcp_slim/fastmcp/server/providers/openapi/components.py	2026-05-17 03:46:17.171650111 +0000
-@@ -27,7 +27,7 @@
++++ work/patched/fastmcp_slim/fastmcp/server/providers/openapi/components.py	2026-05-17 15:37:31.559669066 +0000
+@@ -1,14 +1,11 @@
+ """OpenAPI component classes: Tool, Resource, and ResourceTemplate."""
+-
+-from __future__ import annotations
+-
+-import json
+ import re
+ import warnings
+ from collections.abc import Callable
+-from typing import TYPE_CHECKING, Any
++from typing import Any
+ 
+ import httpx
++import pydantic_core
+ from mcp.types import ToolAnnotations
+ from pydantic.networks import AnyUrl
+ 
+@@ -21,13 +18,13 @@
+     ResourceTemplate,
+ )
+ from fastmcp.server.dependencies import get_http_headers
+-from fastmcp.server.tasks.config import TaskConfig
+-from fastmcp.tools.base import Tool, ToolResult
++from fastmcp.tools import Tool, ToolResult
+ from fastmcp.utilities.logging import get_logger
  from fastmcp.utilities.openapi import HTTPRoute
  from fastmcp.utilities.openapi.director import RequestDirector
++from fastmcp.utilities.tasks import TaskConfig
  
 -if TYPE_CHECKING:
 +if __debug__ and __import__("typing").TYPE_CHECKING:
      from fastmcp.server import Context
  
  _SAFE_HEADERS = frozenset(
+@@ -212,7 +209,7 @@
+ 
+             # Try to parse as JSON first
+             try:
+-                result = response.json()
++                result = pydantic_core.from_json(response.content)
+ 
+                 # Handle structured content based on output schema
+                 if self.output_schema is not None:
+@@ -232,7 +229,7 @@
+                     structured_output = {"result": structured_output}
+ 
+                 return ToolResult(structured_content=structured_output)
+-            except json.JSONDecodeError:
++            except ValueError:
+                 return ToolResult(content=response.text)
+ 
+         except httpx.HTTPStatusError as e:
+@@ -240,9 +237,9 @@
+                 f"HTTP error {e.response.status_code}: {e.response.reason_phrase}"
+             )
+             try:
+-                error_data = e.response.json()
++                error_data = pydantic_core.from_json(e.response.content)
+                 error_message += f" - {error_data}"
+-            except (json.JSONDecodeError, ValueError):
++            except (ValueError, ValueError):
+                 if e.response.text:
+                     error_message += f" - {e.response.text}"
+             raise ValueError(error_message) from e
+@@ -327,27 +324,11 @@
+ 
+             if "application/json" in content_type:
+                 result = response.json()
+-                return ResourceResult(
+-                    contents=[
+-                        ResourceContent(
+-                            content=json.dumps(result), mime_type="application/json"
+-                        )
+-                    ]
+-                )
++                return ResourceResult([ResourceContent(pydantic_core.to_json(result), mime_type="application/json")])
+             elif any(ct in content_type for ct in ["text/", "application/xml"]):
+-                return ResourceResult(
+-                    contents=[
+-                        ResourceContent(content=response.text, mime_type=self.mime_type)
+-                    ]
+-                )
++                return ResourceResult(contents=[ResourceContent(response.text, mime_type=self.mime_type)])
+             else:
+-                return ResourceResult(
+-                    contents=[
+-                        ResourceContent(
+-                            content=response.content, mime_type=self.mime_type
+-                        )
+-                    ]
+-                )
++                return ResourceResult(contents=[ResourceContent(response.content, mime_type=self.mime_type)])
+ 
+         except httpx.HTTPStatusError as e:
+             error_message = (
+@@ -356,7 +337,7 @@
+             try:
+                 error_data = e.response.json()
+                 error_message += f" - {error_data}"
+-            except (json.JSONDecodeError, ValueError):
++            except ValueError:
+                 if e.response.text:
+                     error_message += f" - {e.response.text}"
+             raise ValueError(error_message) from e

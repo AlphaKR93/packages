@@ -1,0 +1,22 @@
+--- work/sources/fastmcp_slim/fastmcp/server/middleware/caching.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/middleware/caching.py	2026-05-17 15:43:43.043635099 +0000
+@@ -18,15 +18,15 @@
+ from pydantic import Field
+ from typing_extensions import NotRequired, Self, override
+ 
+-from fastmcp.prompts.base import Message, Prompt, PromptResult
+-from fastmcp.resources.base import Resource, ResourceContent, ResourceResult
++from fastmcp.prompts import Message, Prompt, PromptResult
++from fastmcp.resources import Resource, ResourceContent, ResourceResult
+ from fastmcp.server.dependencies import get_access_token
+ from fastmcp.server.middleware.middleware import CallNext, Middleware, MiddlewareContext
+-from fastmcp.tools.base import Tool, ToolResult
++from fastmcp.tools import Tool, ToolResult
+ from fastmcp.utilities.logging import get_logger
+ from fastmcp.utilities.types import FastMCPBaseModel
+ 
+-logger: Logger = get_logger(name=__name__)
++logger: Logger = get_logger(__name__)
+ 
+ # Constants
+ ONE_HOUR_IN_SECONDS = 3600

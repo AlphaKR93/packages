@@ -1,0 +1,24 @@
+--- work/sources/fastmcp_slim/fastmcp/utilities/openapi/director.py	2026-05-16 04:15:58.931524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/utilities/openapi/director.py	2026-05-17 11:12:45.709148957 +0000
+@@ -1,11 +1,11 @@
+ """Request director using openapi-core for stateless HTTP request building."""
+ 
+ import io
+-import json as _json
+ from typing import Any, ClassVar
+ from urllib.parse import quote, urljoin
+ 
+ import httpx
++import pydantic_core
+ from jsonschema_path import SchemaPath
+ 
+ from fastmcp.utilities.logging import get_logger
+@@ -132,7 +132,7 @@
+                     # or application/merge-patch+json need an explicit
+                     # Content-Type header since httpx's json= always
+                     # sets application/json.
+-                    content = _json.dumps(body, allow_nan=False).encode("utf-8")
++                    content = pydantic_core.to_json(body, inf_nan_mode='null')
+                     headers = dict(headers) if headers else {}
+                     headers["Content-Type"] = raw_content_type
+                 else:

@@ -10,6 +10,8 @@ from fastmcp.resources.template import match_uri_template
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
 
+from .function_template import FunctionResourceTemplate
+
 
 class ResourceTemplate(ABC, FastMCPComponent):
     """A template for dynamically creating resources."""
