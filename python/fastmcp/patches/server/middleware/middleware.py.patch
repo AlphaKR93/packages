@@ -1,0 +1,11 @@
+--- work/sources/fastmcp_slim/fastmcp/server/middleware/middleware.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/middleware/middleware.py	2026-05-17 03:46:17.163650112 +0000
+@@ -22,7 +22,7 @@
+ from fastmcp.resources.template import ResourceTemplate
+ from fastmcp.tools.base import Tool, ToolResult
+ 
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
+     from fastmcp.server.context import Context
+ 
+ __all__ = [

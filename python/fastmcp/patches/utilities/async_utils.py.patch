@@ -1,0 +1,76 @@
+--- work/sources/fastmcp_slim/fastmcp/utilities/async_utils.py	2026-05-16 04:15:58.931524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/utilities/async_utils.py	2026-05-17 03:52:16.891610943 +0000
+@@ -2,16 +2,16 @@
+ 
+ import functools
+ import inspect
+-from collections.abc import Awaitable, Callable
+-from typing import Any, Literal, TypeVar, overload
+ 
+ import anyio
+ from anyio.to_thread import run_sync as run_sync_in_threadpool
+ 
+-T = TypeVar("T")
+ 
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Awaitable
+ 
+-def is_coroutine_function(fn: Any) -> bool:
++
++def is_coroutine_function(fn, /) -> bool:
+     """Check if a callable is a coroutine function, unwrapping functools.partial.
+ 
+     ``inspect.iscoroutinefunction`` returns ``False`` for
+@@ -23,9 +23,7 @@
+     return inspect.iscoroutinefunction(fn)
+ 
+ 
+-async def call_sync_fn_in_threadpool(
+-    fn: Callable[..., Any], *args: Any, **kwargs: Any
+-) -> Any:
++async def call_sync_fn_in_threadpool(fn, /, *args, **kwargs):
+     """Call a sync function in a threadpool to avoid blocking the event loop.
+ 
+     Uses anyio.to_thread.run_sync which properly propagates contextvars,
+@@ -34,24 +32,7 @@
+     return await run_sync_in_threadpool(functools.partial(fn, *args, **kwargs))
+ 
+ 
+-@overload
+-async def gather(
+-    *awaitables: Awaitable[T],
+-    return_exceptions: Literal[True],
+-) -> list[T | BaseException]: ...
+-
+-
+-@overload
+-async def gather(
+-    *awaitables: Awaitable[T],
+-    return_exceptions: Literal[False] = ...,
+-) -> list[T]: ...
+-
+-
+-async def gather(
+-    *awaitables: Awaitable[T],
+-    return_exceptions: bool = False,
+-) -> list[T] | list[T | BaseException]:
++async def gather[T](*awaitables: Awaitable[T], return_exceptions: bool = False):
+     """Run awaitables concurrently and return results in order.
+ 
+     Uses anyio TaskGroup for structured concurrency.
+@@ -66,12 +47,12 @@
+     """
+     results: list[T | BaseException] = [None] * len(awaitables)  # type: ignore[assignment]  # ty:ignore[invalid-assignment]
+ 
+-    async def run_at(i: int, aw: Awaitable[T]) -> None:
++    async def run_at(i_: int, aw_: Awaitable[T]) -> None:
+         try:
+-            results[i] = await aw
++            results[i_] = await aw_
+         except BaseException as e:
+             if return_exceptions:
+-                results[i] = e
++                results[i_] = e
+             else:
+                 raise
+ 

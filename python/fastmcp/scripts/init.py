@@ -61,8 +61,11 @@ def main():
     if not patches.exists(): raise RuntimeError(f"{patches} not exists")
     elif not patches.is_dir(): raise RuntimeError(f"{patches} is not a directory")
 
+    entire = []
+    failed = []
     for patch_file in sorted(patches.rglob("*.patch")):
         rel_patch = patch_file.relative_to(patches)
+        entire.append(rel_patch)
         # e.g. foo.py.patch → foo.py
         target_rel = rel_patch.with_suffix("")
         target = dst_module / target_rel
@@ -76,7 +79,13 @@ def main():
             text=True,
         )
         if result.returncode != 0:
-            raise RuntimeError(f"Failed to apply {rel_patch}:\n{result.stderr}")
+            stdout_ = "\n\t".join(result.stdout.splitlines())
+            print(f"Failed to apply {rel_patch}:\n\t{stdout_}")
+            failed.append(rel_patch)
+    if failed:
+        print(f"\n\nFailed to apply {len(failed)} out of {len(entire)}:")
+        for fail in failed:
+            print(f"\t{fail}")
 
 if __name__ == "__main__":
     main()

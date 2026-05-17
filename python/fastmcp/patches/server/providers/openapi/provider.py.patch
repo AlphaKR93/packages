@@ -1,0 +1,11 @@
+--- work/sources/fastmcp_slim/fastmcp/server/providers/openapi/provider.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/providers/openapi/provider.py	2026-05-17 03:46:17.171650111 +0000
+@@ -28,7 +28,7 @@
+     RouteMapFn,
+     _determine_route_type,
+ )
+-from fastmcp.tools.base import Tool
++from fastmcp.tools import Tool
+ from fastmcp.utilities.components import FastMCPComponent
+ from fastmcp.utilities.logging import get_logger
+ from fastmcp.utilities.openapi import (

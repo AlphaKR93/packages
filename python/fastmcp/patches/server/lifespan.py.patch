@@ -1,0 +1,11 @@
+--- work/sources/fastmcp_slim/fastmcp/server/lifespan.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/lifespan.py	2026-05-17 03:46:17.163650112 +0000
+@@ -48,7 +48,7 @@
+ from contextlib import AbstractAsyncContextManager, asynccontextmanager
+ from typing import TYPE_CHECKING, Any
+ 
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
+     from fastmcp.server.server import FastMCP
+ 
+ 

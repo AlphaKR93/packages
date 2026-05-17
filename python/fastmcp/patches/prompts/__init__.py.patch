@@ -1,0 +1,18 @@
+--- work/sources/fastmcp_slim/fastmcp/prompts/__init__.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/prompts/__init__.py	2026-05-17 03:46:17.147650114 +0000
+@@ -1,13 +1,6 @@
+-import sys
++from alpha93.fastmcp._internal.components.prompts import FunctionPrompt, Prompt, prompt
+ 
+-from .function_prompt import FunctionPrompt, prompt
+-from .base import Message, Prompt, PromptArgument, PromptMessage, PromptResult
+-
+-# Backward compat: prompt.py was renamed to base.py to stop Pyright from resolving
+-# `from fastmcp.prompts import prompt` as the submodule instead of the decorator function.
+-# This shim keeps `from fastmcp.prompts.prompt import Prompt` working at runtime.
+-# Safe to remove once we're confident no external code imports from the old path.
+-sys.modules[f"{__name__}.prompt"] = sys.modules[f"{__name__}.base"]
++from .base import Message, PromptArgument, PromptMessage, PromptResult
+ 
+ __all__ = [
+     "FunctionPrompt",

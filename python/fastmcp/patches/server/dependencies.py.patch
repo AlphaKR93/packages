@@ -1,45 +1,42 @@
---- work/sources/src/fastmcp/server/dependencies.py	2026-05-03 12:29:52.959915858 +0900
-+++ work/patched/src/fastmcp/server/dependencies.py	2026-05-03 12:57:19.579459156 +0900
-@@ -5,19 +5,16 @@
+--- work/sources/fastmcp_slim/fastmcp/server/dependencies.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/dependencies.py	2026-05-17 03:53:27.351603747 +0000
+@@ -4,9 +4,6 @@
+ using the uncalled-for DI engine. Only task-related dependencies (CurrentDocket,
  CurrentWorker) and background task execution require fastmcp[tasks].
  """
- 
+-
 -from __future__ import annotations
 -
  import contextlib
  import importlib.metadata
  import inspect
- import weakref
--from collections.abc import AsyncGenerator, Callable
- from contextlib import AsyncExitStack, asynccontextmanager
- from contextvars import ContextVar
- from datetime import datetime, timezone
+@@ -18,6 +15,7 @@
  from functools import lru_cache
  from types import TracebackType
--from typing import TYPE_CHECKING, Any, Protocol, cast, get_type_hints, runtime_checkable
-+from typing import TYPE_CHECKING, Protocol, cast, get_type_hints, runtime_checkable
+ from typing import TYPE_CHECKING, Any, Protocol, cast, get_type_hints, runtime_checkable
++from warnings import deprecated
  
  from mcp.server.auth.middleware.auth_context import (
      get_access_token as _sdk_get_access_token,
-@@ -27,7 +24,6 @@
-     AccessToken as _SDKAccessToken,
+@@ -41,9 +39,8 @@
  )
- from mcp.server.lowlevel.server import request_ctx
--from packaging.version import Version
- from starlette.requests import Request
- from uncalled_for import Dependency, get_dependency_parameters
- from uncalled_for.resolution import _Depends
-@@ -42,6 +38,9 @@
  from fastmcp.utilities.types import find_kwarg_by_type, is_class_member_of_type
  
- if TYPE_CHECKING:
-+    from collections.abc import AsyncGenerator, Callable
-+    from typing import Any, Final
-+
-     from docket import Docket
-     from docket.worker import Worker
+-if TYPE_CHECKING:
+-    from docket import Docket
+-    from docket.worker import Worker
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from typing import Never    # TEMP: Docket
  
-@@ -105,10 +104,7 @@
+     from fastmcp.server.context import Context
+     from fastmcp.server.server import FastMCP
+@@ -96,18 +93,11 @@
+     "server", default=None
+ )
+ 
+-_current_docket: ContextVar[Docket | None] = ContextVar("docket", default=None)
+-_current_worker: ContextVar[Worker | None] = ContextVar("worker", default=None)
+-
  
  # --- Docket availability check ---
  
@@ -47,11 +44,13 @@
 -
 -
 -_MIN_DOCKET_VERSION = Version("0.19.0")
-+_DOCKET_AVAILABLE: Final[bool] = False
+-
  
- 
++@deprecated("Unused")
  def is_docket_available() -> bool:
-@@ -125,19 +121,7 @@
+     """Check if a compatible pydocket (>= 0.19.0) is installed and importable.
+ 
+@@ -122,56 +112,18 @@
      Any of those failing means we treat docket as unavailable and fall back
      to the no-tasks code paths instead of crashing deep inside a request.
      """
@@ -71,4 +70,160 @@
 +    return False
  
  
- def require_docket(feature: str) -> None:
+-def require_docket(feature: str) -> None:
++@deprecated("Unused")
++def require_docket(feature: str) -> Never:
+     """Raise ImportError with install instructions if docket not available.
+ 
+     Args:
+         feature: Description of what requires docket (e.g., "`task=True`",
+                  "CurrentDocket()"). Will be included in the error message.
+     """
+-    if is_docket_available():
+-        return
+-
+-    try:
+-        installed = importlib.metadata.version("pydocket")
+-    except importlib.metadata.PackageNotFoundError:
+-        installed = None
+-
+-    if installed is None:
+-        detail = (
+-            "FastMCP background tasks require the `tasks` extra. "
+-            "Install with: pip install 'fastmcp[tasks]'."
+-        )
+-    else:
+-        detail = (
+-            f"FastMCP background tasks require pydocket>={_MIN_DOCKET_VERSION}, "
+-            f"but pydocket {installed} is installed (likely pulled in by another "
+-            f"package). Upgrade with: pip install -U 'pydocket>={_MIN_DOCKET_VERSION}'."
+-        )
+-
+-    raise ImportError(f"{detail} (Triggered by {feature})")
+-
+-
+-# Import Progress separately — it's docket-specific, not part of uncalled-for
+-try:
+-    from docket.dependencies import Progress as DocketProgress
+-except ImportError:
+-    DocketProgress = None  # type: ignore[assignment]  # ty:ignore[invalid-assignment]
++    raise ImportError(f"FastMCP background tasks require the `tasks` extra. (Triggered by {feature})")
+ 
+ 
+ # --- Context utilities ---
+@@ -618,7 +570,7 @@
+     }
+     wrapper.__name__ = getattr(fn, "__name__", "wrapper")
+     wrapper.__doc__ = getattr(fn, "__doc__", None)
+-    wrapper.__module__ = fn.__module__
++    wrapper.__module__ = getattr(fn, "__module__")
+     wrapper.__qualname__ = getattr(fn, "__qualname__", wrapper.__qualname__)
+ 
+     return wrapper
+@@ -870,37 +822,8 @@
+     return cast("Context | None", _OptionalCurrentContext())
+ 
+ 
+-class _CurrentDocket(Dependency["Docket"]):
+-    """Async context manager for Docket dependency."""
+-
+-    async def __aenter__(self) -> Docket:
+-        require_docket("CurrentDocket()")
+-        # Check server instance first, fall back to ContextVar for mounted children
+-        # whose parent owns the Docket
+-        try:
+-            docket = get_server()._docket
+-        except RuntimeError:
+-            docket = None
+-        if docket is None:
+-            docket = _current_docket.get()
+-        if docket is None:
+-            raise RuntimeError(
+-                "No Docket instance found. Docket is only initialized when there are "
+-                "task-enabled components (task=True). Add task=True to a component "
+-                "to enable Docket infrastructure."
+-            )
+-        return docket
+-
+-    async def __aexit__(
+-        self,
+-        exc_type: type[BaseException] | None,
+-        exc_value: BaseException | None,
+-        traceback: TracebackType | None,
+-    ) -> None:
+-        pass
+-
+-
+-def CurrentDocket() -> Docket:
++@deprecated("Unused")
++def CurrentDocket():
+     """Get the current Docket instance managed by FastMCP.
+ 
+     This dependency provides access to the Docket instance that FastMCP
+@@ -924,39 +847,10 @@
+         ```
+     """
+     require_docket("CurrentDocket()")
+-    return cast("Docket", _CurrentDocket())
+-
+-
+-class _CurrentWorker(Dependency["Worker"]):
+-    """Async context manager for Worker dependency."""
+-
+-    async def __aenter__(self) -> Worker:
+-        require_docket("CurrentWorker()")
+-        # Check server instance first, fall back to ContextVar for mounted children
+-        try:
+-            worker = get_server()._worker
+-        except RuntimeError:
+-            worker = None
+-        if worker is None:
+-            worker = _current_worker.get()
+-        if worker is None:
+-            raise RuntimeError(
+-                "No Worker instance found. Worker is only initialized when there are "
+-                "task-enabled components (task=True). Add task=True to a component "
+-                "to enable Docket infrastructure."
+-            )
+-        return worker
+-
+-    async def __aexit__(
+-        self,
+-        exc_type: type[BaseException] | None,
+-        exc_value: BaseException | None,
+-        traceback: TracebackType | None,
+-    ) -> None:
+-        pass
+ 
+ 
+-def CurrentWorker() -> Worker:
++@deprecated("Unused")
++def CurrentWorker():
+     """Get the current Docket Worker instance managed by FastMCP.
+ 
+     This dependency provides access to the Worker instance that FastMCP
+@@ -979,7 +873,6 @@
+         ```
+     """
+     require_docket("CurrentWorker()")
+-    return cast("Worker", _CurrentWorker())
+ 
+ 
+ class _CurrentFastMCP(Dependency["FastMCP"]):
+@@ -1216,16 +1109,6 @@
+             raise RuntimeError("Progress dependency requires a FastMCP server context.")
+ 
+         instance = Progress()
+-
+-        if is_docket_available():
+-            try:
+-                from docket.dependencies import current_execution
+-
+-                instance._impl = current_execution.get().progress
+-                return instance
+-            except LookupError:
+-                pass
+-
+         instance._impl = InMemoryProgress()
+         return instance
+ 

@@ -1,0 +1,51 @@
+--- work/sources/fastmcp_slim/fastmcp/utilities/async_utils.pyi	1970-01-01 00:00:00.000000000 +0000
++++ work/patched/fastmcp_slim/fastmcp/utilities/async_utils.pyi	1970-01-01 00:00:00.000000000 +0000
+@@ -0,0 +1,48 @@
++from collections.abc import Awaitable, Sequence
++from typing import overload, Literal, Any, Callable
++
++
++def is_coroutine_function(fn: Any, /) -> bool:
++    """Check if a callable is a coroutine function, unwrapping functools.partial.
++
++    ``inspect.iscoroutinefunction`` returns ``False`` for
++    ``functools.partial`` objects wrapping an async function on Python < 3.12.
++    This helper unwraps any layers of ``partial`` before checking.
++    """
++
++
++async def call_sync_fn_in_threadpool[**P, T](fn: Callable[P, T], /, *args: P.args, **kwargs: P.kwargs) -> T:
++    """Call a sync function in a threadpool to avoid blocking the event loop.
++
++    Uses anyio.to_thread.run_sync which properly propagates contextvars,
++    making this safe for functions that depend on context (like dependency injection).
++    """
++
++
++@overload
++async def gather[T](
++        *awaitables: Awaitable[T],
++        return_exceptions: Literal[True],
++) -> Sequence[T | BaseException]: ...
++@overload
++async def gather[T](
++        *awaitables: Awaitable[T],
++        return_exceptions: Literal[False] = ...,
++) -> Sequence[T]: ...
++@overload
++async def gather[T](
++        *awaitables: Awaitable[T],
++        return_exceptions: bool = False,
++) -> Sequence[T] | Sequence[T | BaseException]:
++    """Run awaitables concurrently and return results in order.
++
++    Uses anyio TaskGroup for structured concurrency.
++
++    Args:
++        *awaitables: Awaitables to run concurrently
++        return_exceptions: If True, exceptions are returned in results.
++                          If False, first exception cancels all and raises.
++
++    Returns:
++        List of results in the same order as input awaitables.
++    """

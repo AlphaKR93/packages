@@ -1,11 +1,11 @@
---- work/sources/src/fastmcp/server/mixins/lifespan.py	2026-05-03 12:29:52.959915858 +0900
-+++ work/patched/src/fastmcp/server/mixins/lifespan.py	2026-05-03 13:28:08.182944239 +0900
-@@ -65,8 +65,6 @@
-                 task_components = list(await self.get_tasks())
-             except Exception as e:
-                 logger.warning(f"Failed to get tasks: {e}")
--                if fastmcp.settings.mounted_components_raise_on_load_error:
--                    raise
-                 task_components = []
+--- work/sources/fastmcp_slim/fastmcp/server/mixins/lifespan.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/mixins/lifespan.py	2026-05-17 03:46:17.163650112 +0000
+@@ -15,7 +15,7 @@
+ import fastmcp
+ from fastmcp.utilities.logging import get_logger
  
-             # If no task-enabled components, skip Docket infrastructure but still
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
+     from docket import Docket
+ 
+     from fastmcp.server.server import FastMCP

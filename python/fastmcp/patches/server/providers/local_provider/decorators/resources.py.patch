@@ -1,77 +1,11 @@
---- work/sources/src/fastmcp/server/providers/local_provider/decorators/resources.py	2026-05-03 12:29:52.959915858 +0900
-+++ work/patched/src/fastmcp/server/providers/local_provider/decorators/resources.py	2026-05-03 13:32:59.806864506 +0900
-@@ -189,54 +189,26 @@
-                     f"See https://gofastmcp.com/servers/resources#using-with-methods"
-                 )
+--- work/sources/fastmcp_slim/fastmcp/server/providers/local_provider/decorators/resources.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/providers/local_provider/decorators/resources.py	2026-05-17 03:46:17.167650111 +0000
+@@ -20,7 +20,7 @@
+ from fastmcp.server.auth.authorization import AuthCheck
+ from fastmcp.server.tasks.config import TaskConfig
  
--            if fastmcp.settings.decorator_mode == "object":
--                create_resource = standalone_resource(
--                    uri,
--                    name=name,
--                    version=version,
--                    title=title,
--                    description=description,
--                    icons=icons,
--                    mime_type=mime_type,
--                    tags=tags,
--                    annotations=annotations,
--                    meta=meta,
--                    task=resolved_task,
--                    auth=auth,
--                )
--                obj = create_resource(fn)
--                # In legacy mode, standalone_resource always returns a component
--                assert isinstance(obj, (Resource, ResourceTemplate))
--                if isinstance(obj, ResourceTemplate):
--                    self.add_template(obj)
--                    if not enabled:
--                        self.disable(keys={obj.key})
--                else:
--                    self.add_resource(obj)
--                    if not enabled:
--                        self.disable(keys={obj.key})
--                return obj
--            else:
--                from fastmcp.resources.function_resource import ResourceMeta
-+            from fastmcp.resources.function_resource import ResourceMeta
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
+     from fastmcp.server.providers.local_provider import LocalProvider
  
--                metadata = ResourceMeta(
--                    uri=uri,
--                    name=name,
--                    version=version,
--                    title=title,
--                    description=description,
--                    icons=icons,
--                    tags=tags,
--                    mime_type=mime_type,
--                    annotations=annotations,
--                    meta=meta,
--                    task=task,
--                    auth=auth,
--                    enabled=enabled,
--                )
--                target = fn.__func__ if hasattr(fn, "__func__") else fn
--                target.__fastmcp__ = metadata  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
--                self.add_resource(fn)
--                return fn
-+            metadata = ResourceMeta(
-+                uri=uri,
-+                name=name,
-+                version=version,
-+                title=title,
-+                description=description,
-+                icons=icons,
-+                tags=tags,
-+                mime_type=mime_type,
-+                annotations=annotations,
-+                meta=meta,
-+                task=task,
-+                auth=auth,
-+                enabled=enabled,
-+            )
-+            target = fn.__func__ if hasattr(fn, "__func__") else fn
-+            target.__fastmcp__ = metadata  # type: ignore[attr-defined]  # ty:ignore[unresolved-attribute]
-+            self.add_resource(fn)
-+            return fn
- 
-         return decorator
+ F = TypeVar("F", bound=Callable[..., Any])

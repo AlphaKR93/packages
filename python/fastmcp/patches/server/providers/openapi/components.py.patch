@@ -1,27 +1,11 @@
---- work/sources/src/fastmcp/server/providers/openapi/components.py	2026-05-03 12:29:52.959915858 +0900
-+++ work/patched/src/fastmcp/server/providers/openapi/components.py	2026-05-03 13:32:59.850864495 +0900
-@@ -151,16 +151,7 @@
-         output_schema: dict[str, Any] | None = None,
-         tags: set[str] | None = None,
-         annotations: ToolAnnotations | None = None,
--        serializer: Callable[[Any], str] | None = None,  # Deprecated
-     ):
--        if serializer is not None and fastmcp.settings.deprecation_warnings:
--            warnings.warn(
--                "The `serializer` parameter is deprecated. "
--                "Return ToolResult from your tools for full control over serialization. "
--                "See https://gofastmcp.com/servers/tools#custom-serialization for migration examples.",
--                FastMCPDeprecationWarning,
--                stacklevel=2,
--            )
-         super().__init__(
-             name=name,
-             description=description,
-@@ -168,7 +159,6 @@
-             output_schema=output_schema,
-             tags=tags or set(),
-             annotations=annotations,
--            serializer=serializer,
-         )
-         self._client = client
-         self._route = route
+--- work/sources/fastmcp_slim/fastmcp/server/providers/openapi/components.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/providers/openapi/components.py	2026-05-17 03:46:17.171650111 +0000
+@@ -27,7 +27,7 @@
+ from fastmcp.utilities.openapi import HTTPRoute
+ from fastmcp.utilities.openapi.director import RequestDirector
+ 
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
+     from fastmcp.server import Context
+ 
+ _SAFE_HEADERS = frozenset(

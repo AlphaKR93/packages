@@ -1,0 +1,11 @@
+--- work/sources/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py	2026-05-17 03:46:17.171650111 +0000
+@@ -13,7 +13,7 @@
+ from fastmcp.server.providers.base import Provider
+ from fastmcp.utilities.versions import VersionSpec
+ 
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
+     from fastmcp.prompts.base import Prompt
+     from fastmcp.resources.base import Resource
+     from fastmcp.resources.template import ResourceTemplate

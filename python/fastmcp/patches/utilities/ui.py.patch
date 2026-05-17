@@ -1,0 +1,64 @@
+--- work/sources/fastmcp_slim/fastmcp/utilities/ui.py	2026-05-16 04:15:58.931524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/utilities/ui.py	2026-05-17 03:46:17.195650109 +0000
+@@ -4,9 +4,6 @@
+ This module provides reusable HTML/CSS components for OAuth callbacks,
+ consent pages, and other user-facing interfaces.
+ """
+-
+-from __future__ import annotations
+-
+ import html
+ 
+ from starlette.responses import HTMLResponse
+@@ -452,6 +449,7 @@
+ 
+ def create_page(
+     content: str,
++    /,
+     title: str = "FastMCP",
+     additional_styles: str = "",
+     csp_policy: str = "default-src 'none'; style-src 'unsafe-inline'; img-src https: data:; base-uri 'none'",
+@@ -513,7 +511,7 @@
+     return f'<img src="{html.escape(url)}" alt="{alt}" class="logo" />'
+ 
+ 
+-def create_status_message(message: str, is_success: bool = True) -> str:
++def create_status_message(message: str, /, is_success: bool = True) -> str:
+     """
+     Create a status message with icon.
+ 
+@@ -538,6 +536,7 @@
+ 
+ def create_info_box(
+     content: str,
++    /,
+     is_error: bool = False,
+     centered: bool = False,
+     monospace: bool = False,
+@@ -565,7 +564,7 @@
+     return f'<div class="{class_str}">{content}</div>'
+ 
+ 
+-def create_detail_box(rows: list[tuple[str, str]]) -> str:
++def create_detail_box(rows: list[tuple[str, str]], /) -> str:
+     """
+     Create a detail box with key-value pairs.
+ 
+@@ -588,7 +587,7 @@
+     return f'<div class="detail-box">{rows_html}</div>'
+ 
+ 
+-def create_button_group(buttons: list[tuple[str, str, str]]) -> str:
++def create_button_group(buttons: list[tuple[str, str, str]], /) -> str:
+     """
+     Create a group of buttons.
+ 
+@@ -606,7 +605,7 @@
+     return f'<div class="button-group">{buttons_html}</div>'
+ 
+ 
+-def create_secure_html_response(html: str, status_code: int = 200) -> HTMLResponse:
++def create_secure_html_response(html: str, /, status_code: int = 200) -> HTMLResponse:
+     """
+     Create an HTMLResponse with security headers.
+ 

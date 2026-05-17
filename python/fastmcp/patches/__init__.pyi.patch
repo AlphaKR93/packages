@@ -1,0 +1,10 @@
+--- work/sources/fastmcp_slim/fastmcp/__init__.pyi	1970-01-01 00:00:00.000000000 +0000
++++ work/patched/fastmcp_slim/fastmcp/__init__.pyi	1970-01-01 00:00:00.000000000 +0000
+@@ -0,0 +1,7 @@
++from .server.context import Context
++from .server.server import FastMCP
++from .exceptions import FastMCPDeprecationWarning
++
++__all__ = ("Context", "FastMCP", "FastMCPDeprecationWarning",)
++
++__version__: str

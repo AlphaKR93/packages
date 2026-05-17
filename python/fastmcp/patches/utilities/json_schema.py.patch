@@ -1,0 +1,19 @@
+--- work/sources/fastmcp_slim/fastmcp/utilities/json_schema.py	2026-05-16 04:15:58.931524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/utilities/json_schema.py	2026-05-17 03:46:17.187650109 +0000
+@@ -1,12 +1,13 @@
+-from __future__ import annotations
+-
+ import copy
+ from collections import defaultdict
+-from typing import Any
+ 
+ from jsonref import JsonRefError, replace_refs
+ 
+ 
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from typing import Any
++
++
+ def _defs_have_cycles(defs: dict[str, Any]) -> bool:
+     """Check whether any definitions in ``$defs`` form a reference cycle.
+ 

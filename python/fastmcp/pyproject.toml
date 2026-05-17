@@ -18,14 +18,14 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "fastmcp",
+    "fastmcp-slim[server]",
 ]
 
 [tool.uv]
 exclude-dependencies = ["uvicorn", "starlette"]
 
 [tool.uv.sources]
-fastmcp = { path = "work/patched" }
+fastmcp-slim = { path = "work/patched/fastmcp_slim" }
 alpha93 = { path = "../alpha93" }
 starlette-minimal = { path = "../starlette" }
 
@@ -34,26 +34,59 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
-path = "work/patched/src/fastmcp/__init__.py"
+path = "work/patched/fastmcp_slim/fastmcp/__init__.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/alpha93"]
 
 [tool.hatch.build.targets.wheel.force-include]
-"src/fastmcp" = "fastmcp"
+"src/fastmcp_slim/fastmcp" = "fastmcp"
 
 [tool.hatch.build.hooks.custom]
 path = "scripts/hooks/hatch_build.py"
 
 [tool.patcher]
-module-source = "src/fastmcp"
+module-source = "fastmcp_slim/fastmcp"
 excludes = [
+    "apps/**/*",
+    "client/**/*",
     "contrib/**/*",
     "cli/**/*",
     "experimental/**/*",
+    "server/auth/providers/auth0.py",
+    "server/auth/providers/aws.py",
+    "server/auth/providers/azure.py",
+    "server/auth/providers/clerk.py",
+    "server/auth/providers/debug.py",
+    "server/auth/providers/descope.py",
+    "server/auth/providers/discord.py",
+    "server/auth/providers/google.py",
+    "server/auth/providers/in_memory.py",
+    "server/auth/providers/introspection.py",
+    "server/auth/providers/keycloak.py",
+    "server/auth/providers/oci.py",
+    "server/auth/providers/propelauth.py",
+    "server/auth/providers/scalekit.py",
+    "server/auth/providers/supabase.py",
+    "server/auth/providers/workos.py",
+    "server/auth/authorization.py",
+    "server/providers/prefab_synthesis.py",
+    "server/apps.py",
+    "server/app.py",
     "server/telemetry.py",
+    "utilities/mcp_server_config/**/*",
     "utilities/cli.py",
+    "utilities/docstring_parsing.py",
+    "utilities/exceptions.py",
+    "utilities/http.py",
+    "utilities/inspect.py",
+    "utilities/mime.py",
+    "utilities/skills.py",
+    "utilities/tests.py",
     "utilities/version_check.py",
+    "_install_hints.py",
+    "dependencies.py",
+    "mcp_config.py",
     "settings.py",
     "telemetry.py",
     "types.py",

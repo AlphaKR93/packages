@@ -1,0 +1,201 @@
+--- work/sources/fastmcp_slim/fastmcp/tools/function_parsing.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/tools/function_parsing.py	2026-05-17 03:46:17.179650111 +0000
+@@ -1,20 +1,19 @@
+ """Function introspection and schema generation for FastMCP tools."""
+-
+-from __future__ import annotations
+-
+ import functools
+ import inspect
+ import types
+ from collections.abc import Callable
+ from dataclasses import dataclass
+-from typing import Annotated, Any, Generic, Union, get_args, get_origin, get_type_hints
++from typing import Annotated, Any, Union, get_args, get_origin, get_type_hints
+ 
+ import mcp.types
+ from pydantic import PydanticSchemaGenerationError
+-from typing_extensions import TypeVar as TypeVarExt
+ 
+ from fastmcp.tools.base import ToolResult
+-from fastmcp.utilities.docstring_parsing import ParsedDocstring, parse_docstring
++from fastmcp.server.dependencies import (
++    transform_context_annotations,
++    without_injected_parameters,
++)
+ from fastmcp.utilities.json_schema import compress_schema
+ from fastmcp.utilities.logging import get_logger
+ from fastmcp.utilities.types import (
+@@ -27,16 +26,8 @@
+     replace_type,
+ )
+ 
+-try:
+-    from prefab_ui.app import PrefabApp as _PrefabApp
+-    from prefab_ui.components.base import Component as _PrefabComponent
+-
+-    _PREFAB_TYPES: tuple[type, ...] = (_PrefabApp, _PrefabComponent)
+-except ImportError:
+-    _PREFAB_TYPES = ()
+-
+ 
+-def _contains_bytes_type(tp: Any) -> bool:
++def _contains_bytes_type(tp: Any, /) -> bool:
+     """Check if *tp* is or contains bytes, recursing through unions and Annotated."""
+     if tp is bytes:
+         return True
+@@ -45,24 +36,11 @@
+         return any(_contains_bytes_type(a) for a in get_args(tp))
+     return False
+ 
+-
+-def _contains_prefab_type(tp: Any) -> bool:
+-    """Check if *tp* is or contains a prefab type, recursing through unions and Annotated."""
+-    if isinstance(tp, type) and issubclass(tp, _PREFAB_TYPES):
+-        return True
+-    origin = get_origin(tp)
+-    if origin is Union or origin is types.UnionType or origin is Annotated:
+-        return any(_contains_prefab_type(a) for a in get_args(tp))
+-    return False
+-
+-
+-T = TypeVarExt("T", default=Any)
+-
+ logger = get_logger(__name__)
+ 
+ 
+ @dataclass
+-class _WrappedResult(Generic[T]):
++class _WrappedResult[T]:
+     result: T
+ 
+ 
+@@ -135,37 +113,27 @@
+         validate: bool = True,
+         wrap_non_object_output_schema: bool = True,
+     ) -> ParsedFunction:
+-        if validate:
++        if __debug__ and validate:
+             sig = inspect.signature(fn)
+             # Reject functions with *args or **kwargs
+             for param in sig.parameters.values():
+-                if param.kind == inspect.Parameter.VAR_POSITIONAL:
+-                    raise ValueError("Functions with *args are not supported as tools")
+-                if param.kind == inspect.Parameter.VAR_KEYWORD:
+-                    raise ValueError(
+-                        "Functions with **kwargs are not supported as tools"
+-                    )
++                assert param.kind != inspect.Parameter.VAR_POSITIONAL, "Functions with *args are not supported as tools"
++                assert param.kind != inspect.Parameter.VAR_KEYWORD, "Functions with **kwargs are not supported as tools"
+ 
+             # Reject exclude_args that don't exist in the function or don't have a default value
+             if exclude_args:
+                 for arg_name in exclude_args:
+-                    if arg_name not in sig.parameters:
+-                        raise ValueError(
+-                            f"Parameter '{arg_name}' in exclude_args does not exist in function."
+-                        )
+-                    param = sig.parameters[arg_name]
+-                    if param.default == inspect.Parameter.empty:
+-                        raise ValueError(
+-                            f"Parameter '{arg_name}' in exclude_args must have a default value."
+-                        )
++                    assert arg_name in sig.parameters, f"Parameter '{arg_name}' in exclude_args does not exist."
++                    assert sig.parameters[arg_name].default == inspect.Parameter.empty, \
++                        f"Parameter '{arg_name}' in exclude_args must have a default value."
+ 
+         # collect name and description before we potentially modify the function
+-        fn_name = getattr(fn, "__name__", None) or fn.__class__.__name__
+-        outer_docstring = parse_docstring(fn)
++        fn_name = getattr(fn, "__name__", None) or getattr(fn, "__class__").__name__
++        outer_docstring = inspect.getdoc(fn)
+ 
+         # if the fn is a callable class, we need to get the __call__ method from here out
+         if not inspect.isroutine(fn) and not isinstance(fn, functools.partial):
+-            fn = fn.__call__
++            fn = getattr(fn, "__call__")
+         # if the fn is a staticmethod, we need to work with the underlying function
+         if isinstance(fn, staticmethod):
+             fn = fn.__func__
+@@ -177,18 +145,9 @@
+         # constructor docs into __call__'s schema on overlapping names.
+         # The description, however, comes from the class docstring (which
+         # describes what the tool IS) when present.
+-        inner_docstring = parse_docstring(fn)
+-        parsed_docstring = ParsedDocstring(
+-            description=outer_docstring.description or inner_docstring.description,
+-            parameters=inner_docstring.parameters,
+-        )
++        parsed_docstring = outer_docstring or inspect.getdoc(fn)
+ 
+         # Transform Context type annotations to Depends() for unified DI
+-        from fastmcp.server.dependencies import (
+-            transform_context_annotations,
+-            without_injected_parameters,
+-        )
+-
+         fn = transform_context_annotations(fn)
+ 
+         # Handle injected parameters (Context, Docket dependencies)
+@@ -208,18 +167,6 @@
+             input_schema, prune_params=prune_params, prune_titles=True
+         )
+ 
+-        # Inject parameter descriptions from the docstring into the schema.
+-        # Explicit annotations (Field(description=...), Annotated[x, "..."])
+-        # already have a "description" key and take precedence.
+-        if parsed_docstring.parameters:
+-            properties = input_schema.get("properties", {})
+-            for param_name, param_desc in parsed_docstring.parameters.items():
+-                if (
+-                    param_name in properties
+-                    and "description" not in properties[param_name]
+-                ):
+-                    properties[param_name]["description"] = param_desc
+-
+         output_schema = None
+         # Get the return annotation from the signature
+         sig = inspect.signature(fn)
+@@ -244,14 +191,6 @@
+             if _contains_bytes_type(output_type):
+                 output_type = _UnserializableType
+ 
+-            # Prefab component subclasses (Column, Card, etc.) shouldn't
+-            # produce output schemas — replace_type only does exact matching,
+-            # so we handle subclass matching explicitly here.  We also need
+-            # to handle composite types like ``Column | None`` and
+-            # ``Annotated[PrefabApp, ...]`` by recursing into their args.
+-            if _PREFAB_TYPES and _contains_prefab_type(output_type):
+-                output_type = _UnserializableType
+-
+             # ToolResult subclasses should suppress schema generation just
+             # like ToolResult itself — replace_type only does exact matching.
+             if is_class_member_of_type(output_type, ToolResult):
+@@ -275,7 +214,6 @@
+                         mcp.types.AudioContent,
+                         mcp.types.ResourceLink,
+                         mcp.types.EmbeddedResource,
+-                        *_PREFAB_TYPES,
+                     ),
+                     _UnserializableType,
+                 ),
+@@ -291,9 +229,7 @@
+                 # (self-referencing types use $ref at root level)
+                 if wrap_non_object_output_schema and not _is_object_schema(base_schema):
+                     # Use the wrapped result schema directly
+-                    wrapped_type = _WrappedResult[clean_output_type]
+-                    wrapped_adapter = get_cached_typeadapter(wrapped_type)
+-                    output_schema = wrapped_adapter.json_schema(mode="serialization")
++                    output_schema = get_cached_typeadapter(_WrappedResult(clean_output_type)).json_schema(mode="serialization")
+                     output_schema["x-fastmcp-wrap-result"] = True
+                 else:
+                     output_schema = base_schema
+@@ -307,7 +243,7 @@
+         return cls(
+             fn=fn,
+             name=fn_name,
+-            description=parsed_docstring.description,
++            description=parsed_docstring,
+             input_schema=input_schema,
+             output_schema=output_schema or None,
+             return_type=original_output_type,

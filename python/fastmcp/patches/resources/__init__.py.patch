@@ -1,0 +1,23 @@
+--- work/sources/fastmcp_slim/fastmcp/resources/__init__.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/resources/__init__.py	2026-05-17 03:46:17.151650113 +0000
+@@ -1,8 +1,6 @@
+-import sys
++from alpha93.fastmcp._internal.components.resources import Resource, ResourceTemplate, FunctionResource, resource
+ 
+-from .function_resource import FunctionResource, resource
+-from .base import Resource, ResourceContent, ResourceResult
+-from .template import ResourceTemplate
++from .base import ResourceContent, ResourceResult
+ from .types import (
+     BinaryResource,
+     DirectoryResource,
+@@ -24,9 +22,3 @@
+     "TextResource",
+     "resource",
+ ]
+-
+-# Backward compat: resource.py was renamed to base.py to stop Pyright from resolving
+-# `from fastmcp.resources import resource` as the submodule instead of the decorator function.
+-# This shim keeps `from fastmcp.resources.resource import Resource` working at runtime.
+-# Safe to remove once we're confident no external code imports from the old path.
+-sys.modules[f"{__name__}.resource"] = sys.modules[f"{__name__}.base"]

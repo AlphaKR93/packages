@@ -1,0 +1,47 @@
+--- work/sources/fastmcp_slim/fastmcp/utilities/timeout.py	2026-05-16 04:15:58.931524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/utilities/timeout.py	2026-05-17 03:46:17.191650109 +0000
+@@ -1,13 +1,8 @@
+ """Timeout normalization utilities."""
++from datetime import timedelta
+ 
+-from __future__ import annotations
+ 
+-import datetime
+-
+-
+-def normalize_timeout_to_timedelta(
+-    value: int | float | datetime.timedelta | None,
+-) -> datetime.timedelta | None:
++def normalize_timeout_to_timedelta(value: int | float | timedelta | None, /) -> timedelta | None:
+     """Normalize a timeout value to a timedelta.
+ 
+     Args:
+@@ -18,16 +13,14 @@
+     """
+     if value is None:
+         return None
+-    if isinstance(value, datetime.timedelta):
++    if isinstance(value, timedelta):
+         return value
+     if isinstance(value, int | float):
+-        return datetime.timedelta(seconds=float(value))
++        return timedelta(seconds=float(value))
+     raise TypeError(f"Invalid timeout type: {type(value)}")
+ 
+ 
+-def normalize_timeout_to_seconds(
+-    value: int | float | datetime.timedelta | None,
+-) -> float | None:
++def normalize_timeout_to_seconds(value: int | float | timedelta | None, /) -> float | None:
+     """Normalize a timeout value to seconds (float).
+ 
+     Args:
+@@ -39,7 +32,7 @@
+     """
+     if value is None:
+         return None
+-    if isinstance(value, datetime.timedelta):
++    if isinstance(value, timedelta):
+         seconds = value.total_seconds()
+         return None if seconds == 0 else seconds
+     if isinstance(value, int | float):

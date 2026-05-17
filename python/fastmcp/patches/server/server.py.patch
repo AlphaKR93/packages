@@ -1,153 +1,819 @@
---- work/sources/src/fastmcp/server/server.py	2026-05-03 12:29:52.963915856 +0900
-+++ work/patched/src/fastmcp/server/server.py	2026-05-03 13:28:08.154944247 +0900
-@@ -71,13 +71,11 @@
- from fastmcp.server.providers import LocalProvider, Provider
- from fastmcp.server.providers.aggregate import AggregateProvider
- from fastmcp.server.tasks.config import TaskConfig, TaskMeta
--from fastmcp.server.telemetry import server_span
- from fastmcp.server.transforms import (
-     ToolTransform,
-     Transform,
- )
- from fastmcp.server.transforms.visibility import apply_session_transforms, is_enabled
--from fastmcp.settings import DuplicateBehavior as DuplicateBehaviorSetting
- from fastmcp.tools.base import Tool, ToolResult
- from fastmcp.tools.function_tool import FunctionTool
- from fastmcp.tools.tool_transform import ToolTransformConfig
-@@ -298,9 +296,9 @@
-         lifespan: LifespanCallable | Lifespan | None = None,
-         tools: Sequence[Tool | Callable[..., Any]] | None = None,
-         on_duplicate: DuplicateBehavior | None = None,
+--- work/sources/fastmcp_slim/fastmcp/server/server.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/server.py	2026-05-17 04:00:43.063562340 +0000
+@@ -255,13 +255,13 @@
+ 
+ 
+ def _lifespan_proxy(
+-    fastmcp_server: FastMCP[LifespanResultT],
++        fastmcp_server: FastMCP[LifespanResultT],
+ ) -> Callable[
+     [LowLevelServer[LifespanResultT]], AbstractAsyncContextManager[LifespanResultT]
+ ]:
+     @asynccontextmanager
+     async def wrap(
+-        low_level_server: LowLevelServer[LifespanResultT],
++            low_level_server: LowLevelServer[LifespanResultT],
+     ) -> AsyncIterator[LifespanResultT]:
+         if fastmcp_server._lifespan is default_lifespan:
+             yield {}  # ty:ignore[invalid-yield]
+@@ -292,31 +292,31 @@
+     Generic[LifespanResultT],
+ ):
+     def __init__(
+-        self,
+-        name: str | None = None,
+-        instructions: str | None = None,
+-        *,
+-        version: str | int | float | None = None,
+-        website_url: str | None = None,
+-        icons: list[mcp.types.Icon] | None = None,
+-        auth: AuthProvider | None = None,
+-        middleware: Sequence[Middleware] | None = None,
+-        providers: Sequence[Provider] | None = None,
+-        transforms: Sequence[Transform] | None = None,
+-        lifespan: LifespanCallable | Lifespan | None = None,
+-        tools: Sequence[Tool | Callable[..., Any]] | None = None,
+-        on_duplicate: DuplicateBehavior | None = None,
 -        mask_error_details: bool | None = None,
-+        mask_error_details: bool = False,
-         dereference_schemas: bool = True,
+-        dereference_schemas: bool = True,
 -        strict_input_validation: bool | None = None,
-+        strict_input_validation: bool = False,
-         list_page_size: int | None = None,
-         tasks: bool | None = None,
-         session_state_store: AsyncKeyValue | None = None,
-@@ -314,7 +312,7 @@
-         # Initialize Provider (sets up _transforms)
-         super().__init__()
+-        list_page_size: int | None = None,
+-        tasks: bool | None = None,
+-        session_state_store: AsyncKeyValue | None = None,
+-        sampling_handler: SamplingHandler | None = None,
+-        sampling_handler_behavior: Literal["always", "fallback"] | None = None,
+-        client_log_level: mcp.types.LoggingLevel | None = None,
+-        experimental_capabilities: dict[str, dict[str, Any]] | None = None,
+-        **kwargs: Any,
++            self,
++            name: str | None = None,
++            instructions: str | None = None,
++            *,
++            version: str | int | float | None = None,
++            website_url: str | None = None,
++            icons: list[mcp.types.Icon] | None = None,
++            auth: AuthProvider | None = None,
++            middleware: Sequence[Middleware] | None = None,
++            providers: Sequence[Provider] | None = None,
++            transforms: Sequence[Transform] | None = None,
++            lifespan: LifespanCallable | Lifespan | None = None,
++            tools: Sequence[Tool | Callable[..., Any]] | None = None,
++            on_duplicate: DuplicateBehavior | None = None,
++            mask_error_details: bool | None = None,
++            dereference_schemas: bool = True,
++            strict_input_validation: bool | None = None,
++            list_page_size: int | None = None,
++            tasks: bool | None = None,
++            session_state_store: AsyncKeyValue | None = None,
++            sampling_handler: SamplingHandler | None = None,
++            sampling_handler_behavior: Literal["always", "fallback"] | None = None,
++            client_log_level: mcp.types.LoggingLevel | None = None,
++            experimental_capabilities: dict[str, dict[str, Any]] | None = None,
++            **kwargs: Any,
+     ):
+         _check_removed_kwargs(kwargs)
  
--        self._on_duplicate: DuplicateBehaviorSetting = on_duplicate or "warn"
-+        self._on_duplicate: DuplicateBehavior = on_duplicate or cast(DuplicateBehavior, "warn")
+@@ -415,7 +415,7 @@
+         )
  
-         # Resolve server default for background task support
-         self._support_tasks_by_default: bool = tasks if tasks is not None else False
-@@ -348,11 +346,7 @@
-             self.add_transform(t)
- 
-         # Store mask_error_details for execution error handling
--        self._mask_error_details: bool = (
--            mask_error_details
--            if mask_error_details is not None
--            else fastmcp.settings.mask_error_details
--        )
-+        self._mask_error_details: bool = mask_error_details
- 
-         # Store list_page_size for pagination of list operations
-         if list_page_size is not None and list_page_size <= 0:
-@@ -393,17 +387,9 @@
-                     tool = Tool.from_function(tool)
-                 self.add_tool(tool)
- 
--        self.strict_input_validation: bool = (
--            strict_input_validation
--            if strict_input_validation is not None
--            else fastmcp.settings.strict_input_validation
--        )
-+        self.strict_input_validation: bool = strict_input_validation
- 
--        self.client_log_level: mcp.types.LoggingLevel | None = (
--            client_log_level
--            if client_log_level is not None
--            else fastmcp.settings.client_log_level
--        )
-+        self.client_log_level: mcp.types.LoggingLevel | None = client_log_level
+         self.experimental_capabilities: dict[str, dict[str, Any]] = (
+-            experimental_capabilities or {}
++                experimental_capabilities or {}
+         )
  
          self.middleware: list[Middleware] = list(middleware or [])
+@@ -432,7 +432,7 @@
  
-@@ -567,38 +553,6 @@
-         """
+         self.sampling_handler: SamplingHandler | None = sampling_handler
+         self.sampling_handler_behavior: Literal["always", "fallback"] = (
+-            sampling_handler_behavior or "fallback"
++                sampling_handler_behavior or "fallback"
+         )
+ 
+     def __repr__(self) -> str:
+@@ -478,9 +478,9 @@
+         return self._local_provider
+ 
+     async def _run_middleware(
+-        self,
+-        context: MiddlewareContext[Any],
+-        call_next: Callable[[MiddlewareContext[Any]], Awaitable[Any]],
++            self,
++            context: MiddlewareContext[Any],
++            call_next: Callable[[MiddlewareContext[Any]], Awaitable[Any]],
+     ) -> Any:
+         """Builds and executes the middleware chain."""
+         chain = call_next
+@@ -581,7 +581,7 @@
          self._transforms.append(transform)
  
--    def add_tool_transformation(
+     def add_tool_transformation(
 -        self, tool_name: str, transformation: ToolTransformConfig
--    ) -> None:
--        """Add a tool transformation.
--
--        .. deprecated::
--            Use ``add_transform(ToolTransform({...}))`` instead.
--        """
--        if fastmcp.settings.deprecation_warnings:
--            warnings.warn(
--                "add_tool_transformation is deprecated. Use "
--                "server.add_transform(ToolTransform({tool_name: config})) instead.",
--                FastMCPDeprecationWarning,
--                stacklevel=2,
--            )
--        self.add_transform(ToolTransform({tool_name: transformation}))
--
--    def remove_tool_transformation(self, _tool_name: str) -> None:
--        """Remove a tool transformation.
--
--        .. deprecated::
--            Tool transformations are now immutable. Use enable/disable controls instead.
--        """
--        if fastmcp.settings.deprecation_warnings:
--            warnings.warn(
--                "remove_tool_transformation is deprecated and has no effect. "
--                "Transforms are immutable once added. Use server.disable(keys=[...]) "
--                "to hide tools instead.",
--                FastMCPDeprecationWarning,
--                stacklevel=2,
--            )
--
-     async def list_tools(self, *, run_middleware: bool = True) -> Sequence[Tool]:
-         """List all enabled tools from providers.
++            self, tool_name: str, transformation: ToolTransformConfig
+     ) -> None:
+         """Add a tool transformation.
  
-@@ -1539,35 +1493,6 @@
-         """
-         return self._local_provider.add_tool(tool)
+@@ -662,7 +662,7 @@
+                 return authorized
  
--    def remove_tool(self, name: str, version: str | None = None) -> None:
--        """Remove tool(s) from the server.
--
--        .. deprecated::
--            Use ``mcp.local_provider.remove_tool(name)`` instead.
--
--        Args:
--            name: The name of the tool to remove.
--            version: If None, removes ALL versions. If specified, removes only that version.
--
--        Raises:
--            NotFoundError: If no matching tool is found.
--        """
--        if fastmcp.settings.deprecation_warnings:
--            warnings.warn(
--                "remove_tool() is deprecated. Use "
--                "mcp.local_provider.remove_tool(name) instead.",
--                FastMCPDeprecationWarning,
--                stacklevel=2,
--            )
--        try:
--            self._local_provider.remove_tool(name, version)
--        except KeyError:
--            if version is None:
--                raise NotFoundError(f"Tool {name!r} not found") from None
--            raise NotFoundError(
--                f"Tool {name!r} version {version!r} not found"
--            ) from None
--
+     async def _get_tool(
+-        self, name: str, version: VersionSpec | None = None
++            self, name: str, version: VersionSpec | None = None
+     ) -> Tool | None:
+         """Get a tool by name via aggregation from providers.
+ 
+@@ -693,7 +693,7 @@
+         return tool
+ 
+     async def get_tool(
+-        self, name: str, version: VersionSpec | None = None
++            self, name: str, version: VersionSpec | None = None
+     ) -> Tool | None:
+         """Get a tool by name, filtering disabled tools.
+ 
+@@ -747,7 +747,7 @@
+         return cast(Tool, max(authorized, key=version_sort_key))
+ 
+     async def list_resources(
+-        self, *, run_middleware: bool = True
++            self, *, run_middleware: bool = True
+     ) -> Sequence[Resource]:
+         """List all enabled resources from providers.
+ 
+@@ -771,7 +771,7 @@
+ 
+             # Core logic: list resources
+             with server_span(
+-                "resources/list", "resources/list", self.name, "resource", ""
++                    "resources/list", "resources/list", self.name, "resource", ""
+             ):
+                 # Get all resources, apply session transforms, then filter enabled
+                 resources = list(await super().list_resources())
+@@ -801,7 +801,7 @@
+                 return authorized
+ 
+     async def _get_resource(
+-        self, uri: str, version: VersionSpec | None = None
++            self, uri: str, version: VersionSpec | None = None
+     ) -> Resource | None:
+         """Get a resource by URI via aggregation from providers.
+ 
+@@ -832,7 +832,7 @@
+         return resource
+ 
+     async def get_resource(
+-        self, uri: str, version: VersionSpec | None = None
++            self, uri: str, version: VersionSpec | None = None
+     ) -> Resource | None:
+         """Get a resource by URI, filtering disabled resources.
+ 
+@@ -882,7 +882,7 @@
+         return cast(Resource, max(authorized, key=version_sort_key))
+ 
+     async def list_resource_templates(
+-        self, *, run_middleware: bool = True
++            self, *, run_middleware: bool = True
+     ) -> Sequence[ResourceTemplate]:
+         """List all enabled resource templates from providers.
+ 
+@@ -908,11 +908,11 @@
+ 
+             # Core logic: list resource templates
+             with server_span(
+-                "resources/templates/list",
+-                "resources/templates/list",
+-                self.name,
+-                "resource_template",
+-                "",
++                    "resources/templates/list",
++                    "resources/templates/list",
++                    self.name,
++                    "resource_template",
++                    "",
+             ):
+                 # Get all templates, apply session transforms, then filter enabled
+                 templates = list(await super().list_resource_templates())
+@@ -933,7 +933,7 @@
+                 return authorized
+ 
+     async def _get_resource_template(
+-        self, uri: str, version: VersionSpec | None = None
++            self, uri: str, version: VersionSpec | None = None
+     ) -> ResourceTemplate | None:
+         """Get a resource template by URI via aggregation from providers.
+ 
+@@ -964,7 +964,7 @@
+         return template
+ 
+     async def get_resource_template(
+-        self, uri: str, version: VersionSpec | None = None
++            self, uri: str, version: VersionSpec | None = None
+     ) -> ResourceTemplate | None:
+         """Get a resource template by URI, filtering disabled templates.
+ 
+@@ -1059,7 +1059,7 @@
+                 return authorized
+ 
+     async def _get_prompt(
+-        self, name: str, version: VersionSpec | None = None
++            self, name: str, version: VersionSpec | None = None
+     ) -> Prompt | None:
+         """Get a prompt by name via aggregation from providers.
+ 
+@@ -1090,7 +1090,7 @@
+         return prompt
+ 
+     async def get_prompt(
+-        self, name: str, version: VersionSpec | None = None
++            self, name: str, version: VersionSpec | None = None
+     ) -> Prompt | None:
+         """Get a prompt by name, filtering disabled prompts.
+ 
+@@ -1141,34 +1141,34 @@
+ 
+     @overload
+     async def call_tool(
+-        self,
+-        name: str,
+-        arguments: dict[str, Any] | None = None,
+-        *,
+-        version: VersionSpec | None = None,
+-        run_middleware: bool = True,
+-        task_meta: None = None,
++            self,
++            name: str,
++            arguments: dict[str, Any] | None = None,
++            *,
++            version: VersionSpec | None = None,
++            run_middleware: bool = True,
++            task_meta: None = None,
+     ) -> ToolResult: ...
+ 
+     @overload
+     async def call_tool(
+-        self,
+-        name: str,
+-        arguments: dict[str, Any] | None = None,
+-        *,
+-        version: VersionSpec | None = None,
+-        run_middleware: bool = True,
+-        task_meta: TaskMeta,
++            self,
++            name: str,
++            arguments: dict[str, Any] | None = None,
++            *,
++            version: VersionSpec | None = None,
++            run_middleware: bool = True,
++            task_meta: TaskMeta,
+     ) -> mcp.types.CreateTaskResult: ...
+ 
+     async def call_tool(
+-        self,
+-        name: str,
+-        arguments: dict[str, Any] | None = None,
+-        *,
+-        version: VersionSpec | None = None,
+-        run_middleware: bool = True,
+-        task_meta: TaskMeta | None = None,
++            self,
++            name: str,
++            arguments: dict[str, Any] | None = None,
++            *,
++            version: VersionSpec | None = None,
++            run_middleware: bool = True,
++            task_meta: TaskMeta | None = None,
+     ) -> ToolResult | mcp.types.CreateTaskResult:
+         """Call a tool by name.
+ 
+@@ -1228,17 +1228,17 @@
+                         version=version,
+                         run_middleware=False,
+                         task_meta=task_meta,
+-                    ),
++                        ),
+                 )
+ 
+             # Core logic: find and execute tool
+             with server_span(
+-                f"tools/call {name}",
+-                "tools/call",
+-                self.name,
+-                "tool",
+-                name,
+-                tool_name=name,
++                    f"tools/call {name}",
++                    "tools/call",
++                    self.name,
++                    "tool",
++                    name,
++                    tool_name=name,
+             ) as span:
+                 # Try normal display-name resolution first.
+                 tool: Tool | None = await self.get_tool(name, version=version)
+@@ -1305,31 +1305,31 @@
+ 
+     @overload
+     async def read_resource(
+-        self,
+-        uri: str,
+-        *,
+-        version: VersionSpec | None = None,
+-        run_middleware: bool = True,
+-        task_meta: None = None,
++            self,
++            uri: str,
++            *,
++            version: VersionSpec | None = None,
++            run_middleware: bool = True,
++            task_meta: None = None,
+     ) -> ResourceResult: ...
+ 
+     @overload
+     async def read_resource(
+-        self,
+-        uri: str,
+-        *,
+-        version: VersionSpec | None = None,
+-        run_middleware: bool = True,
+-        task_meta: TaskMeta,
++            self,
++            uri: str,
++            *,
++            version: VersionSpec | None = None,
++            run_middleware: bool = True,
++            task_meta: TaskMeta,
+     ) -> mcp.types.CreateTaskResult: ...
+ 
+     async def read_resource(
+-        self,
+-        uri: str,
+-        *,
+-        version: VersionSpec | None = None,
+-        run_middleware: bool = True,
+-        task_meta: TaskMeta | None = None,
++            self,
++            uri: str,
++            *,
++            version: VersionSpec | None = None,
++            run_middleware: bool = True,
++            task_meta: TaskMeta | None = None,
+     ) -> ResourceResult | mcp.types.CreateTaskResult:
+         """Read a resource by URI.
+ 
+@@ -1382,12 +1382,12 @@
+ 
+             # Core logic: find and read resource (providers queried in parallel)
+             with server_span(
+-                "resources/read",
+-                "resources/read",
+-                self.name,
+-                "resource",
+-                uri,
+-                resource_uri=uri,
++                    "resources/read",
++                    "resources/read",
++                    self.name,
++                    "resource",
++                    uri,
++                    resource_uri=uri,
+             ) as span:
+                 # Intercept synthetic Prefab renderer URIs before normal
+                 # resolution. The resource isn't stored anywhere — we
+@@ -1482,34 +1482,34 @@
+ 
+     @overload
+     async def render_prompt(
+-        self,
+-        name: str,
+-        arguments: dict[str, Any] | None = None,
+-        *,
+-        version: VersionSpec | None = None,
+-        run_middleware: bool = True,
+-        task_meta: None = None,
++            self,
++            name: str,
++            arguments: dict[str, Any] | None = None,
++            *,
++            version: VersionSpec | None = None,
++            run_middleware: bool = True,
++            task_meta: None = None,
+     ) -> PromptResult: ...
+ 
+     @overload
+     async def render_prompt(
+-        self,
+-        name: str,
+-        arguments: dict[str, Any] | None = None,
+-        *,
+-        version: VersionSpec | None = None,
+-        run_middleware: bool = True,
+-        task_meta: TaskMeta,
++            self,
++            name: str,
++            arguments: dict[str, Any] | None = None,
++            *,
++            version: VersionSpec | None = None,
++            run_middleware: bool = True,
++            task_meta: TaskMeta,
+     ) -> mcp.types.CreateTaskResult: ...
+ 
+     async def render_prompt(
+-        self,
+-        name: str,
+-        arguments: dict[str, Any] | None = None,
+-        *,
+-        version: VersionSpec | None = None,
+-        run_middleware: bool = True,
+-        task_meta: TaskMeta | None = None,
++            self,
++            name: str,
++            arguments: dict[str, Any] | None = None,
++            *,
++            version: VersionSpec | None = None,
++            run_middleware: bool = True,
++            task_meta: TaskMeta | None = None,
+     ) -> PromptResult | mcp.types.CreateTaskResult:
+         """Render a prompt by name.
+ 
+@@ -1559,12 +1559,12 @@
+             # Core logic: find and render prompt (providers queried in parallel)
+             # Use get_prompt to apply transforms and filter disabled
+             with server_span(
+-                f"prompts/get {name}",
+-                "prompts/get",
+-                self.name,
+-                "prompt",
+-                name,
+-                prompt_name=name,
++                    f"prompts/get {name}",
++                    "prompts/get",
++                    self.name,
++                    "prompt",
++                    name,
++                    prompt_name=name,
+             ) as span:
+                 prompt = await self.get_prompt(name, version=version)
+                 if prompt is None:
+@@ -1633,71 +1633,71 @@
+ 
      @overload
      def tool(
-         self,
-@@ -2304,43 +2229,6 @@
-         return cls(name=server_name, providers=[provider], **settings)
+-        self,
+-        name_or_fn: F,
+-        *,
+-        name: str | None = None,
+-        version: str | int | None = None,
+-        title: str | None = None,
+-        description: str | None = None,
+-        icons: list[mcp.types.Icon] | None = None,
+-        tags: set[str] | None = None,
+-        output_schema: dict[str, Any] | NotSetT | None = NotSet,
+-        annotations: ToolAnnotations | dict[str, Any] | None = None,
+-        exclude_args: list[str] | None = None,
+-        meta: dict[str, Any] | None = None,
+-        app: AppConfig | dict[str, Any] | bool | None = None,
+-        task: bool | TaskConfig | None = None,
+-        timeout: float | None = None,
+-        auth: AuthCheck | list[AuthCheck] | None = None,
+-        run_in_thread: bool = True,
++            self,
++            name_or_fn: F,
++            *,
++            name: str | None = None,
++            version: str | int | None = None,
++            title: str | None = None,
++            description: str | None = None,
++            icons: list[mcp.types.Icon] | None = None,
++            tags: set[str] | None = None,
++            output_schema: dict[str, Any] | NotSetT | None = NotSet,
++            annotations: ToolAnnotations | dict[str, Any] | None = None,
++            exclude_args: list[str] | None = None,
++            meta: dict[str, Any] | None = None,
++            app: AppConfig | dict[str, Any] | bool | None = None,
++            task: bool | TaskConfig | None = None,
++            timeout: float | None = None,
++            auth: AuthCheck | list[AuthCheck] | None = None,
++            run_in_thread: bool = True,
+     ) -> F: ...
+ 
+     @overload
+     def tool(
+-        self,
+-        name_or_fn: str | None = None,
+-        *,
+-        name: str | None = None,
+-        version: str | int | None = None,
+-        title: str | None = None,
+-        description: str | None = None,
+-        icons: list[mcp.types.Icon] | None = None,
+-        tags: set[str] | None = None,
+-        output_schema: dict[str, Any] | NotSetT | None = NotSet,
+-        annotations: ToolAnnotations | dict[str, Any] | None = None,
+-        exclude_args: list[str] | None = None,
+-        meta: dict[str, Any] | None = None,
+-        app: AppConfig | dict[str, Any] | bool | None = None,
+-        task: bool | TaskConfig | None = None,
+-        timeout: float | None = None,
+-        auth: AuthCheck | list[AuthCheck] | None = None,
+-        run_in_thread: bool = True,
++            self,
++            name_or_fn: str | None = None,
++            *,
++            name: str | None = None,
++            version: str | int | None = None,
++            title: str | None = None,
++            description: str | None = None,
++            icons: list[mcp.types.Icon] | None = None,
++            tags: set[str] | None = None,
++            output_schema: dict[str, Any] | NotSetT | None = NotSet,
++            annotations: ToolAnnotations | dict[str, Any] | None = None,
++            exclude_args: list[str] | None = None,
++            meta: dict[str, Any] | None = None,
++            app: AppConfig | dict[str, Any] | bool | None = None,
++            task: bool | TaskConfig | None = None,
++            timeout: float | None = None,
++            auth: AuthCheck | list[AuthCheck] | None = None,
++            run_in_thread: bool = True,
+     ) -> Callable[[F], F]: ...
+ 
+     def tool(
+-        self,
+-        name_or_fn: str | AnyFunction | None = None,
+-        *,
+-        name: str | None = None,
+-        version: str | int | None = None,
+-        title: str | None = None,
+-        description: str | None = None,
+-        icons: list[mcp.types.Icon] | None = None,
+-        tags: set[str] | None = None,
+-        output_schema: dict[str, Any] | NotSetT | None = NotSet,
+-        annotations: ToolAnnotations | dict[str, Any] | None = None,
+-        exclude_args: list[str] | None = None,
+-        meta: dict[str, Any] | None = None,
+-        app: AppConfig | dict[str, Any] | bool | None = None,
+-        task: bool | TaskConfig | None = None,
+-        timeout: float | None = None,
+-        auth: AuthCheck | list[AuthCheck] | None = None,
+-        run_in_thread: bool = True,
++            self,
++            name_or_fn: str | AnyFunction | None = None,
++            *,
++            name: str | None = None,
++            version: str | int | None = None,
++            title: str | None = None,
++            description: str | None = None,
++            icons: list[mcp.types.Icon] | None = None,
++            tags: set[str] | None = None,
++            output_schema: dict[str, Any] | NotSetT | None = NotSet,
++            annotations: ToolAnnotations | dict[str, Any] | None = None,
++            exclude_args: list[str] | None = None,
++            meta: dict[str, Any] | None = None,
++            app: AppConfig | dict[str, Any] | bool | None = None,
++            task: bool | TaskConfig | None = None,
++            timeout: float | None = None,
++            auth: AuthCheck | list[AuthCheck] | None = None,
++            run_in_thread: bool = True,
+     ) -> (
+-        Callable[[AnyFunction], FunctionTool]
+-        | FunctionTool
+-        | partial[Callable[[AnyFunction], FunctionTool] | FunctionTool]
++            Callable[[AnyFunction], FunctionTool]
++            | FunctionTool
++            | partial[Callable[[AnyFunction], FunctionTool] | FunctionTool]
+     ):
+         """Decorator to register a tool.
+ 
+@@ -1777,7 +1777,7 @@
+         return result
+ 
+     def add_resource(
+-        self, resource: Resource | Callable[..., Any]
++            self, resource: Resource | Callable[..., Any]
+     ) -> Resource | ResourceTemplate:
+         """Add a resource to the server.
+ 
+@@ -1801,21 +1801,21 @@
+         return self._local_provider.add_template(template)
+ 
+     def resource(
+-        self,
+-        uri: str,
+-        *,
+-        name: str | None = None,
+-        version: str | int | None = None,
+-        title: str | None = None,
+-        description: str | None = None,
+-        icons: list[mcp.types.Icon] | None = None,
+-        mime_type: str | None = None,
+-        tags: set[str] | None = None,
+-        annotations: Annotations | dict[str, Any] | None = None,
+-        meta: dict[str, Any] | None = None,
+-        app: AppConfig | dict[str, Any] | bool | None = None,
+-        task: bool | TaskConfig | None = None,
+-        auth: AuthCheck | list[AuthCheck] | None = None,
++            self,
++            uri: str,
++            *,
++            name: str | None = None,
++            version: str | int | None = None,
++            title: str | None = None,
++            description: str | None = None,
++            icons: list[mcp.types.Icon] | None = None,
++            mime_type: str | None = None,
++            tags: set[str] | None = None,
++            annotations: Annotations | dict[str, Any] | None = None,
++            meta: dict[str, Any] | None = None,
++            app: AppConfig | dict[str, Any] | bool | None = None,
++            task: bool | TaskConfig | None = None,
++            auth: AuthCheck | list[AuthCheck] | None = None,
+     ) -> Callable[[F], F]:
+         """Decorator to register a function as a resource.
+ 
+@@ -1932,53 +1932,53 @@
+ 
+     @overload
+     def prompt(
+-        self,
+-        name_or_fn: F,
+-        *,
+-        name: str | None = None,
+-        version: str | int | None = None,
+-        title: str | None = None,
+-        description: str | None = None,
+-        icons: list[mcp.types.Icon] | None = None,
+-        tags: set[str] | None = None,
+-        meta: dict[str, Any] | None = None,
+-        task: bool | TaskConfig | None = None,
+-        auth: AuthCheck | list[AuthCheck] | None = None,
++            self,
++            name_or_fn: F,
++            *,
++            name: str | None = None,
++            version: str | int | None = None,
++            title: str | None = None,
++            description: str | None = None,
++            icons: list[mcp.types.Icon] | None = None,
++            tags: set[str] | None = None,
++            meta: dict[str, Any] | None = None,
++            task: bool | TaskConfig | None = None,
++            auth: AuthCheck | list[AuthCheck] | None = None,
+     ) -> F: ...
+ 
+     @overload
+     def prompt(
+-        self,
+-        name_or_fn: str | None = None,
+-        *,
+-        name: str | None = None,
+-        version: str | int | None = None,
+-        title: str | None = None,
+-        description: str | None = None,
+-        icons: list[mcp.types.Icon] | None = None,
+-        tags: set[str] | None = None,
+-        meta: dict[str, Any] | None = None,
+-        task: bool | TaskConfig | None = None,
+-        auth: AuthCheck | list[AuthCheck] | None = None,
++            self,
++            name_or_fn: str | None = None,
++            *,
++            name: str | None = None,
++            version: str | int | None = None,
++            title: str | None = None,
++            description: str | None = None,
++            icons: list[mcp.types.Icon] | None = None,
++            tags: set[str] | None = None,
++            meta: dict[str, Any] | None = None,
++            task: bool | TaskConfig | None = None,
++            auth: AuthCheck | list[AuthCheck] | None = None,
+     ) -> Callable[[F], F]: ...
+ 
+     def prompt(
+-        self,
+-        name_or_fn: str | AnyFunction | None = None,
+-        *,
+-        name: str | None = None,
+-        version: str | int | None = None,
+-        title: str | None = None,
+-        description: str | None = None,
+-        icons: list[mcp.types.Icon] | None = None,
+-        tags: set[str] | None = None,
+-        meta: dict[str, Any] | None = None,
+-        task: bool | TaskConfig | None = None,
+-        auth: AuthCheck | list[AuthCheck] | None = None,
++            self,
++            name_or_fn: str | AnyFunction | None = None,
++            *,
++            name: str | None = None,
++            version: str | int | None = None,
++            title: str | None = None,
++            description: str | None = None,
++            icons: list[mcp.types.Icon] | None = None,
++            tags: set[str] | None = None,
++            meta: dict[str, Any] | None = None,
++            task: bool | TaskConfig | None = None,
++            auth: AuthCheck | list[AuthCheck] | None = None,
+     ) -> (
+-        Callable[[AnyFunction], FunctionPrompt]
+-        | FunctionPrompt
+-        | partial[Callable[[AnyFunction], FunctionPrompt] | FunctionPrompt]
++            Callable[[AnyFunction], FunctionPrompt]
++            | FunctionPrompt
++            | partial[Callable[[AnyFunction], FunctionPrompt] | FunctionPrompt]
+     ):
+         """Decorator to register a prompt.
+ 
+@@ -2063,12 +2063,12 @@
+         )
+ 
+     def mount(
+-        self,
+-        server: FastMCP[LifespanResultT],
+-        namespace: str | None = None,
+-        as_proxy: bool | None = None,
+-        tool_names: dict[str, str] | None = None,
+-        prefix: str | None = None,  # deprecated, use namespace
++            self,
++            server: FastMCP[LifespanResultT],
++            namespace: str | None = None,
++            as_proxy: bool | None = None,
++            tool_names: dict[str, str] | None = None,
++            prefix: str | None = None,  # deprecated, use namespace
+     ) -> None:
+         """Mount another FastMCP server on this server with an optional namespace.
+ 
+@@ -2169,9 +2169,9 @@
+         self.add_provider(provider, namespace=namespace or "")
+ 
+     async def import_server(
+-        self,
+-        server: FastMCP[LifespanResultT],
+-        prefix: str | None = None,
++            self,
++            server: FastMCP[LifespanResultT],
++            prefix: str | None = None,
+     ) -> None:
+         """
+         Import the MCP objects from another FastMCP server into this one,
+@@ -2269,17 +2269,17 @@
  
      @classmethod
--    def as_proxy(
+     def from_openapi(
+-        cls,
+-        openapi_spec: dict[str, Any],
+-        client: httpx.AsyncClient | None = None,
+-        name: str = "OpenAPI Server",
+-        route_maps: list[RouteMap] | None = None,
+-        route_map_fn: OpenAPIRouteMapFn | None = None,
+-        mcp_component_fn: OpenAPIComponentFn | None = None,
+-        mcp_names: dict[str, str] | None = None,
+-        tags: set[str] | None = None,
+-        validate_output: bool = True,
+-        **settings: Any,
++            cls,
++            openapi_spec: dict[str, Any],
++            client: httpx.AsyncClient | None = None,
++            name: str = "OpenAPI Server",
++            route_maps: list[RouteMap] | None = None,
++            route_map_fn: OpenAPIRouteMapFn | None = None,
++            mcp_component_fn: OpenAPIComponentFn | None = None,
++            mcp_names: dict[str, str] | None = None,
++            tags: set[str] | None = None,
++            validate_output: bool = True,
++            **settings: Any,
+     ) -> Self:
+         """
+         Create a FastMCP server from an OpenAPI specification.
+@@ -2320,16 +2320,16 @@
+ 
+     @classmethod
+     def from_fastapi(
+-        cls,
+-        app: Any,
+-        name: str | None = None,
+-        route_maps: list[RouteMap] | None = None,
+-        route_map_fn: OpenAPIRouteMapFn | None = None,
+-        mcp_component_fn: OpenAPIComponentFn | None = None,
+-        mcp_names: dict[str, str] | None = None,
+-        httpx_client_kwargs: dict[str, Any] | None = None,
+-        tags: set[str] | None = None,
+-        **settings: Any,
++            cls,
++            app: Any,
++            name: str | None = None,
++            route_maps: list[RouteMap] | None = None,
++            route_map_fn: OpenAPIRouteMapFn | None = None,
++            mcp_component_fn: OpenAPIComponentFn | None = None,
++            mcp_names: dict[str, str] | None = None,
++            httpx_client_kwargs: dict[str, Any] | None = None,
++            tags: set[str] | None = None,
++            **settings: Any,
+     ) -> Self:
+         """
+         Create a FastMCP server from a FastAPI application.
+@@ -2375,19 +2375,19 @@
+ 
+     @classmethod
+     def as_proxy(
 -        cls,
 -        backend: (
 -            Client[ClientTransportT]
@@ -161,29 +827,50 @@
 -            | str
 -        ),
 -        **settings: Any,
--    ) -> FastMCPProxy:
--        """Create a FastMCP proxy server for the given backend.
--
--        .. deprecated::
--            Use :func:`fastmcp.server.create_proxy` instead.
--            This method will be removed in a future version.
--
--        The `backend` argument can be either an existing `fastmcp.client.Client`
--        instance or any value accepted as the `transport` argument of
--        `fastmcp.client.Client`. This mirrors the convenience of the
--        `fastmcp.client.Client` constructor.
--        """
--        if fastmcp.settings.deprecation_warnings:
--            warnings.warn(
--                "FastMCP.as_proxy() is deprecated. Use create_proxy() from "
--                "fastmcp.server instead: `from fastmcp.server import create_proxy`",
--                FastMCPDeprecationWarning,
--                stacklevel=2,
--            )
--        # Call the module-level create_proxy function directly
--        return create_proxy(backend, **settings)
--
--    @classmethod
-     def generate_name(cls, name: str | None = None) -> str:
-         class_name = cls.__name__
++            cls,
++            backend: (
++                    Client[ClientTransportT]
++                    | ClientTransport
++                    | FastMCP[Any]
++                    | FastMCP1Server
++                    | AnyUrl
++                    | Path
++                    | MCPConfig
++                    | dict[str, Any]
++                    | str
++            ),
++            **settings: Any,
+     ) -> FastMCPProxy:
+         """Create a FastMCP proxy server for the given backend.
+ 
+@@ -2426,18 +2426,18 @@
+ 
+ 
+ def create_proxy(
+-    target: (
+-        Client[ClientTransportT]
+-        | ClientTransport
+-        | FastMCP[Any]
+-        | FastMCP1Server
+-        | AnyUrl
+-        | Path
+-        | MCPConfig
+-        | dict[str, Any]
+-        | str
+-    ),
+-    **settings: Any,
++        target: (
++                Client[ClientTransportT]
++                | ClientTransport
++                | FastMCP[Any]
++                | FastMCP1Server
++                | AnyUrl
++                | Path
++                | MCPConfig
++                | dict[str, Any]
++                | str
++        ),
++        **settings: Any,
+ ) -> FastMCPProxy:
+     """Create a FastMCP proxy server for the given target.
  

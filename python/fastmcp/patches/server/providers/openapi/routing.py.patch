@@ -1,0 +1,11 @@
+--- work/sources/fastmcp_slim/fastmcp/server/providers/openapi/routing.py	2026-05-16 04:15:58.927524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/providers/openapi/routing.py	2026-05-17 03:46:17.171650111 +0000
+@@ -9,7 +9,7 @@
+ from re import Pattern
+ from typing import TYPE_CHECKING, Literal
+ 
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
+     from fastmcp.server.providers.openapi.components import (
+         OpenAPIResource,
+         OpenAPIResourceTemplate,

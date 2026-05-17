@@ -1,0 +1,11 @@
+--- work/sources/fastmcp_slim/fastmcp/server/auth/handlers/authorize.py	2026-05-16 04:15:58.923524368 +0000
++++ work/patched/fastmcp_slim/fastmcp/server/auth/handlers/authorize.py	2026-05-17 03:46:17.159650112 +0000
+@@ -32,7 +32,7 @@
+     create_secure_html_response,
+ )
+ 
+-if TYPE_CHECKING:
++if __debug__ and __import__("typing").TYPE_CHECKING:
+     from mcp.server.auth.provider import OAuthAuthorizationServerProvider
+ 
+ logger = get_logger(__name__)
