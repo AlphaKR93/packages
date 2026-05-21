@@ -1,0 +1,18 @@
+--- work/sources/src/mcp/server/auth/middleware/bearer_auth.py
++++ work/patched/src/mcp/server/auth/middleware/bearer_auth.py
+@@ -5,11 +5,14 @@
+ from pydantic import AnyHttpUrl
+ from starlette.authentication import AuthCredentials, AuthenticationBackend, SimpleUser
+ from starlette.requests import HTTPConnection
+-from starlette.types import Receive, Scope, Send
+ 
+ from mcp.server.auth.provider import AccessToken, TokenVerifier
+ 
+ 
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from starlette.types import Receive, Scope, Send
++
++
+ class AuthenticatedUser(SimpleUser):
+     """User with authentication info."""
+ 

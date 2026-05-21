@@ -56,3 +56,12 @@
                  pass  # Not JSON or unexpected format, return as-is
  
          return response
+@@ -769,7 +767,7 @@
+                 )
+                 oauth_routes.append(
+                     Route(
+-                        path="/token",
++                        "/token",
+                         endpoint=cors_middleware(
+                             token_handler.handle, ["POST", "OPTIONS"]
+                         ),

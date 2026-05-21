@@ -1,8 +1,9 @@
 --- work/sources/fastmcp_slim/fastmcp/server/server.py
 +++ work/patched/fastmcp_slim/fastmcp/server/server.py
-@@ -1,281 +1,26 @@
+@@ -1,281 +1,25 @@
  """FastMCP - A more ergonomic interface for MCP servers."""
--
++from typing import Any
+ 
 -from __future__ import annotations
 -
 -import asyncio
@@ -91,7 +92,6 @@
 -    version_sort_key,
 -)
 +from fastmcp.utilities.types import FastMCPBaseModel
-+
  
 -if TYPE_CHECKING:
 -    from fastmcp.client import Client
@@ -102,8 +102,6 @@
 -    from fastmcp.server.providers.openapi import RouteMap
 -    from fastmcp.server.providers.openapi import RouteMapFn as OpenAPIRouteMapFn
 -    from fastmcp.server.providers.proxy import FastMCPProxy
-+if __debug__ and __import__("typing").TYPE_CHECKING:
-+    from typing import Any
  
 -logger = get_logger(__name__)
 +_logger = get_logger(__name__)
@@ -185,7 +183,14 @@
 -    if is_stdio:
 -        return (True, None)
 -    from fastmcp.server.dependencies import get_access_token
--
++@lambda _: _()
++def _():
++    import logging
++
++    class __SuppressUnlistedToolWarning(logging.Filter):
++        def filter(self, record: logging.LogRecord) -> bool:
++            return "not listed, no validation" not in record.getMessage()
+ 
 -    return (False, get_access_token())
 -
 -
@@ -280,14 +285,7 @@
 -                "FastMCP server has a lifespan defined but no lifespan result is set, which means the server's context manager was not entered. "
 -                " Are you running the server in a way that supports lifespans? If so, please file an issue at https://github.com/PrefectHQ/fastmcp/issues."
 -            )
-+@lambda _: _()
-+def _():
-+    import logging
-+
-+    class __SuppressUnlistedToolWarning(logging.Filter):
-+        def filter(self, record: logging.LogRecord) -> bool:
-+            return "not listed, no validation" not in record.getMessage()
- 
+-
 -        yield fastmcp_server._lifespan_result  # ty:ignore[invalid-yield]
 -
 -    return wrap
@@ -295,7 +293,7 @@
  
  
  class StateValue(FastMCPBaseModel):
-@@ -284,2197 +29,6 @@
+@@ -284,2197 +28,6 @@
      value: Any
  
  

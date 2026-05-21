@@ -1,11 +1,50 @@
 --- work/sources/fastmcp_slim/fastmcp/server/providers/__init__.py
 +++ work/patched/fastmcp_slim/fastmcp/server/providers/__init__.py
-@@ -39,7 +39,7 @@
-     SkillsProvider,
- )
+@@ -25,45 +25,30 @@
+     ```
+ """
+ 
+-from typing import TYPE_CHECKING
+-
+ from fastmcp.server.providers.aggregate import AggregateProvider
+ from fastmcp.server.providers.base import Provider
+ from fastmcp.server.providers.fastmcp_provider import FastMCPProvider
+ from fastmcp.server.providers.filesystem import FileSystemProvider
+ from fastmcp.server.providers.local_provider import LocalProvider
+-from fastmcp.server.providers.skills import (
+-    ClaudeSkillsProvider,
+-    SkillProvider,
+-    SkillsDirectoryProvider,
+-    SkillsProvider,
+-)
++from fastmcp.server.providers.skills import SkillProvider, SkillsDirectoryProvider
  
 -if TYPE_CHECKING:
 +if __debug__ and __import__("typing").TYPE_CHECKING:
      from fastmcp.server.providers.openapi import OpenAPIProvider as OpenAPIProvider
-     from fastmcp.server.providers.proxy import ProxyProvider as ProxyProvider
+-    from fastmcp.server.providers.proxy import ProxyProvider as ProxyProvider
+ 
+ __all__ = [
+     "AggregateProvider",
+-    "ClaudeSkillsProvider",
+     "FastMCPProvider",
+     "FileSystemProvider",
+     "LocalProvider",
+     "OpenAPIProvider",
+     "Provider",
+-    "ProxyProvider",
+     "SkillProvider",
+     "SkillsDirectoryProvider",
+-    "SkillsProvider",  # Backwards compatibility alias for SkillsDirectoryProvider
+ ]
+ 
+ 
+ def __getattr__(name: str) -> object:
+     """Lazy import for providers to avoid circular imports."""
+-    if name == "ProxyProvider":
+-        from fastmcp.server.providers.proxy import ProxyProvider
+-
+-        return ProxyProvider
+     if name == "OpenAPIProvider":
+         from fastmcp.server.providers.openapi import OpenAPIProvider
  

@@ -161,11 +161,12 @@
              return
  
          scope.update(child_scope)
-@@ -198,17 +178,16 @@
+@@ -197,18 +177,17 @@
+     def __init__(
          self,
          path: str,
-         endpoint: Callable[..., Any],
 +        /,
+         endpoint: Callable[..., Any],
          *,
          methods: Collection[str] | None = None,
          name: str | None = None,

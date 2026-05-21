@@ -1,0 +1,17 @@
+--- work/sources/src/mcp/server/auth/middleware/auth_context.py
++++ work/patched/src/mcp/server/auth/middleware/auth_context.py
+@@ -1,10 +1,12 @@
+ import contextvars
+ 
+-from starlette.types import ASGIApp, Receive, Scope, Send
+-
+ from mcp.server.auth.middleware.bearer_auth import AuthenticatedUser
+ from mcp.server.auth.provider import AccessToken
+ 
++
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from starlette.types import ASGIApp, Receive, Scope, Send
++
+ # Create a contextvar to store the authenticated user
+ # The default is None, indicating no authenticated user is present
+ auth_context_var = contextvars.ContextVar[AuthenticatedUser | None]("auth_context", default=None)

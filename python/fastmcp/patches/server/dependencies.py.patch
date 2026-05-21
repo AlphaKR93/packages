@@ -12,7 +12,7 @@
  import inspect
  import weakref
  from collections.abc import AsyncGenerator, Callable
-@@ -17,7 +13,8 @@
+@@ -17,17 +13,13 @@
  from datetime import datetime, timezone
  from functools import lru_cache
  from types import TracebackType
@@ -20,18 +20,29 @@
 +from typing import Any, Protocol, cast, get_type_hints, runtime_checkable
 +from warnings import deprecated
  
- from mcp.server.auth.middleware.auth_context import (
-     get_access_token as _sdk_get_access_token,
-@@ -27,7 +24,6 @@
-     AccessToken as _SDKAccessToken,
- )
+-from mcp.server.auth.middleware.auth_context import (
+-    get_access_token as _sdk_get_access_token,
+-)
++from mcp.server.auth.middleware.auth_context import get_access_token as _sdk_get_access_token
+ from mcp.server.auth.middleware.bearer_auth import AuthenticatedUser
+-from mcp.server.auth.provider import (
+-    AccessToken as _SDKAccessToken,
+-)
++from mcp.server.auth.provider import AccessToken as _SDKAccessToken
  from mcp.server.lowlevel.server import request_ctx
 -from packaging.version import Version
  from starlette.requests import Request
  from uncalled_for import Dependency, get_dependency_parameters
  from uncalled_for.resolution import _Depends
-@@ -41,9 +37,8 @@
- )
+@@ -35,15 +27,11 @@
+ from fastmcp.exceptions import FastMCPError
+ from fastmcp.server.auth import AccessToken
+ from fastmcp.server.http import _current_http_request
+-from fastmcp.utilities.async_utils import (
+-    call_sync_fn_in_threadpool,
+-    is_coroutine_function,
+-)
++from fastmcp.utilities.async_utils import call_sync_fn_in_threadpool, is_coroutine_function
  from fastmcp.utilities.types import find_kwarg_by_type, is_class_member_of_type
  
 -if TYPE_CHECKING:
@@ -42,7 +53,44 @@
  
      from fastmcp.server.context import Context
      from fastmcp.server.server import FastMCP
-@@ -96,18 +91,11 @@
+@@ -59,55 +47,26 @@
+     "CurrentRequest",
+     "CurrentWorker",
+     "Progress",
+-    "TaskContextInfo",
+-    "TaskContextSnapshot",
+     "TokenClaim",
+     "get_access_token",
+     "get_context",
+     "get_http_headers",
+     "get_http_request",
+     "get_server",
+-    "get_task_context",
+-    "get_task_session",
+-    "is_docket_available",
+-    "register_task_server",
+-    "register_task_session",
+-    "require_docket",
+     "resolve_dependencies",
+     "transform_context_annotations",
+     "without_injected_parameters",
+ ]
+ 
+-
+-# Task context lives in fastmcp.server.tasks.context; public symbols are
+-# re-exported here so existing imports from dependencies continue to work.
+-from fastmcp.server.tasks.context import (
+-    TaskContextInfo,
+-    TaskContextSnapshot,
+-    _recall_snapshot,
+-    get_task_context,
+-    get_task_server,
+-    get_task_session,
+-    register_task_server,
+-    register_task_session,
+-)
+-
+ _current_server: ContextVar[weakref.ref[FastMCP] | None] = ContextVar(
      "server", default=None
  )
  
@@ -62,7 +110,7 @@
  def is_docket_available() -> bool:
      """Check if a compatible pydocket (>= 0.19.0) is installed and importable.
  
-@@ -122,56 +110,18 @@
+@@ -122,56 +81,18 @@
      Any of those failing means we treat docket as unavailable and fall back
      to the no-tasks code paths instead of crashing deep inside a request.
      """
@@ -123,7 +171,86 @@
  
  
  # --- Context utilities ---
-@@ -618,7 +568,7 @@
+@@ -320,7 +241,8 @@
+ 
+ def get_context() -> Context:
+     """Get the current FastMCP Context instance directly."""
+-    from fastmcp.server.context import _current_context
++    # noinspection PyUnresolvedReferences
++    from alpha93.fastmcp._internal.server.context import _current_context
+ 
+     context = _current_context.get()
+     if context is None:
+@@ -341,14 +263,6 @@
+     Raises:
+         RuntimeError: If no server in context
+     """
+-    # In a task context, prefer the task-specific server mapping.
+-    # This handles mounted-child tasks where _current_server is the parent.
+-    task_info = get_task_context()
+-    if task_info is not None:
+-        task_server = get_task_server(task_info.task_id)
+-        if task_server is not None:
+-            return task_server
+-
+     server_ref = _current_server.get()
+     if server_ref is None:
+         raise RuntimeError("No FastMCP server instance in context")
+@@ -375,33 +289,6 @@
+     if request is None:
+         request = _current_http_request.get()
+ 
+-    # In Docket workers, restore a minimal request from the snapshotted
+-    # headers.  The snapshot is preloaded by restore_task_snapshot before
+-    # user code runs, so this is a pure ContextVar read.
+-    if request is None:
+-        task_info = get_task_context()
+-        snapshot = _recall_snapshot(task_info.task_id) if task_info else None
+-        task_headers = snapshot.http_headers if snapshot else None
+-        if task_headers:
+-            request = Request(
+-                {
+-                    "type": "http",
+-                    "http_version": "1.1",
+-                    "method": "POST",
+-                    "scheme": "http",
+-                    "path": "/",
+-                    "raw_path": b"/",
+-                    "query_string": b"",
+-                    "headers": [
+-                        (name.encode("latin-1"), value.encode("latin-1"))
+-                        for name, value in task_headers.items()
+-                    ],
+-                    "client": None,
+-                    "server": None,
+-                    "root_path": "",
+-                }
+-            )
+-
+     if request is None:
+         raise RuntimeError("No active HTTP request found.")
+     return request
+@@ -494,19 +381,6 @@
+     if access_token is None:
+         access_token = _sdk_get_access_token()
+ 
+-    # Fall back to background task snapshot (#3095).  In Docket workers,
+-    # neither the HTTP request nor the SDK context var is available; the
+-    # snapshot is preloaded by restore_task_snapshot before user code runs.
+-    if access_token is None:
+-        task_info = get_task_context()
+-        snapshot = _recall_snapshot(task_info.task_id) if task_info else None
+-        if snapshot is not None and snapshot.access_token_json is not None:
+-            task_token = AccessToken.model_validate_json(snapshot.access_token_json)
+-            if task_token.expires_at is not None:
+-                if task_token.expires_at < int(datetime.now(timezone.utc).timestamp()):
+-                    return None
+-            return task_token
+-
+     if access_token is None or isinstance(access_token, AccessToken):
+         return access_token
+ 
+@@ -618,7 +492,7 @@
      }
      wrapper.__name__ = getattr(fn, "__name__", "wrapper")
      wrapper.__doc__ = getattr(fn, "__doc__", None)
@@ -132,7 +259,69 @@
      wrapper.__qualname__ = getattr(fn, "__qualname__", wrapper.__qualname__)
  
      return wrapper
-@@ -870,37 +820,8 @@
+@@ -757,39 +631,14 @@
+     """
+ 
+     async def __aenter__(self) -> Context:
+-        from fastmcp.server.context import Context, _current_context
++        # noinspection PyUnresolvedReferences
++        from alpha93.fastmcp._internal.server.context import _current_context
+ 
+         # Try foreground context first (normal MCP request)
+         context = _current_context.get()
+         if context is not None:
+             return context
+ 
+-        # Check if we're in a Docket worker context
+-        task_info = get_task_context()
+-        if task_info is not None:
+-            server = get_server()
+-
+-            # The snapshot is preloaded by restore_task_snapshot (worker-level
+-            # Docket dependency) before any task code runs, so this is a pure
+-            # ContextVar read — no Redis I/O here.
+-            snapshot = _recall_snapshot(task_info.task_id)
+-            origin_request_id = snapshot.origin_request_id if snapshot else None
+-
+-            # Session ID is stored in the snapshot for notification delivery
+-            snapshot_session_id = snapshot.session_id if snapshot else None
+-            session = (
+-                get_task_session(snapshot_session_id) if snapshot_session_id else None
+-            )
+-
+-            ctx = Context(
+-                fastmcp=server,
+-                session=session,
+-                task_id=task_info.task_id,
+-                origin_request_id=origin_request_id,
+-            )
+-            await ctx.__aenter__()
+-            return ctx
+-
+         raise RuntimeError(
+             "No active context found. This can happen if:\n"
+             "  - Called outside an MCP request handler\n"
+@@ -803,7 +652,8 @@
+         exc_value: BaseException | None,
+         traceback: TracebackType | None,
+     ) -> None:
+-        from fastmcp.server.context import _current_context
++        # noinspection PyUnresolvedReferences
++        from alpha93.fastmcp._internal.server.context import _current_context
+ 
+         ctx = _current_context.get()
+         if ctx is not None and ctx.is_background_task:
+@@ -833,7 +683,8 @@
+         exc_value: BaseException | None,
+         traceback: TracebackType | None,
+     ) -> None:
+-        from fastmcp.server.context import _current_context
++        # noinspection PyUnresolvedReferences
++        from alpha93.fastmcp._internal.server.context import _current_context
+ 
+         ctx = _current_context.get()
+         if ctx is not None and ctx.is_background_task:
+@@ -870,37 +721,8 @@
      return cast("Context | None", _OptionalCurrentContext())
  
  
@@ -172,16 +361,16 @@
      """Get the current Docket instance managed by FastMCP.
  
      This dependency provides access to the Docket instance that FastMCP
-@@ -924,39 +845,10 @@
+@@ -924,39 +746,10 @@
          ```
      """
      require_docket("CurrentDocket()")
 -    return cast("Docket", _CurrentDocket())
 -
--
+ 
 -class _CurrentWorker(Dependency["Worker"]):
 -    """Async context manager for Worker dependency."""
--
+ 
 -    async def __aenter__(self) -> Worker:
 -        require_docket("CurrentWorker()")
 -        # Check server instance first, fall back to ContextVar for mounted children
@@ -206,15 +395,15 @@
 -        traceback: TracebackType | None,
 -    ) -> None:
 -        pass
- 
- 
+-
+-
 -def CurrentWorker() -> Worker:
 +@deprecated("Unused")
 +def CurrentWorker():
      """Get the current Docket Worker instance managed by FastMCP.
  
      This dependency provides access to the Worker instance that FastMCP
-@@ -979,7 +871,6 @@
+@@ -979,7 +772,6 @@
          ```
      """
      require_docket("CurrentWorker()")
@@ -222,7 +411,7 @@
  
  
  class _CurrentFastMCP(Dependency["FastMCP"]):
-@@ -1216,16 +1107,6 @@
+@@ -1216,16 +1008,6 @@
              raise RuntimeError("Progress dependency requires a FastMCP server context.")
  
          instance = Progress()

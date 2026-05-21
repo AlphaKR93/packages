@@ -18,7 +18,7 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from .function_prompt import FunctionPrompt
 
 
-class Prompt(ABC, FastMCPComponent):
+class Prompt(FastMCPComponent):
     """A prompt template that can be rendered with parameters."""
 
     KEY_PREFIX: ClassVar[str] = "prompt"

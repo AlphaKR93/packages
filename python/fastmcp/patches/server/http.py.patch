@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/server/http.py
 +++ work/patched/fastmcp_slim/fastmcp/server/http.py
-@@ -1,30 +1,29 @@
+@@ -1,30 +1,30 @@
 -from __future__ import annotations
 -
 -from collections.abc import AsyncGenerator, Callable, Generator
@@ -21,6 +21,7 @@
 -from starlette.responses import Response
 -from starlette.routing import BaseRoute, Mount, Route
 -from starlette.types import Lifespan, Receive, Scope, Send
++from starlette.routing import Route
  
 -from fastmcp.server.auth import AuthProvider
 -from fastmcp.server.auth.middleware import RequireAuthMiddleware
@@ -37,7 +38,7 @@
 +    from starlette.applications import Starlette
 +    from starlette.middleware import Middleware
 +    from starlette.requests import Request
-+    from starlette.routing import BaseRoute, Route
++    from starlette.routing import BaseRoute
 +    from starlette.types import Lifespan
 +
 +    from .auth import AuthProvider
@@ -47,7 +48,7 @@
  
  logger = get_logger(__name__)
  
-@@ -32,16 +31,16 @@
+@@ -32,16 +32,16 @@
  class StreamableHTTPASGIApp:
      """ASGI application wrapper for Streamable HTTP server transport."""
  
@@ -67,7 +68,7 @@
          except RuntimeError as e:
              if str(e) == "Task group is not initialized. Make sure to use run().":
                  logger.error(
-@@ -73,12 +72,12 @@
+@@ -73,12 +73,12 @@
  
  class StarletteWithLifespan(Starlette):
      @property
@@ -82,7 +83,7 @@
      token = _current_http_request.set(request)
      try:
          yield request
-@@ -91,24 +90,25 @@
+@@ -91,24 +91,25 @@
      Middleware that stores each request in a ContextVar and sets transport type.
      """
  
@@ -113,7 +114,7 @@
  
  
  def create_base_app(
-@@ -139,136 +139,10 @@
+@@ -139,136 +140,10 @@
      )
  
  
@@ -254,7 +255,7 @@
      event_store: EventStore | None = None,
      retry_interval: int | None = None,
      auth: AuthProvider | None = None,
-@@ -282,7 +156,7 @@
+@@ -282,7 +157,7 @@
  
      Args:
          server: The FastMCP server instance
@@ -263,7 +264,7 @@
          event_store: Optional event store for SSE polling/resumability
          retry_interval: Optional retry interval in milliseconds for SSE polling.
              Controls how quickly clients should reconnect after server-initiated
-@@ -309,48 +183,37 @@
+@@ -309,48 +184,37 @@
          auth_middleware = auth.get_middleware()
  
          # Get auth provider's own routes (OAuth endpoints, metadata, etc)
@@ -321,7 +322,7 @@
  
      # Add middleware
      if middleware:
-@@ -358,7 +221,7 @@
+@@ -358,7 +222,7 @@
  
      # Create a lifespan manager to start and stop the session manager
      @asynccontextmanager
@@ -330,7 +331,7 @@
          streamable_http_app.session_manager = StreamableHTTPSessionManager(
              app=server._mcp_server,
              event_store=event_store,
-@@ -400,7 +263,7 @@
+@@ -400,7 +264,7 @@
      )
      # Store the FastMCP server instance on the Starlette app state
      app.state.fastmcp_server = server

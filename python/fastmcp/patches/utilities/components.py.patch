@@ -1,11 +1,10 @@
 --- work/sources/fastmcp_slim/fastmcp/utilities/components.py
 +++ work/patched/fastmcp_slim/fastmcp/utilities/components.py
-@@ -1,20 +1,15 @@
+@@ -1,20 +1,14 @@
 -from __future__ import annotations
 -
 -from collections.abc import Sequence
 -from typing import TYPE_CHECKING, Annotated, Any, ClassVar, TypedDict, cast
-+from abc import ABC
 +from typing import Annotated, Any, ClassVar, TypedDict, cast
  
  from mcp.types import Icon
@@ -26,7 +25,7 @@
  
  
  class FastMCPMeta(TypedDict, total=False):
-@@ -23,7 +18,7 @@
+@@ -23,7 +17,7 @@
      versions: list[str]
  
  
@@ -35,7 +34,7 @@
      """Extract FastMCP metadata from a component's meta dict.
  
      Handles both the current `fastmcp` namespace and the legacy `_fastmcp`
-@@ -40,7 +35,7 @@
+@@ -40,7 +34,7 @@
      return {}
  
  
@@ -44,7 +43,7 @@
      """Convert a sequence to a set, defaulting to an empty set if None."""
      if maybe_set is None:
          return set()
-@@ -49,7 +44,7 @@
+@@ -49,7 +43,7 @@
      return set(maybe_set)
  
  
@@ -53,13 +52,7 @@
      """Coerce version to string, accepting int, float, or str.
  
      Raises TypeError for non-scalar types (list, dict, set, etc.).
-@@ -71,12 +66,12 @@
-     return version
- 
- 
--class FastMCPComponent(FastMCPBaseModel):
-+class FastMCPComponent(ABC, FastMCPBaseModel):
-     """Base class for FastMCP tools, prompts, resources, and resource templates."""
+@@ -76,7 +70,7 @@
  
      KEY_PREFIX: ClassVar[str] = ""
  
@@ -68,7 +61,7 @@
          super().__init_subclass__(**kwargs)
          # Warn if a subclass doesn't define KEY_PREFIX (inherited or its own)
          if not cls.KEY_PREFIX:
-@@ -89,40 +84,32 @@
+@@ -89,40 +83,32 @@
                  stacklevel=2,
              )
  
@@ -133,7 +126,7 @@
          """Construct the lookup key for this component type.
  
          Args:
-@@ -136,7 +123,7 @@
+@@ -136,7 +122,7 @@
          return identifier
  
      @property
@@ -142,7 +135,7 @@
          """The globally unique lookup key for this component.
  
          Format: "{key_prefix}:{identifier}@{version}" or "{key_prefix}:{identifier}@"
-@@ -158,7 +145,7 @@
+@@ -158,7 +144,7 @@
          base_key = self.make_key(self.name)
          return f"{base_key}@{self.version or ''}"
  
@@ -151,7 +144,7 @@
          """Get the meta information about the component.
  
          Returns a dict that always includes a `fastmcp` key containing:
-@@ -186,14 +173,14 @@
+@@ -186,14 +172,14 @@
  
          return meta
  
@@ -168,7 +161,7 @@
          parts = [f"name={self.name!r}"]
          if self.version:
              parts.append(f"version={self.version!r}")
-@@ -206,55 +193,11 @@
+@@ -206,55 +192,11 @@
          )
          return f"{self.__class__.__name__}({', '.join(parts)})"
  

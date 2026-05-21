@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/utilities/versions.py
 +++ work/patched/fastmcp_slim/fastmcp/utilities/versions.py
-@@ -11,20 +11,15 @@
+@@ -11,21 +11,14 @@
      - "2025-01-15" → not valid PEP 440, compared as strings
      - None → sorts lowest (unversioned components)
  """
@@ -12,19 +12,19 @@
  from functools import total_ordering
 -from typing import TYPE_CHECKING, Any, TypeVar, cast
  
- from packaging.version import InvalidVersion, Version
- 
--if TYPE_CHECKING:
--    from fastmcp.utilities.components import FastMCPComponent
+-from packaging.version import InvalidVersion, Version
 +if __debug__ and __import__("typing").TYPE_CHECKING:
 +    from collections.abc import Callable, Sequence
  
--C = TypeVar("C", bound=Any)
-+    from fastmcp.utilities.components import FastMCPComponent
+-if TYPE_CHECKING:
+     from fastmcp.utilities.components import FastMCPComponent
  
+-C = TypeVar("C", bound=Any)
+-
  
  @dataclass
-@@ -45,7 +40,7 @@
+ class VersionSpec:
+@@ -45,7 +38,7 @@
      lt: str | None = None
      eq: str | None = None
  
@@ -33,7 +33,7 @@
          """Check if a version matches this spec.
  
          Args:
-@@ -78,7 +73,7 @@
+@@ -78,7 +71,7 @@
  
          return True
  
@@ -42,36 +42,77 @@
          """Return a spec that satisfies both this spec and other.
  
          Used by transforms to combine caller constraints with filter constraints.
-@@ -126,7 +121,7 @@
+@@ -124,25 +117,18 @@
+     4. When comparing PEP 440 vs string, PEP 440 comes first
+     """
  
-     __slots__ = ("_is_none", "_is_pep440", "_parsed", "_raw")
+-    __slots__ = ("_is_none", "_is_pep440", "_parsed", "_raw")
++    __slots__ = ("_is_none", "_parsed", "_raw")
  
 -    def __init__(self, version: str | None) -> None:
 +    def __init__(self, version: str | None, /) -> None:
          self._raw = version
          self._is_none = version is None
-         self._is_pep440 = False
-@@ -142,7 +137,7 @@
-                 # Fall back to string comparison for non-PEP 440 versions
-                 self._parsed = version
+-        self._is_pep440 = False
+-        self._parsed: Version | str | None = None
++        self._parsed: str | None = None
+ 
+         if version is not None:
+-            # Strip leading 'v' if present (common convention like "v1.0")
+-            normalized = version.lstrip("v") if version.startswith("v") else version
+-            try:
+-                self._parsed = Version(normalized)
+-                self._is_pep440 = True
+-            except InvalidVersion:
+-                # Fall back to string comparison for non-PEP 440 versions
+-                self._parsed = version
++            # Fall back to string comparison for non-PEP 440 versions
++            self._parsed = version
  
 -    def __eq__(self, other: object) -> bool:
 +    def __eq__(self, other: object, /) -> bool:
          if not isinstance(other, VersionKey):
              return NotImplemented
          if self._is_none and other._is_none:
-@@ -157,7 +152,7 @@
-         # One is PEP 440, other is string - never equal
-         return False
+@@ -150,14 +136,9 @@
+         if self._is_none != other._is_none:
+             return False
+         # Both are not None
+-        if self._is_pep440 and other._is_pep440:
+-            return self._parsed == other._parsed
+-        if not self._is_pep440 and not other._is_pep440:
+-            return self._parsed == other._parsed
+-        # One is PEP 440, other is string - never equal
+-        return False
++        return self._parsed == other._parsed
  
 -    def __lt__(self, other: object) -> bool:
 +    def __lt__(self, other: object, /) -> bool:
          if not isinstance(other, VersionKey):
              return NotImplemented
          # None sorts lowest
-@@ -183,11 +178,11 @@
-         # (arbitrary but consistent choice)
-         return self._is_pep440
+@@ -168,26 +149,16 @@
+         if other._is_none:
+             return False  # anything > None
+ 
+-        # Both are not None
+-        if self._is_pep440 and other._is_pep440:
+-            # Both PEP 440 - compare normally
+-            assert isinstance(self._parsed, Version)
+-            assert isinstance(other._parsed, Version)
+-            return self._parsed < other._parsed
+-        if not self._is_pep440 and not other._is_pep440:
+-            # Both strings - lexicographic
+-            assert isinstance(self._parsed, str)
+-            assert isinstance(other._parsed, str)
+-            return self._parsed < other._parsed
+-        # Mixed: PEP 440 sorts before strings
+-        # (arbitrary but consistent choice)
+-        return self._is_pep440
++        # Both strings - lexicographic
++        assert isinstance(self._parsed, str)
++        assert isinstance(other._parsed, str)
++        return self._parsed < other._parsed
  
 -    def __repr__(self) -> str:
 +    def __repr__(self, /) -> str:
@@ -83,7 +124,7 @@
      """Parse a version string into a sortable key.
  
      Args:
-@@ -199,7 +194,7 @@
+@@ -199,7 +170,7 @@
      return VersionKey(version)
  
  
@@ -92,7 +133,7 @@
      """Get a sort key for a component based on its version.
  
      Use with sorted() or max() to order components by version.
-@@ -219,7 +214,7 @@
+@@ -219,7 +190,7 @@
      return parse_version_key(component.version)
  
  
@@ -101,7 +142,7 @@
      """Compare two version strings.
  
      Args:
-@@ -241,7 +236,7 @@
+@@ -241,7 +212,7 @@
      return (key_a > key_b) - (key_a < key_b)
  
  
@@ -110,7 +151,7 @@
      """Check if version a is greater than version b.
  
      Args:
-@@ -254,7 +249,7 @@
+@@ -254,7 +225,7 @@
      return compare_versions(a, b) > 0
  
  
@@ -119,7 +160,7 @@
      """Return the greater of two versions.
  
      Args:
-@@ -271,7 +266,7 @@
+@@ -271,7 +242,7 @@
      return a if compare_versions(a, b) >= 0 else b
  
  
@@ -128,7 +169,7 @@
      """Return the lesser of two versions.
  
      Args:
-@@ -288,9 +283,10 @@
+@@ -288,9 +259,10 @@
      return a if compare_versions(a, b) <= 0 else b
  
  
@@ -140,7 +181,7 @@
  ) -> list[C]:
      """Deduplicate components by key, keeping highest version.
  
-@@ -310,7 +306,7 @@
+@@ -310,7 +282,7 @@
  
      result: list[C] = []
      for versions in by_key.values():

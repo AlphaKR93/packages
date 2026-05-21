@@ -20,7 +20,7 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from fastmcp.utilities.tasks import TaskMeta
 
 
-class Resource(ABC, FastMCPComponent):
+class Resource(FastMCPComponent):
     """Base class for all resources."""
 
     KEY_PREFIX: ClassVar[str] = "resource"

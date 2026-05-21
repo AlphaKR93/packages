@@ -14,7 +14,8 @@
  
  from fastmcp.exceptions import NotFoundError
  from fastmcp.server.providers.base import Provider
- from fastmcp.server.transforms import Namespace
+-from fastmcp.server.transforms import Namespace
++from fastmcp.server.transforms.namespace import Namespace
  from fastmcp.utilities.async_utils import gather
 -from fastmcp.utilities.components import FastMCPComponent
 -from fastmcp.utilities.versions import VersionSpec, version_sort_key

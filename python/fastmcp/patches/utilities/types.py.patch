@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/utilities/types.py
 +++ work/patched/fastmcp_slim/fastmcp/utilities/types.py
-@@ -1,38 +1,40 @@
+@@ -1,40 +1,48 @@
  """Common types used across FastMCP."""
  
 -import base64
@@ -43,7 +43,7 @@
 +    from typing import Any, Final, Protocol
 +
 +    from mcp.types import Annotations, ContentBlock, ModelPreferences, SamplingMessage
- 
++
 +    class ContextSamplingFallbackProtocol(Protocol):
 +        async def __call__(
 +                self,
@@ -54,14 +54,22 @@
 +                model_preferences: ModelPreferences | str | list[str] | None = None,
 +        ) -> ContentBlock: ...
  
+ 
 -def get_fn_name(fn: Callable[..., Any]) -> str:
 -    return fn.__name__  # ty: ignore[unresolved-attribute]
-+
 +get_fn_name: Final = lambda fn: fn.__name__
  
  
++def validate[T: BaseModel](cls: type[T], /):
++    cls.model_rebuild()
++    return cls
++
++
++@validate
  class FastMCPBaseModel(BaseModel):
-@@ -42,7 +44,7 @@
+     """Base model for FastMCP models."""
+ 
+@@ -42,7 +50,7 @@
  
  
  @lru_cache(maxsize=5000)
@@ -70,7 +78,7 @@
      """
      TypeAdapters are heavy objects, and in an application context we'd typically
      create them once in a global scope and reuse them as often as possible.
-@@ -51,86 +53,89 @@
+@@ -51,86 +59,89 @@
      """
      # For functions, process annotations to handle forward references and convert
      # Annotated[Type, "string"] to Annotated[Type, Field(description="string")]
@@ -173,7 +181,8 @@
 +        return TypeAdapter(cls)
 +
 +    import types
-+
+ 
+-    return TypeAdapter(cls)
 +    # Handle both functions and methods
 +    if inspect.ismethod(cls):
 +        actual_func: T = cls.__func__
@@ -191,7 +200,6 @@
 +        kwdefaults = cls.__kwdefaults__
 +        closure = cls.__closure__
  
--    return TypeAdapter(cls)
 +    new_func = types.FunctionType(
 +        code,
 +        globals_dict,
@@ -210,8 +218,8 @@
 +        return TypeAdapter(new_method)
 +    return TypeAdapter(new_func)
  
- 
 -def issubclass_safe(cls: type, base: type) -> bool:
++
 +def issubclass_safe(cls: type, base: type, /) -> bool:
      """Check if cls is a subclass of base, even if cls is a type variable."""
      try:
@@ -228,7 +236,7 @@
      """
      Check if cls is a member of base, even if cls is a type variable.
  
-@@ -152,7 +157,7 @@
+@@ -152,7 +163,7 @@
          return issubclass_safe(cls, base)
  
  
@@ -237,7 +245,7 @@
      """
      Find the name of the kwarg that is of type kwarg_type.
  
-@@ -178,9 +183,7 @@
+@@ -178,9 +189,7 @@
      return None
  
  
@@ -248,7 +256,7 @@
      """
      Create a new function with the same code but without the specified parameters in annotations.
  
-@@ -190,7 +193,7 @@
+@@ -190,7 +199,7 @@
      import types
  
      if inspect.ismethod(fn):
@@ -257,7 +265,7 @@
          code = actual_func.__code__  # ty: ignore[unresolved-attribute]
          globals_dict = actual_func.__globals__  # ty: ignore[unresolved-attribute]
          name = actual_func.__name__  # ty: ignore[unresolved-attribute]
-@@ -240,6 +243,7 @@
+@@ -240,6 +249,7 @@
  
      def __init__(
          self,
@@ -265,7 +273,7 @@
          path: str | Path | None = None,
          data: bytes | None = None,
          format: str | None = None,
-@@ -257,11 +261,11 @@
+@@ -257,11 +267,11 @@
          self.annotations = annotations
  
      @staticmethod
@@ -280,7 +288,7 @@
          """Get MIME type from format or guess from file extension."""
          if self._format:
              return f"image/{self._format.lower()}"
-@@ -275,19 +279,20 @@
+@@ -275,19 +285,20 @@
              return "application/octet-stream"
          return "image/png"  # default for raw binary data
  
@@ -304,7 +312,7 @@
          mime_type: str | None = None,
          annotations: Annotations | None = None,
      ) -> mcp.types.ImageContent:
-@@ -301,7 +306,7 @@
+@@ -301,7 +312,7 @@
              annotations=annotations or self.annotations,
          )
  
@@ -313,7 +321,7 @@
          """Get image as a data URI."""
          data = self._get_data()
          return f"data:{mime_type or self._mime_type};base64,{data}"
-@@ -312,6 +317,7 @@
+@@ -312,6 +323,7 @@
  
      def __init__(
          self,
@@ -321,7 +329,7 @@
          path: str | Path | None = None,
          data: bytes | None = None,
          format: str | None = None,
-@@ -322,13 +328,13 @@
+@@ -322,13 +334,13 @@
          if path is not None and data is not None:
              raise ValueError("Only one of path or data can be provided")
  
@@ -337,7 +345,7 @@
          """Get MIME type from format or guess from file extension."""
          if self._format:
              return f"audio/{self._format.lower()}"
-@@ -346,14 +352,15 @@
+@@ -346,14 +358,15 @@
  
      def to_audio_content(
          self,
@@ -355,7 +363,7 @@
          else:
              raise ValueError("No audio data available")
  
-@@ -370,6 +377,7 @@
+@@ -370,6 +383,7 @@
  
      def __init__(
          self,
@@ -363,7 +371,7 @@
          path: str | Path | None = None,
          data: bytes | None = None,
          format: str | None = None,
-@@ -381,14 +389,14 @@
+@@ -381,14 +395,14 @@
          if path is not None and data is not None:
              raise ValueError("Only one of path or data can be provided")
  
@@ -380,7 +388,7 @@
          """Get MIME type from format or guess from file extension."""
          if self._format:
              fmt = self._format.lower()
-@@ -406,6 +414,7 @@
+@@ -406,6 +420,7 @@
  
      def to_resource_content(
          self,
@@ -388,7 +396,7 @@
          mime_type: str | None = None,
          annotations: Annotations | None = None,
      ) -> mcp.types.EmbeddedResource:
-@@ -437,7 +446,7 @@
+@@ -437,7 +452,7 @@
                  uri=uri,
              )
          else:
@@ -397,7 +405,7 @@
              resource = mcp.types.BlobResourceContents(
                  blob=data,
                  mimeType=mime,
-@@ -451,7 +460,7 @@
+@@ -451,7 +466,7 @@
          )
  
  
@@ -406,7 +414,7 @@
      """
      Given a (possibly generic, nested, or otherwise complex) type, replaces all
      instances of old_type with new_type.
-@@ -486,14 +495,3 @@
+@@ -486,14 +501,3 @@
          return Union[new_args]  # noqa: UP007
      else:
          return origin[new_args]

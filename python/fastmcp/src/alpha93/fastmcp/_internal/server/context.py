@@ -6,12 +6,12 @@ from dataclasses import dataclass
 
 from mcp.server.lowlevel.server import request_ctx
 
+import fastmcp.server.context as _origin
 from fastmcp.server.elicitation import (
     handle_elicit_accept,
     parse_elicit_response_type,
 )
 from fastmcp.server.sampling.run import sample_impl, sample_step_impl
-from fastmcp.server.context import logger, to_client_logger
 from fastmcp.server.server import StateValue
 from fastmcp.server.transforms.visibility import disable_components as _disable_components
 from fastmcp.server.transforms.visibility import enable_components as _enable_components
@@ -35,7 +35,6 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
 
     from fastmcp.server.elicitation import CancelledElicitation, DeclinedElicitation
     from fastmcp.server.low_level import MiddlewareServerSession
-
     from fastmcp.server.server import FastMCP
 
     type TransportType = Literal["stdio", "streamable-http"]
@@ -335,7 +334,7 @@ class Context:
 
     async def close_sse_stream(self, /):
         if not self.request_context or not self.request_context.close_sse_stream:
-            logger.debug(
+            _origin.logger.debug(
                 "close_sse_stream() called but not applicable "
                 "(requires StreamableHTTP transport with event_store)"
             )
@@ -496,7 +495,7 @@ async def _log_to_server_and_client(
     if logger_name:
         msg_prefix += f" ({logger_name})"
 
-    to_client_logger.log(
+    _origin.to_client_logger.log(
         level=_mcp_level_to_python_level[level],
         msg=f"{msg_prefix}: {data.msg}",
         extra=data.extra,

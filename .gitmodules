@@ -7,3 +7,6 @@
 [submodule "python/fastmcp/work/sources"]
 	path = python/fastmcp/work/sources
 	url = git@github.com:PrefectHQ/fastmcp.git
+[submodule "python/mcp/work/sources"]
+	path = python/mcp/work/sources
+	url = git@github.com:modelcontextprotocol/python-sdk.git

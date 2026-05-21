@@ -1,19 +1,20 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import ClassVar, Annotated, Any
 
 from mcp.types import Annotations
 from pydantic import Field, field_validator
 from pydantic.json_schema import SkipJsonSchema
 
-from fastmcp.resources import ResourceResult
+from fastmcp.resources.base import ResourceResult
 from fastmcp.resources.template import match_uri_template
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
 
-from .function_template import FunctionResourceTemplate
+if __debug__ and __import__("typing").TYPE_CHECKING:
+    from .function_template import FunctionResourceTemplate
 
 
-class ResourceTemplate(ABC, FastMCPComponent):
+class ResourceTemplate(FastMCPComponent):
     """A template for dynamically creating resources."""
 
     KEY_PREFIX: ClassVar[str] = "template"
@@ -38,6 +39,8 @@ class ResourceTemplate(ABC, FastMCPComponent):
 
     @staticmethod
     def from_function(**kwargs) -> FunctionResourceTemplate:
+        from .function_template import FunctionResourceTemplate
+
         return FunctionResourceTemplate.from_function(**kwargs)
 
     @field_validator("mime_type", mode="before")

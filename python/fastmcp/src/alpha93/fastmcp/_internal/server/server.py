@@ -14,14 +14,20 @@ from pydantic import AnyUrl
 from pydantic import ValidationError as PydanticValidationError
 
 from fastmcp.exceptions import AuthorizationError, FastMCPError, NotFoundError, PromptError, ResourceError, ToolError
+from fastmcp.server.middleware import MiddlewareContext
 from fastmcp.server.mixins import LifespanMixin, MCPOperationsMixin, TransportMixin
+from fastmcp.server.low_level import LowLevelServer
 from fastmcp.server.providers.aggregate import AggregateProvider
 from fastmcp.server.transforms.visibility import apply_session_transforms, is_enabled
+from fastmcp.server.transforms.tool_transform import ToolTransform, ToolTransformConfig
 from fastmcp.server.server import StateValue, _logger
+from fastmcp.server.providers import LocalProvider
 from fastmcp.tools import Tool
+from fastmcp.utilities.authorization import AuthContext, run_auth_checks
 from fastmcp.utilities.components import _coerce_version
 from fastmcp.utilities.versions import version_sort_key
 
+import alpha93.fastmcp._internal.server.context as _ctx
 from alpha93._tmp_commons import catch
 
 
@@ -37,15 +43,11 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from fastmcp.prompts import Prompt, PromptResult
     from fastmcp.resources import Resource, ResourceResult, ResourceTemplate
     from fastmcp.server.auth import AuthProvider
-    from fastmcp.server.context import Context
     from fastmcp.server.lifespan import Lifespan
-    from fastmcp.server.low_level import LowLevelServer
-    from fastmcp.server.middleware import Middleware, MiddlewareContext
-    from fastmcp.server.providers import LocalProvider, Provider
-    from fastmcp.server.transforms import ToolTransform, Transform
+    from fastmcp.server.middleware import Middleware
+    from fastmcp.server.providers import Provider
+    from fastmcp.server.transforms import Transform
     from fastmcp.tools import ToolResult
-    from fastmcp.tools.tool_transform import ToolTransformConfig
-    from fastmcp.utilities.authorization import AuthContext, run_auth_checks
     from fastmcp.utilities.tasks import TaskMeta
     from fastmcp.utilities.versions import VersionSpec
 
@@ -117,7 +119,7 @@ class FastMCP[LifespanResultT](
         self.__provider: Final = LocalProvider(on_duplicate)
         self.__support_tasks_by_default: Final = tasks
 
-        self._lifespan: Final = cast(LifespanCallable[LifespanResultT], lifespan)
+        self._lifespan: Final = cast("LifespanCallable[LifespanResultT]", lifespan)
         self._lifespan_result: LifespanResultT | None = None
         self._lifespan_result_set: bool = False
         self._lifespan_ref_count: int = 0
@@ -153,13 +155,13 @@ class FastMCP[LifespanResultT](
 
         # Generate random ID if no name provided
         self._mcp_server: Final = LowLevelServer[LifespanResultT, Any](
-            fastmcp=self,
+            self,
             name=name or self.generate_name(),
             version=_coerce_version(version) or __import__("fastmcp").__version__,
+            lifespan=_lifespan_proxy(self),
             instructions=instructions,
             website_url=website_url,
             icons=icons,
-            lifespan=_lifespan_proxy(self),
         )
 
         if tools:
@@ -255,7 +257,7 @@ class FastMCP[LifespanResultT](
 
     @override
     async def list_tools(self, /, *, run_middleware = True):
-        async with Context(self) as ctx:
+        async with _ctx.Context(self) as ctx:
             if run_middleware:
                 mw_context = MiddlewareContext(
                     message=mcp.types.ListToolsRequest(method="tools/list"),
@@ -343,7 +345,7 @@ class FastMCP[LifespanResultT](
 
     @override
     async def list_resources(self, /, *, run_middleware = True):
-        async with Context(self) as ctx:
+        async with _ctx.Context(self) as ctx:
             if run_middleware:
                 mw_context = MiddlewareContext(
                     message={},
@@ -425,7 +427,7 @@ class FastMCP[LifespanResultT](
 
     @override
     async def list_resource_templates(self, /, *, run_middleware = True):
-        async with Context(self) as ctx:
+        async with _ctx.Context(self) as ctx:
             if run_middleware:
                 mw_context = MiddlewareContext(
                     message={},
@@ -510,7 +512,7 @@ class FastMCP[LifespanResultT](
 
     @override
     async def list_prompts(self, /, *, run_middleware = True):
-        async with Context(self) as ctx:
+        async with _ctx.Context(self) as ctx:
             if run_middleware:
                 mw_context = MiddlewareContext(
                     message={},
@@ -615,7 +617,7 @@ class FastMCP[LifespanResultT](
         #   2. Display-name path — everything else. Goes through normal
         #      `get_tool` aggregation/transforms. Address is determined
         #      after resolution by walking the registry.
-        async with Context(self) as ctx:
+        async with _ctx.Context(self) as ctx:
             if run_middleware:
                 mw_context = MiddlewareContext(
                     message=mcp.types.CallToolRequestParams(name=name, arguments=arguments or {}),
@@ -719,7 +721,7 @@ class FastMCP[LifespanResultT](
         # For mounted servers, the parent's provider sets fn_key to the
         # namespaced key before delegating, ensuring correct Docket routing.
 
-        async with Context(self) as ctx:
+        async with _ctx.Context(self) as ctx:
             if run_middleware:
                 uri_param = AnyUrl(uri)
                 mw_context = MiddlewareContext(
@@ -810,7 +812,7 @@ class FastMCP[LifespanResultT](
         run_middleware: bool = True,
         task_meta: TaskMeta | None = None,
     ) -> PromptResult | CreateTaskResult:
-        async with Context(self) as ctx:
+        async with _ctx.Context(self) as ctx:
             if run_middleware:
                 mw_context = MiddlewareContext(
                     message=mcp.types.GetPromptRequestParams(name=name, arguments=arguments),

@@ -1,6 +1,18 @@
 --- work/sources/fastmcp_slim/fastmcp/server/auth/oauth_proxy/proxy.py
 +++ work/patched/fastmcp_slim/fastmcp/server/auth/oauth_proxy/proxy.py
-@@ -60,7 +60,6 @@
+@@ -33,11 +33,6 @@
+ from cryptography.fernet import Fernet
+ from key_value.aio.adapters.pydantic import PydanticAdapter
+ from key_value.aio.protocols import AsyncKeyValue
+-from key_value.aio.stores.filetree import (
+-    FileTreeStore,
+-    FileTreeV1CollectionSanitizationStrategy,
+-    FileTreeV1KeySanitizationStrategy,
+-)
+ from key_value.aio.wrappers.encryption import FernetEncryptionWrapper
+ from mcp.server.auth.handlers.metadata import MetadataHandler
+ from mcp.server.auth.provider import (
+@@ -60,7 +55,6 @@
  from starlette.routing import Route
  from typing_extensions import override
  
@@ -8,7 +20,7 @@
  from fastmcp.server.auth.auth import (
      OAuthProvider,
      PrivateKeyJWTClientAuthenticator,
-@@ -483,14 +482,19 @@
+@@ -483,14 +477,24 @@
          # keys get isolated directories (e.g. two servers on the same machine with
          # different keys won't collide). Decryption errors are treated as cache misses
          # rather than hard failures, so key rotation just causes re-registration.
@@ -16,6 +28,11 @@
 +        if __debug__ and client_storage is None:
 +            from pathlib import Path
 +            from platformdirs import user_data_dir
++            from key_value.aio.stores.filetree import (
++                FileTreeStore,
++                FileTreeV1CollectionSanitizationStrategy,
++                FileTreeV1KeySanitizationStrategy,
++            )
 +
 +            logger.warning("Using local storage for development; deploy with own implementation for production.")
 +
@@ -39,3 +56,67 @@
  
          self._client_storage: AsyncKeyValue = client_storage
  
+@@ -1911,11 +1917,7 @@
+                     server_icon_url=None,
+                 )
+                 custom_routes.append(
+-                    Route(
+-                        path="/authorize",
+-                        endpoint=authorize_handler.handle,
+-                        methods=["GET", "POST"],
+-                    )
++                    Route("/authorize", authorize_handler.handle, methods=["GET", "POST"])
+                 )
+             elif (
+                 self._cimd_manager is not None
+@@ -1937,11 +1939,9 @@
+                 )
+                 custom_routes.append(
+                     Route(
+-                        path="/token",
+-                        endpoint=cors_middleware(
+-                            token_handler.handle, ["POST", "OPTIONS"]
+-                        ),
+-                        methods=["POST", "OPTIONS"],
++                        "/token",
++                        cors_middleware(token_handler.handle, ["POST", "OPTIONS"]),
++                        methods=["POST", "OPTIONS"]
+                     )
+                 )
+             elif (
+@@ -1965,11 +1965,10 @@
+ 
+                 custom_routes.append(
+                     Route(
+-                        path=route.path,
+-                        endpoint=cors_middleware(handler.handle, ["GET", "OPTIONS"]),
++                        route.path,
++                        cors_middleware(handler.handle, ["GET", "OPTIONS"]),
+                         methods=methods,
+                         name=route.name,
+-                        include_in_schema=route.include_in_schema,
+                     )
+                 )
+             else:
+@@ -1978,19 +1977,13 @@
+ 
+         # Add OAuth callback endpoint for forwarding to client callbacks
+         custom_routes.append(
+-            Route(
+-                path=self._redirect_path,
+-                endpoint=self._handle_idp_callback,
+-                methods=["GET"],
+-            )
++            Route(self._redirect_path, self._handle_idp_callback, methods=["GET"])
+         )
+ 
+         # Add consent endpoints
+         # Handle both GET (show page) and POST (submit) at /consent
+         custom_routes.append(
+-            Route(
+-                path="/consent", endpoint=self._handle_consent, methods=["GET", "POST"]
+-            )
++            Route("/consent", self._handle_consent, methods=["GET", "POST"])
+         )
+ 
+         return custom_routes

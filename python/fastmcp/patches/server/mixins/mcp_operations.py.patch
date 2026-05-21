@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/server/mixins/mcp_operations.py
 +++ work/patched/fastmcp_slim/fastmcp/server/mixins/mcp_operations.py
-@@ -1,14 +1,7 @@
+@@ -1,30 +1,27 @@
  """MCP protocol handler setup and wire-format handlers for FastMCP Server."""
  
 -from __future__ import annotations
@@ -14,8 +14,9 @@
 -from pydantic import AnyUrl
  
  from fastmcp.exceptions import DisabledError, NotFoundError
- from fastmcp.server.tasks.config import TaskMeta
-@@ -16,15 +9,19 @@
+-from fastmcp.server.tasks.config import TaskMeta
++from fastmcp.utilities.tasks import TaskMeta
+ from fastmcp.utilities.logging import get_logger
  from fastmcp.utilities.pagination import paginate_sequence
  from fastmcp.utilities.versions import VersionSpec, dedupe_with_versions
  

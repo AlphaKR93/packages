@@ -11,10 +11,11 @@
  from contextlib import asynccontextmanager
  from functools import partial
 -from typing import TYPE_CHECKING, Literal, cast
--
--from typing_extensions import Self
  
- from fastmcp.server.transforms.visibility import Visibility
+-from typing_extensions import Self
+-
+-from fastmcp.server.transforms.visibility import Visibility
++from fastmcp.server.transforms import Visibility
  from fastmcp.utilities.async_utils import gather
 -from fastmcp.utilities.components import FastMCPComponent
 -from fastmcp.utilities.versions import VersionSpec, version_sort_key

@@ -1,28 +1,27 @@
-from abc import ABC, abstractmethod
+from collections.abc import Callable
 from typing import ClassVar, Annotated, Any
 from warnings import deprecated
 
 import pydantic_core
 from mcp.shared.tool_name_validation import validate_and_warn_tool_name
-from mcp.types import Tool as MCPTool, ToolAnnotations, ToolExecution
+from mcp.types import ContentBlock, Tool as MCPTool, ToolAnnotations, ToolExecution
 from pydantic import Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
-from fastmcp.tools.base import ToolResult, _convert_to_content
+from fastmcp.tools.base import ToolResult, ToolResultSerializerType, _convert_to_content
+from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
-from fastmcp.utilities.types import File, Image, Audio, ContentBlock
+from fastmcp.utilities.types import File, Image, Audio, validate
 
 if __debug__ and __import__("typing").TYPE_CHECKING:
-    from collections.abc import Callable
-
     from mcp.types import CreateTaskResult
 
-    from fastmcp.tools.base import ToolResultSerializerType
-    from fastmcp.utilities.authorization import AuthCheck
+    from fastmcp.tools.tool_transform import TransformedTool
     from fastmcp.utilities.tasks import TaskMeta
 
 
-class Tool(ABC, FastMCPComponent):
+@validate
+class Tool(FastMCPComponent):
     """Internal tools registration info."""
 
     KEY_PREFIX: ClassVar[str] = "tools"
@@ -92,11 +91,10 @@ class Tool(ABC, FastMCPComponent):
     @classmethod
     def from_function(cls, fn, /, **kwargs):
         """Create a Tool from a function."""
-        from fastmcp.tools import FunctionTool
+        from .function_tool import FunctionTool
 
         return FunctionTool.from_function(fn, **kwargs)
 
-    @abstractmethod
     async def run(self, arguments: dict[str, Any]) -> ToolResult:
         """
         Run the tools with arguments.
@@ -180,7 +178,7 @@ class Tool(ABC, FastMCPComponent):
 
         task_result = await check_background_task(
             component=self,
-            task_type="tools",
+            task_type="tool",
             arguments=arguments,
             task_meta=task_meta,
         )
@@ -203,7 +201,8 @@ class Tool(ABC, FastMCPComponent):
             return tool
 
         from fastmcp.decorators import get_fastmcp_meta
-        from fastmcp.tools.function_tool import FunctionTool, ToolMeta
+        from fastmcp.tools.function_tool import ToolMeta
+        from .function_tool import FunctionTool
 
         fmeta = get_fastmcp_meta(tool)
         if isinstance(fmeta, ToolMeta):

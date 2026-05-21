@@ -13,13 +13,14 @@ from fastmcp.tools.function_parsing import _is_object_schema, ParsedFunction
 from fastmcp.tools.function_tool import ToolMeta, logger
 from fastmcp.utilities.async_utils import is_coroutine_function, call_sync_fn_in_threadpool
 from fastmcp.utilities.tasks import TaskConfig
-from fastmcp.utilities.types import NotSetT, get_cached_typeadapter
+from fastmcp.utilities.types import NotSetT, get_cached_typeadapter, validate
 from .base import Tool
 
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from fastmcp.tools.base import ToolResult
 
 
+@validate
 class FunctionTool(Tool):
     fn: SkipJsonSchema[Callable[..., Any]]
     return_type: Annotated[SkipJsonSchema[Any], Field(exclude=True)] = None

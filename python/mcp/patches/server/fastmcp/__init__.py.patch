@@ -1,0 +1,9 @@
+--- work/sources/src/mcp/server/fastmcp/__init__.py
++++ work/patched/src/mcp/server/fastmcp/__init__.py
+@@ -7,5 +7,5 @@
+ from .server import Context, FastMCP
+ from .utilities.types import Audio, Image
+ 
+-__version__ = version("mcp")
++__version__ = version("mcp-minimal")
+ __all__ = ["FastMCP", "Context", "Image", "Audio", "Icon"]
