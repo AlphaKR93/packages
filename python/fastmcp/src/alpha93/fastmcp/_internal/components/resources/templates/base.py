@@ -38,10 +38,10 @@ class ResourceTemplate(FastMCPComponent):
         return f"{self.__class__.__name__}(uri_template={self.uri_template!r}, name={self.name!r}, description={self.description!r}, tags={self.tags})"
 
     @staticmethod
-    def from_function(**kwargs) -> FunctionResourceTemplate:
+    def from_function(fn, uri, /, **kwargs) -> FunctionResourceTemplate:
         from .function_template import FunctionResourceTemplate
 
-        return FunctionResourceTemplate.from_function(**kwargs)
+        return FunctionResourceTemplate.from_function(fn, uri, **kwargs)
 
     @field_validator("mime_type", mode="before")
     @classmethod

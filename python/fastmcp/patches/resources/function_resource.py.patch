@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/resources/function_resource.py
 +++ work/patched/fastmcp_slim/fastmcp/resources/function_resource.py
-@@ -1,46 +1,12 @@
+@@ -1,45 +1,14 @@
  """Standalone @resource decorator for FastMCP."""
 -
 -from __future__ import annotations
@@ -11,12 +11,11 @@
 -from collections.abc import Callable
  from dataclasses import dataclass, field
 -from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeVar, runtime_checkable
-+from typing import Any, Literal
- 
- from mcp.types import Annotations, Icon
+-
+-from mcp.types import Annotations, Icon
 -from pydantic import AnyUrl
 -from pydantic.json_schema import SkipJsonSchema
- 
+-
 -import fastmcp
 -from fastmcp.decorators import resolve_task_config
 -from fastmcp.exceptions import FastMCPDeprecationWarning
@@ -25,17 +24,20 @@
 -    call_sync_fn_in_threadpool,
 -    is_coroutine_function,
 -)
- from fastmcp.utilities.authorization import AuthCheck
+-from fastmcp.utilities.authorization import AuthCheck
 -from fastmcp.utilities.mime import resolve_ui_mime_type
- from fastmcp.utilities.tasks import TaskConfig
+-from fastmcp.utilities.tasks import TaskConfig
  
 -if TYPE_CHECKING:
 -    from docket import Docket
--
+ 
 -    from fastmcp.resources.template import ResourceTemplate
--
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from typing import Any, Literal
+ 
 -F = TypeVar("F", bound=Callable[..., Any])
--
++    from mcp.types import Annotations, Icon
+ 
 -
 -@runtime_checkable
 -class DecoratedResource(Protocol):
@@ -44,16 +46,15 @@
 -    __fastmcp__: ResourceMeta
 -
 -    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
--
++    from fastmcp.utilities.authorization import AuthCheck
++    from fastmcp.utilities.tasks import TaskConfig
+ 
  
  @dataclass(frozen=True, kw_only=True)
- class ResourceMeta:
-@@ -60,285 +26,3 @@
-     task: bool | TaskConfig | None = None
-     auth: AuthCheck | list[AuthCheck] | None = None
+@@ -62,283 +31,9 @@
      enabled: bool = True
--
--
+ 
+ 
 -class FunctionResource(Resource):
 -    """A resource that defers data loading by wrapping a function.
 -
@@ -174,7 +175,8 @@
 -            transform_context_annotations,
 -            without_injected_parameters,
 -        )
--
++from alpha93.fastmcp._internal.components.resources.function_resource import FunctionResource, resource
+ 
 -        fn = transform_context_annotations(fn)
 -
 -        # Wrap fn to handle dependency resolution internally
@@ -334,3 +336,7 @@
 -        return attach_metadata(fn)
 -
 -    return decorator
++__all__ = (
++    "FunctionResource",
++    "resource",
++)

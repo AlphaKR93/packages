@@ -72,6 +72,7 @@ excludes = [
     "server/auth/providers/workos.py",
     "server/auth/authorization.py",
     "server/openapi/**/*",
+    "server/providers/local_provider/decorators/*.py",
     "server/providers/skills/claude_provider.py",
     "server/providers/skills/vendor_providers.py",
     "server/providers/addressing.py",

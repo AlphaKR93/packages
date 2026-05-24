@@ -165,7 +165,7 @@
  
              # Start lifespans for all providers
 -            for provider in self.providers:
-+            for provider in self.__providers:
++            for provider in self._providers:
                  await stack.enter_async_context(provider.lifespan())
  
              self._started.set()

@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from typing import ClassVar, Annotated
 
 import pydantic_core
@@ -6,7 +5,6 @@ from mcp.types import Annotations, Resource as SDKResource
 from pydantic import ConfigDict, AnyUrl, UrlConstraints, Field, field_validator, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
-from fastmcp.resources.base import ResourceContent, ResourceResult
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
 
@@ -15,9 +13,7 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from mcp.types import CreateTaskResult
-
-    from fastmcp.utilities.tasks import TaskMeta
+    from fastmcp.resources.base import ResourceContent, ResourceResult
 
 
 class Resource(FastMCPComponent):
@@ -67,8 +63,7 @@ class Resource(FastMCPComponent):
             raise ValueError("Either name or uri must be provided")
         return self
 
-    @abstractmethod
-    async def read(self, /) -> str | bytes | ResourceResult:
+    async def read(self, /):
         """Read the resource content.
 
         Subclasses implement this to return resource data. Supported return types:
@@ -77,7 +72,7 @@ class Resource(FastMCPComponent):
             - ResourceResult: Full control over contents and result-level meta
         """
 
-    def convert_result(self, raw_value, /) -> ResourceResult:
+    def convert_result(self, raw_value, /):
         """Convert a raw result to ResourceResult.
 
         This is used in two contexts:
@@ -94,6 +89,8 @@ class Resource(FastMCPComponent):
         MCP Apps CSP/permissions) is propagated to each content item so
         that hosts can read it from the ``resources/read`` response.
         """
+        from fastmcp.resources.base import ResourceContent, ResourceResult
+
         if isinstance(raw_value, ResourceResult):
             return raw_value
 
@@ -123,7 +120,7 @@ class Resource(FastMCPComponent):
         # All other types fall through to ResourceResult for error handling
         return ResourceResult(raw_value)
 
-    async def _read(self, /, task_meta: TaskMeta | None = None) -> ResourceResult | CreateTaskResult:
+    async def _read(self, /, task_meta = None):
         """Server entry point that handles task routing.
 
         This allows ANY Resource subclass to support background execution by setting

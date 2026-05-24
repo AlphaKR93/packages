@@ -1,23 +1,29 @@
 --- work/sources/fastmcp_slim/fastmcp/server/auth/middleware.py
 +++ work/patched/fastmcp_slim/fastmcp/server/auth/middleware.py
-@@ -4,14 +4,8 @@
+@@ -4,17 +4,15 @@
  that return more helpful error messages for developers troubleshooting
  authentication issues.
  """
--
++import pydantic_core
++from mcp.server.auth.middleware.bearer_auth import RequireAuthMiddleware as SDKRequireAuthMiddleware
+ 
 -from __future__ import annotations
--
++from fastmcp.utilities.logging import get_logger
+ 
 -import json
--
+ 
 -from mcp.server.auth.middleware.bearer_auth import (
 -    RequireAuthMiddleware as SDKRequireAuthMiddleware,
 -)
-+import pydantic_core
-+from mcp.server.auth.middleware.bearer_auth import RequireAuthMiddleware as SDKRequireAuthMiddleware
- from starlette.types import Send
+-from starlette.types import Send
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from starlette.types import Send
  
- from fastmcp.utilities.logging import get_logger
-@@ -68,7 +62,7 @@
+-from fastmcp.utilities.logging import get_logger
+ 
+ logger = get_logger(__name__)
+ 
+@@ -68,7 +66,7 @@
  
          # Send response
          body = {"error": error, "error_description": enhanced_description}

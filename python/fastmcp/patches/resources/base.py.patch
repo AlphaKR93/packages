@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/resources/base.py
 +++ work/patched/fastmcp_slim/fastmcp/resources/base.py
-@@ -1,42 +1,17 @@
+@@ -1,42 +1,18 @@
  """Base classes and interfaces for FastMCP resources."""
 -
 -from __future__ import annotations
@@ -16,11 +16,13 @@
 -if TYPE_CHECKING:
 -    from docket import Docket
 -    from docket.execution import Execution
--
++import pydantic_core
++from pydantic import BaseModel
+ 
 -    from fastmcp.resources.function_resource import FunctionResource
--
+ 
 -import pydantic
- import pydantic_core
+-import pydantic_core
 -from mcp.types import Annotations, Icon
 -from mcp.types import Resource as SDKResource
 -from pydantic import (
@@ -38,18 +40,16 @@
 -from fastmcp.utilities.authorization import AuthCheck
 -from fastmcp.utilities.components import FastMCPComponent
 -from fastmcp.utilities.tasks import TaskConfig, TaskMeta
-+from pydantic import BaseModel
- 
 +if __debug__ and __import__("typing").TYPE_CHECKING:
 +    from pydantic import AnyUrl
  
+ 
 -class ResourceContent(pydantic.BaseModel):
-+
 +class ResourceContent(BaseModel):
      """Wrapper for resource content with optional MIME type and metadata.
  
      Accepts any value for content - strings and bytes pass through directly,
-@@ -65,6 +40,7 @@
+@@ -65,6 +41,7 @@
      def __init__(
          self,
          content: Any,
@@ -57,7 +57,7 @@
          mime_type: str | None = None,
          meta: dict[str, Any] | None = None,
      ):
-@@ -92,7 +68,7 @@
+@@ -92,7 +69,7 @@
          super().__init__(content=normalized_content, mime_type=mime_type, meta=meta)
  
      def to_mcp_resource_contents(
@@ -66,7 +66,7 @@
      ) -> mcp.types.TextResourceContents | mcp.types.BlobResourceContents:
          """Convert to MCP resource contents type.
  
-@@ -118,7 +94,7 @@
+@@ -118,7 +95,7 @@
              )
  
  
@@ -75,7 +75,7 @@
      """Canonical result type for resource reads.
  
      Provides explicit control over resource responses: multiple content items,
-@@ -194,7 +170,7 @@
+@@ -194,7 +171,7 @@
              isinstance(contents, dict | list | tuple | int | float | bool)
              or contents is None
          ):
@@ -84,7 +84,7 @@
          raise TypeError(
              f"contents must be str, bytes, or list[ResourceContent], got {type(contents).__name__}"
          )
-@@ -215,283 +191,7 @@
+@@ -215,283 +192,10 @@
          )
  
  
@@ -336,9 +336,10 @@
 -            "fastmcp.provider.type": "LocalProvider",
 -        }
 -
--
++from alpha93.fastmcp._internal.components.resources.base import Resource
+ 
  __all__ = [
--    "Resource",
+     "Resource",
      "ResourceContent",
      "ResourceResult",
  ]

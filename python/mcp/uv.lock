@@ -3,11 +3,14 @@ revision = 3
 requires-python = ">=3.14"
 
 [manifest]
-excludes = ["python-dotenv"]
+excludes = [
+    "python-dotenv",
+    "starlette",
+]
 
 [[package]]
 name = "alpha93"
-version = "0.2.0"
+version = "0.2.1"
 source = { directory = "../alpha93" }
 
 [[package]]
@@ -225,17 +228,19 @@ wheels = [
 
 [[package]]
 name = "makepatch"
-version = "0.1.7"
+version = "0.1.8"
 source = { directory = "../makepatch" }
 dependencies = [
     { name = "hatchling" },
     { name = "pydantic" },
+    { name = "typing-extensions", marker = "python_full_version < '3.15'" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "hatchling", specifier = ">=1.29.0" },
-    { name = "pydantic", specifier = ">=2.13.4" },
+    { name = "pydantic", specifier = ">=2.13.0" },
+    { name = "typing-extensions", marker = "python_full_version < '3.15'", specifier = ">=4.15.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -247,11 +252,11 @@ version = "1.27.1"
 source = { editable = "." }
 dependencies = [
     { name = "anyio" },
+    { name = "cryptography" },
     { name = "httpx" },
     { name = "jsonschema" },
     { name = "pydantic" },
     { name = "pydantic-settings" },
-    { name = "pyjwt", extra = ["crypto"] },
     { name = "starlette-minimal" },
     { name = "typing-inspection" },
 ]
@@ -264,11 +269,11 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "anyio", specifier = ">=4.5" },
+    { name = "cryptography", specifier = ">=48.0.0" },
     { name = "httpx", specifier = ">=0.27.1,<1.0.0" },
     { name = "jsonschema", specifier = ">=4.20.0" },
     { name = "pydantic", specifier = ">=2.11.0,<3.0.0" },
     { name = "pydantic-settings", specifier = ">=2.5.2" },
-    { name = "pyjwt", extras = ["crypto"], specifier = ">=2.10.1" },
     { name = "starlette-minimal", directory = "../starlette" },
     { name = "typing-inspection", specifier = ">=0.4.1" },
 ]
@@ -382,20 +387,6 @@ wheels = [
 ]
 
 [[package]]
-name = "pyjwt"
-version = "2.12.1"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/c2/27/a3b6e5bf6ff856d2509292e95c8f57f0df7017cf5394921fc4e4ef40308a/pyjwt-2.12.1.tar.gz", hash = "sha256:c74a7a2adf861c04d002db713dd85f84beb242228e671280bf709d765b03672b", size = 102564, upload-time = "2026-03-13T19:27:37.25Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e5/7a/8dd906bd22e79e47397a61742927f6747fe93242ef86645ee9092e610244/pyjwt-2.12.1-py3-none-any.whl", hash = "sha256:28ca37c070cad8ba8cd9790cd940535d40274d22f80ab87f3ac6a713e6e8454c", size = 29726, upload-time = "2026-03-13T19:27:35.677Z" },
-]
-
-[package.optional-dependencies]
-crypto = [
-    { name = "cryptography" },
-]
-
-[[package]]
 name = "referencing"
 version = "0.37.0"
 source = { registry = "https://pypi.org/simple" }
@@ -458,6 +449,9 @@ requires-dist = [
     { name = "alpha93", directory = "../alpha93" },
     { name = "anyio", specifier = ">=4.13.0" },
 ]
+
+[package.metadata.requires-dev]
+dev = [{ name = "makepatch", directory = "../makepatch" }]
 
 [[package]]
 name = "trove-classifiers"

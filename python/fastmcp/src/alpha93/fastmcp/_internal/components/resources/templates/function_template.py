@@ -106,14 +106,14 @@ class FunctionResourceTemplate(ResourceTemplate):
 
     @classmethod
     def from_function(
-            cls,
-            fn: Callable[..., Any],
-            uri_template: str,
-            /,
-            *,
-            version: str | int | None = None,
-            task: bool | TaskConfig | None = None,
-            **kwargs
+        cls,
+        fn: Callable[..., Any],
+        uri_template: str,
+        /,
+        *,
+        version: str | int | None = None,
+        task: bool | TaskConfig | None = None,
+        **kwargs
     ) -> FunctionResourceTemplate:
         """Create a template from a function."""
 

@@ -39,19 +39,21 @@ class ResourceTemplate(ABC, FastMCPComponent):
 
     @staticmethod
     def from_function(
-            fn: Callable[..., Any],
-            uri_template: str,
-            name: str | None = None,
-            version: str | int | None = None,
-            title: str | None = None,
-            description: str | None = None,
-            icons: list[Icon] | None = None,
-            mime_type: str | None = None,
-            tags: set[str] | None = None,
-            annotations: Annotations | None = None,
-            meta: dict[str, Any] | None = None,
-            task: bool | TaskConfig | None = None,
-            auth: AuthCheck | list[AuthCheck] | None = None,
+        fn: Callable[..., Any],
+        uri_template: str,
+        /,
+        *,
+        name: str | None = None,
+        version: str | int | None = None,
+        title: str | None = None,
+        description: str | None = None,
+        icons: list[Icon] | None = None,
+        mime_type: str | None = None,
+        tags: set[str] | None = None,
+        annotations: Annotations | None = None,
+        meta: dict[str, Any] | None = None,
+        task: bool | TaskConfig | None = None,
+        auth: AuthCheck | list[AuthCheck] | None = None,
     ) -> FunctionResourceTemplate:
         ...
 

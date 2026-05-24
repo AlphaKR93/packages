@@ -36,12 +36,12 @@
 +if __debug__ and __import__("typing").TYPE_CHECKING:
 +    from typing import Any
 +
-+
+ 
 +QUERY_PARAMS = re.compile(r"\{\?[^}]+\}")
 +QUERY_PARTS = re.compile(r"\{[^}]+\}")
  
- 
 -def extract_query_params(uri_template: str) -> set[str]:
++
 +def extract_query_params(uri_template: str, /) -> set[str]:
      """Extract query parameter names from RFC 6570 `{?param1,param2}` syntax."""
 -    match = re.search(r"\{\?([^}]+)\}", uri_template)
@@ -130,7 +130,7 @@
      """Expand a URI template with parameters — inverse of `match_uri_template`.
  
      Supports the same RFC 6570 subset:
-@@ -151,524 +130,6 @@
+@@ -151,524 +130,11 @@
              return "?" + "&".join(parts)
          return ""
  
@@ -138,8 +138,8 @@
 +    result = re.sub(QUERY_PARAMS, _expand_query_block, result)
  
      return result
--
--
+ 
+ 
 -class ResourceTemplate(FastMCPComponent):
 -    """A template for dynamically creating resources."""
 -
@@ -618,7 +618,8 @@
 -        else:
 -            task_config = task
 -        task_config.validate_function(fn, func_name)
--
++from alpha93.fastmcp._internal.components.resources.templates import ResourceTemplate
+ 
 -        # if the fn is a callable class, we need to get the __call__ method from here out
 -        if not inspect.isroutine(fn) and not isinstance(fn, functools.partial):
 -            fn = fn.__call__
@@ -656,3 +657,4 @@
 -            task_config=task_config,
 -            auth=auth,
 -        )
++__all__ = ("ResourceTemplate",)

@@ -1,10 +1,14 @@
 [project]
 name = "alpha93"
-version = "0.2.0"
+version = "0.2.2"
 description = "commons library for alpha93"
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = []
+
+[project.urls]
+homepage = "https://github.com/AlphaKR93/packages"  # TODO: https://alpha93.kr/projects/commons-python
+source = "https://github.com/AlphaKR93/packages/blob/HEAD/python/alpha93"
 
 [build-system]
 requires = ["uv_build>=0.11.7,<0.12.0"]

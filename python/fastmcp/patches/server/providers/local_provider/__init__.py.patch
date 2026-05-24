@@ -1,0 +1,12 @@
+--- work/sources/fastmcp_slim/fastmcp/server/providers/local_provider/__init__.py
++++ work/patched/fastmcp_slim/fastmcp/server/providers/local_provider/__init__.py
+@@ -4,8 +4,6 @@
+ templates, and prompts registered via decorators or direct methods.
+ """
+ 
+-from fastmcp.server.providers.local_provider.local_provider import (
+-    LocalProvider,
+-)
++from .local_provider import LocalProvider
+ 
+ __all__ = ["LocalProvider"]

@@ -3,19 +3,24 @@ from typing import ClassVar, Annotated, Any
 from warnings import deprecated
 
 import pydantic_core
+from commons.types import SequenceOr
 from mcp.shared.tool_name_validation import validate_and_warn_tool_name
 from mcp.types import ContentBlock, Tool as MCPTool, ToolAnnotations, ToolExecution
 from pydantic import Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
 
-from fastmcp.tools.base import ToolResult, ToolResultSerializerType, _convert_to_content
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
 from fastmcp.utilities.types import File, Image, Audio, validate
 
+# Local alias to avoid circular import from fastmcp.tools.base at class-definition time.
+# Pydantic evaluates this annotation via model_rebuild(); it must be in module globals.
+ToolResultSerializerType = Callable[[Any], str]
+
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from mcp.types import CreateTaskResult
 
+    from fastmcp.tools.base import ToolResult, ToolResultSerializerType  # noqa: F811
     from fastmcp.tools.tool_transform import TransformedTool
     from fastmcp.utilities.tasks import TaskMeta
 
@@ -44,7 +49,7 @@ class Tool(FastMCPComponent):
     ] = None
     """Deprecated. Return ToolResult from your tools for full control over serialization."""
 
-    auth: Annotated[SkipJsonSchema[AuthCheck | list[AuthCheck] | None], Field(exclude=True)] = None
+    auth: Annotated[SkipJsonSchema[SequenceOr[AuthCheck] | None], Field(exclude=True)] = None
     """Authorization checks for this tools"""
 
     timeout: float | None = None
@@ -95,7 +100,7 @@ class Tool(FastMCPComponent):
 
         return FunctionTool.from_function(fn, **kwargs)
 
-    async def run(self, arguments: dict[str, Any]) -> ToolResult:
+    async def run(self, arguments):
         """
         Run the tools with arguments.
 
@@ -106,12 +111,14 @@ class Tool(FastMCPComponent):
         (list of ContentBlocks, dict of structured output).
         """
 
-    def convert_result(self, raw_value, /) -> ToolResult:
+    def convert_result(self, raw_value, /):
         """Convert a raw result to ToolResult.
 
         Handles ToolResult passthrough and converts raw values using the tools's
         attributes (serializer, output_schema) for proper conversion.
         """
+        from fastmcp.tools.base import ToolResult, _convert_to_content
+
         if isinstance(raw_value, ToolResult):
             return raw_value
 
@@ -151,9 +158,7 @@ class Tool(FastMCPComponent):
             meta={"fastmcp": {"wrap_result": True}} if wrap_result else None,
         )
 
-    async def _run(
-        self, arguments: dict[str, Any], /, task_meta: TaskMeta | None = None
-    ) -> ToolResult | CreateTaskResult:
+    async def _run(self, arguments, /, task_meta=None):
         """Server entry point that handles task routing.
 
         This allows ANY Tool subclass to support background execution by setting

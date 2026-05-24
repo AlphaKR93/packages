@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/server/event_store.py
 +++ work/patched/fastmcp_slim/fastmcp/server/event_store.py
-@@ -5,9 +5,6 @@
+@@ -5,14 +5,10 @@
  AsyncKeyValue protocol, allowing users to configure any compatible backend
  (in-memory, Redis, etc.) following the same pattern as ResponseCachingMiddleware.
  """
@@ -10,7 +10,12 @@
  from uuid import uuid4
  
  from key_value.aio.adapters.pydantic import PydanticAdapter
-@@ -70,30 +67,34 @@
+ from key_value.aio.protocols import AsyncKeyValue
+-from key_value.aio.stores.memory import MemoryStore
+ from mcp.server.streamable_http import EventCallback, EventId, EventMessage, StreamId
+ from mcp.server.streamable_http import EventStore as SDKEventStore
+ from mcp.types import JSONRPCMessage
+@@ -70,30 +66,34 @@
      def __init__(
          self,
          storage: AsyncKeyValue | None = None,
@@ -53,7 +58,7 @@
          """Store an event and return its ID.
  
          Args:
-@@ -132,11 +133,7 @@
+@@ -132,11 +132,7 @@
  
          return event_id
  

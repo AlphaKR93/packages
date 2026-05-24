@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/tools/function_tool.py
 +++ work/patched/fastmcp_slim/fastmcp/tools/function_tool.py
-@@ -1,67 +1,16 @@
+@@ -1,66 +1,20 @@
  """Standalone @tool decorator for FastMCP."""
 -
 -from __future__ import annotations
@@ -19,15 +19,13 @@
 -    overload,
 -    runtime_checkable,
 -)
-+from typing import Any, Literal
- 
+-
 -import anyio
 -from mcp.shared.exceptions import McpError
 -from mcp.types import ErrorData, Icon, ToolAnnotations
 -from pydantic import Field
 -from pydantic.json_schema import SkipJsonSchema
-+from mcp.types import Icon, ToolAnnotations
- 
+-
 -import fastmcp
 -from fastmcp.decorators import get_fastmcp_meta, resolve_task_config
 -from fastmcp.exceptions import FastMCPDeprecationWarning
@@ -41,42 +39,55 @@
 -    call_sync_fn_in_threadpool,
 -    is_coroutine_function,
 -)
- from fastmcp.utilities.authorization import AuthCheck
- from fastmcp.utilities.logging import get_logger
- from fastmcp.utilities.tasks import TaskConfig
+-from fastmcp.utilities.authorization import AuthCheck
+-from fastmcp.utilities.logging import get_logger
+-from fastmcp.utilities.tasks import TaskConfig
 -from fastmcp.utilities.types import (
 -    NotSet,
 -    NotSetT,
 -    get_cached_typeadapter,
 -)
-+from fastmcp.utilities.types import NotSet, NotSetT
  
- logger = get_logger(__name__)
+-logger = get_logger(__name__)
++from fastmcp.utilities.logging import get_logger
  
 -if TYPE_CHECKING:
 -    from docket import Docket
 -    from docket.execution import Execution
--
+ 
 -F = TypeVar("F", bound=Callable[..., Any])
--
--
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from typing import Any, Literal
+ 
++    from mcp.types import Icon, ToolAnnotations
+ 
 -@runtime_checkable
 -class DecoratedTool(Protocol):
 -    """Protocol for functions decorated with @tool."""
--
++    from fastmcp.utilities.authorization import AuthCheck
++    from fastmcp.utilities.tasks import TaskConfig
++    from fastmcp.utilities.types import NotSetT
+ 
 -    __fastmcp__: ToolMeta
--
+ 
 -    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
--
++logger = get_logger(__name__)
+ 
  
  @dataclass(frozen=True, kw_only=True)
- class ToolMeta:
-@@ -85,465 +34,3 @@
-     auth: AuthCheck | list[AuthCheck] | None = None
-     enabled: bool = True
+@@ -74,7 +28,7 @@
+     description: str | None = None
+     icons: list[Icon] | None = None
+     tags: set[str] | None = None
+-    output_schema: dict[str, Any] | NotSetT | None = NotSet
++    output_schema: dict[str, Any] | NotSetT | None = ...
+     annotations: ToolAnnotations | None = None
+     meta: dict[str, Any] | None = None
+     app: Any = None
+@@ -87,463 +41,6 @@
      run_in_thread: bool = True
--
--
+ 
+ 
 -class FunctionTool(Tool):
 -    fn: SkipJsonSchema[Callable[..., Any]]
 -    return_type: Annotated[SkipJsonSchema[Any], Field(exclude=True)] = None
@@ -535,5 +546,7 @@
 -
 -    def wrapper(fn: F) -> F:
 -        return decorator(fn, tool_name)
--
++from alpha93.fastmcp._internal.components.tools.function_tool import FunctionTool, tool
+ 
 -    return wrapper
++__all__ = ("FunctionTool", "tool")

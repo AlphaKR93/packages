@@ -2,6 +2,7 @@ from collections.abc import Generator, Mapping, Iterable, Sequence, Callable
 from contextlib import contextmanager
 from contextvars import Token
 from dataclasses import dataclass
+from types import TracebackType
 from typing import Literal, Any, overload
 
 from commons.types import SequenceOr
@@ -124,6 +125,18 @@ class Context:
             task_id: str | None = None,
             origin_request_id: str | None = None,
     ): ...
+
+    async def __aenter__(self, /):
+        """Enter the context manager and set this context as the current context."""
+
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+        /
+    ):
+        """Exit the context manager and reset the most recent token."""
 
     @property
     def fastmcp(self, /) -> FastMCP:

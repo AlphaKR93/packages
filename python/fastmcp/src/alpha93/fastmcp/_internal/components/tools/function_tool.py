@@ -9,7 +9,6 @@ from pydantic import Field
 from pydantic.json_schema import SkipJsonSchema
 
 from fastmcp.decorators import get_fastmcp_meta
-from fastmcp.tools.function_parsing import _is_object_schema, ParsedFunction
 from fastmcp.tools.function_tool import ToolMeta, logger
 from fastmcp.utilities.async_utils import is_coroutine_function, call_sync_fn_in_threadpool
 from fastmcp.utilities.tasks import TaskConfig
@@ -81,6 +80,8 @@ class FunctionTool(Tool):
         #         FastMCPDeprecationWarning,
         #         stacklevel=2,
         #     )
+
+        from fastmcp.tools.function_parsing import _is_object_schema, ParsedFunction
 
         parsed_fn = ParsedFunction.from_function(fn, exclude_args=metadata.exclude_args)
         func_name = metadata.name or parsed_fn.name

@@ -1,6 +1,6 @@
 from collections.abc import Awaitable, Callable, Sequence, Mapping, Iterable
 from contextlib import AbstractAsyncContextManager
-from typing import Any, Literal, overload, override
+from typing import Any, Literal, overload, override, TypeVar, Generic
 
 import mcp.types
 from commons.types import AwaitableOr, SequenceOr
@@ -16,19 +16,20 @@ from fastmcp.server.middleware import Middleware, MiddlewareContext
 from fastmcp.server.mixins import LifespanMixin, MCPOperationsMixin, TransportMixin
 from fastmcp.server.providers import LocalProvider, Provider
 from fastmcp.server.providers.aggregate import AggregateProvider
-from fastmcp.server.tasks.config import TaskConfig, TaskMeta
 from fastmcp.server.transforms import Transform
 from fastmcp.tools import Tool, ToolResult
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
+from fastmcp.utilities.tasks import TaskConfig, TaskMeta
 from fastmcp.utilities.types import NotSet, NotSetT
 from fastmcp.utilities.versions import VersionSpec
 
 type DuplicateBehavior = Literal["warn", "error", "replace", "ignore"]
 type LifespanCallable[T] = Callable[[FastMCP[T]], AbstractAsyncContextManager[T]]
+LifespanResultT = TypeVar("LifespanResultT", bound=Any)
 
 # Copied from fastmcp/client/
-from mcp.shared.context
+import mcp.shared.context
 
 type SamplingHandler[T, LifespanContextT] = Callable[
     [
@@ -40,11 +41,12 @@ type SamplingHandler[T, LifespanContextT] = Callable[
 ]
 
 
-class FastMCP[LifespanResultT](
+class FastMCP(
     AggregateProvider,
     LifespanMixin,
     MCPOperationsMixin,
     TransportMixin,
+    Generic[LifespanResultT]
 ):
     # <editor-fold defaultstate="collapsed" desc="def __init__(self, name, ...) -> None: ...">
     __slots__ = (

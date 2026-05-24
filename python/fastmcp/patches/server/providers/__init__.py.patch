@@ -1,28 +1,36 @@
 --- work/sources/fastmcp_slim/fastmcp/server/providers/__init__.py
 +++ work/patched/fastmcp_slim/fastmcp/server/providers/__init__.py
-@@ -25,45 +25,30 @@
+@@ -24,48 +24,54 @@
+     mcp = FastMCP("Server", providers=[DatabaseProvider(db_url)])
      ```
  """
++from .base import Provider
++from .aggregate import AggregateProvider
  
 -from typing import TYPE_CHECKING
--
- from fastmcp.server.providers.aggregate import AggregateProvider
- from fastmcp.server.providers.base import Provider
- from fastmcp.server.providers.fastmcp_provider import FastMCPProvider
- from fastmcp.server.providers.filesystem import FileSystemProvider
- from fastmcp.server.providers.local_provider import LocalProvider
+ 
+-from fastmcp.server.providers.aggregate import AggregateProvider
+-from fastmcp.server.providers.base import Provider
+-from fastmcp.server.providers.fastmcp_provider import FastMCPProvider
+-from fastmcp.server.providers.filesystem import FileSystemProvider
+-from fastmcp.server.providers.local_provider import LocalProvider
 -from fastmcp.server.providers.skills import (
 -    ClaudeSkillsProvider,
 -    SkillProvider,
 -    SkillsDirectoryProvider,
 -    SkillsProvider,
 -)
-+from fastmcp.server.providers.skills import SkillProvider, SkillsDirectoryProvider
- 
+-
 -if TYPE_CHECKING:
-+if __debug__ and __import__("typing").TYPE_CHECKING:
-     from fastmcp.server.providers.openapi import OpenAPIProvider as OpenAPIProvider
+-    from fastmcp.server.providers.openapi import OpenAPIProvider as OpenAPIProvider
 -    from fastmcp.server.providers.proxy import ProxyProvider as ProxyProvider
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from .fastmcp_provider import FastMCPProvider as FastMCPProvider
++    from .filesystem import FileSystemProvider as FileSystemProvider
++    from .local_provider import LocalProvider as LocalProvider
++    from .skills import SkillProvider as SkillProvider, SkillsDirectoryProvider as SkillsDirectoryProvider
++    from .openapi import OpenAPIProvider as OpenAPIProvider
++
  
  __all__ = [
      "AggregateProvider",
@@ -43,8 +51,30 @@
      """Lazy import for providers to avoid circular imports."""
 -    if name == "ProxyProvider":
 -        from fastmcp.server.providers.proxy import ProxyProvider
--
--        return ProxyProvider
-     if name == "OpenAPIProvider":
-         from fastmcp.server.providers.openapi import OpenAPIProvider
++    if name == "FastMCPProvider":
++        from .fastmcp_provider import FastMCPProvider
++
++        return FastMCPProvider
++    if name == "FileSystemProvider":
++        from .filesystem import FileSystemProvider
++
++        return FileSystemProvider
++    if name == "LocalProvider":
++        from .local_provider import LocalProvider
++
++        return LocalProvider
++    if name == "SkillProvider":
++        from .skills.skill_provider import SkillProvider
++
++        return SkillProvider
++    if name == "SkillsDirectoryProvider":
++        from .skills.directory_provider import SkillsDirectoryProvider
  
+-        return ProxyProvider
++        return SkillsDirectoryProvider
+     if name == "OpenAPIProvider":
+-        from fastmcp.server.providers.openapi import OpenAPIProvider
++        from .openapi import OpenAPIProvider
+ 
+         return OpenAPIProvider
+     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

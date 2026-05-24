@@ -5,7 +5,6 @@ from mcp.types import Prompt as SDKPrompt, PromptArgument as SDKPromptArgument
 from pydantic import Field
 from pydantic.json_schema import SkipJsonSchema
 
-from fastmcp.prompts.base import Message, PromptArgument, PromptResult
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
 
@@ -13,6 +12,7 @@ from fastmcp.utilities.components import FastMCPComponent
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from typing import Any
 
+    from fastmcp.prompts.base import Message, PromptArgument, PromptResult
     from fastmcp.utilities.tasks import TaskMeta
 
     from .function_prompt import FunctionPrompt
@@ -65,7 +65,7 @@ class Prompt(FastMCPComponent):
         return FunctionPrompt.from_function(fn, **kwargs)
 
     @abstractmethod
-    async def render(self, arguments: dict[str, Any] | None = None, /) -> str | list[Message | str] | PromptResult:
+    async def render(self, arguments=None, /):
         """Render the prompt with arguments.
 
         Subclasses must implement this method. Return one of:
@@ -74,7 +74,7 @@ class Prompt(FastMCPComponent):
         - PromptResult: Used directly
         """
 
-    def convert_result(self, raw_value, /) -> PromptResult:
+    def convert_result(self, raw_value, /):
         """Convert a raw return value to PromptResult.
 
         Accepts:
@@ -85,6 +85,8 @@ class Prompt(FastMCPComponent):
         Raises:
             TypeError: for unsupported types
         """
+        from fastmcp.prompts.base import Message, PromptResult
+
         if isinstance(raw_value, PromptResult):
             return raw_value
 
@@ -92,7 +94,7 @@ class Prompt(FastMCPComponent):
             return PromptResult(raw_value, description=self.description, meta=self.meta)
 
         if isinstance(raw_value, list | tuple):
-            messages: list[Message] = []
+            messages = []
             for i, item in enumerate(raw_value):
                 if isinstance(item, Message):
                     messages.append(item)

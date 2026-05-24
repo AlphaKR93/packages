@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/server/providers/fastmcp_provider.py
 +++ work/patched/fastmcp_slim/fastmcp/server/providers/fastmcp_provider.py
-@@ -7,30 +7,23 @@
+@@ -7,30 +7,25 @@
  the wrapped server's middleware, ensuring middleware runs when components are
  executed.
  """
@@ -18,13 +18,13 @@
 -from fastmcp.prompts.base import Prompt, PromptResult
 -from fastmcp.resources.base import Resource, ResourceResult
 -from fastmcp.resources.template import ResourceTemplate, expand_uri_template
-+from fastmcp.prompts import Prompt, PromptResult
-+from fastmcp.resources import Resource, ResourceResult, ResourceTemplate
-+from fastmcp.resources.template import expand_uri_template
- from fastmcp.server.providers.base import Provider
+-from fastmcp.server.providers.base import Provider
 -from fastmcp.server.tasks.config import TaskMeta
 -from fastmcp.server.telemetry import delegate_span
 -from fastmcp.tools.base import Tool, ToolResult
++from fastmcp.prompts import Prompt, PromptResult
++from fastmcp.resources import Resource, ResourceResult, ResourceTemplate
++from fastmcp.resources.template import expand_uri_template
 +from fastmcp.tools import Tool, ToolResult
  from fastmcp.utilities.components import FastMCPComponent
 +from fastmcp.utilities.tasks import TaskMeta
@@ -33,12 +33,14 @@
 -if TYPE_CHECKING:
 -    from docket import Docket
 -    from docket.execution import Execution
--
++from .base import Provider
++
+ 
 +if __debug__ and __import__("typing").TYPE_CHECKING:
      from fastmcp.server.server import FastMCP
  
  
-@@ -108,12 +101,7 @@
+@@ -108,12 +103,7 @@
          # Pass exact version so child executes the correct version
          version = VersionSpec(eq=self.version) if self.version else None
  
@@ -52,7 +54,7 @@
              return await self._server.call_tool(
                  self._original_name,
                  arguments,
-@@ -204,12 +192,7 @@
+@@ -204,12 +194,7 @@
          # Pass exact version so child reads the correct version
          version = VersionSpec(eq=self.version) if self.version else None
  
@@ -66,7 +68,7 @@
              return await self._server.read_resource(
                  self._original_uri, version=version, task_meta=task_meta
              )
-@@ -286,12 +269,7 @@
+@@ -286,12 +271,7 @@
          # Pass exact version so child renders the correct version
          version = VersionSpec(eq=self.version) if self.version else None
  
@@ -80,7 +82,7 @@
              return await self._server.render_prompt(
                  self._original_name, arguments, version=version, task_meta=task_meta
              )
-@@ -408,12 +386,7 @@
+@@ -408,12 +388,7 @@
          # Pass exact version so child reads the correct version
          version = VersionSpec(eq=self.version) if self.version else None
  
@@ -94,7 +96,7 @@
              return await self._server.read_resource(
                  original_uri, version=version, task_meta=task_meta
              )
-@@ -437,28 +410,6 @@
+@@ -437,28 +412,6 @@
  
          return result
  

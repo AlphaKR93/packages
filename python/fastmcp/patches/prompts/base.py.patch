@@ -63,7 +63,7 @@
      """Canonical result type for prompt rendering.
  
      Provides explicit control over prompt responses: multiple messages,
-@@ -195,246 +166,9 @@
+@@ -195,246 +166,12 @@
          )
  
  
@@ -279,10 +279,11 @@
 -            "fastmcp.provider.type": "LocalProvider",
 -        }
 -
--
++from alpha93.fastmcp._internal.components.prompts.base import Prompt
+ 
  __all__ = [
      "Message",
--    "Prompt",
+     "Prompt",
      "PromptArgument",
 +    "PromptMessage",
      "PromptResult",

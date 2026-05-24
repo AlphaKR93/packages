@@ -1,0 +1,20 @@
+--- work/sources/fastmcp_slim/fastmcp/server/providers/local_provider/decorators.py
++++ work/patched/fastmcp_slim/fastmcp/server/providers/local_provider/decorators.py
+@@ -0,0 +1,17 @@
++"""Decorator mixins for LocalProvider.
++
++This module provides mixin classes that add decorator functionality
++to LocalProvider for tools, resources, templates, and prompts.
++"""
++from alpha93.fastmcp._internal.server.providers.local_provider.decorators import (
++    PromptDecoratorMixin,
++    ResourceDecoratorMixin,
++    ToolDecoratorMixin
++)
++
++
++__all__ = (
++    "PromptDecoratorMixin",
++    "ResourceDecoratorMixin",
++    "ToolDecoratorMixin",
++)

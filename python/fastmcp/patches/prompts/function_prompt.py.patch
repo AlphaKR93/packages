@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/prompts/function_prompt.py
 +++ work/patched/fastmcp_slim/fastmcp/prompts/function_prompt.py
-@@ -1,60 +1,16 @@
+@@ -1,58 +1,19 @@
  """Standalone @prompt decorator for FastMCP."""
 -
 -from __future__ import annotations
@@ -20,12 +20,11 @@
 -    overload,
 -    runtime_checkable,
 -)
-+from typing import Any, Literal
  
 -import pydantic_core
- from mcp.types import Icon
+-from mcp.types import Icon
 -from pydantic.json_schema import SkipJsonSchema
- 
+-
 -import fastmcp
 -from fastmcp.decorators import resolve_task_config
 -from fastmcp.exceptions import FastMCPDeprecationWarning, FastMCPError, PromptError
@@ -34,40 +33,42 @@
 -    call_sync_fn_in_threadpool,
 -    is_coroutine_function,
 -)
- from fastmcp.utilities.authorization import AuthCheck
+-from fastmcp.utilities.authorization import AuthCheck
 -from fastmcp.utilities.docstring_parsing import ParsedDocstring, parse_docstring
 -from fastmcp.utilities.json_schema import compress_schema
  from fastmcp.utilities.logging import get_logger
- from fastmcp.utilities.tasks import TaskConfig
+-from fastmcp.utilities.tasks import TaskConfig
 -from fastmcp.utilities.types import get_cached_typeadapter
 -
 -if TYPE_CHECKING:
 -    from docket import Docket
 -    from docket.execution import Execution
--
+ 
 -F = TypeVar("F", bound=Callable[..., Any])
  
- logger = get_logger(__name__)
+-logger = get_logger(__name__)
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from typing import Any, Literal
  
++    from mcp.types import Icon
  
 -@runtime_checkable
 -class DecoratedPrompt(Protocol):
 -    """Protocol for functions decorated with @prompt."""
--
++    from fastmcp.utilities.authorization import AuthCheck
++    from fastmcp.utilities.tasks import TaskConfig
+ 
 -    __fastmcp__: PromptMeta
--
+ 
 -    def __call__(self, *args: Any, **kwargs: Any) -> Any: ...
--
--
++logger = get_logger(__name__)
+ 
+ 
  @dataclass(frozen=True, kw_only=True)
- class PromptMeta:
-     """Metadata attached to functions by the @prompt decorator."""
-@@ -70,447 +26,3 @@
-     task: bool | TaskConfig | None = None
-     auth: AuthCheck | list[AuthCheck] | None = None
+@@ -72,445 +33,10 @@
      enabled: bool = True
--
--
+ 
+ 
 -class FunctionPrompt(Prompt):
 -    """A prompt that is a function."""
 -
@@ -505,8 +506,14 @@
 -        prompt_name = name
 -    else:
 -        raise TypeError(f"Invalid first argument: {type(name_or_fn)}")
--
++# noinspection PyProtectedMember
++from alpha93.fastmcp._internal.components.prompts.function_prompt import FunctionPrompt, prompt
+ 
 -    def wrapper(fn: F) -> F:
 -        return decorator(fn, prompt_name)
 -
 -    return wrapper
++__all__ = (
++    "FunctionPrompt",
++    "prompt",
++)

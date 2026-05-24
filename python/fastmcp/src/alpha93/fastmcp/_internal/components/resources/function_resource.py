@@ -12,6 +12,7 @@ from fastmcp.utilities.tasks import TaskConfig
 
 from .base import Resource
 
+
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from pydantic import AnyUrl
 

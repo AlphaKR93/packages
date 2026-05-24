@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/server/transforms/prompts_as_tools.py
 +++ work/patched/fastmcp_slim/fastmcp/server/transforms/prompts_as_tools.py
-@@ -17,22 +17,20 @@
+@@ -17,22 +17,23 @@
      # Now has list_prompts and get_prompt tools
      ```
  """
@@ -17,18 +17,21 @@
  from fastmcp.server.dependencies import get_context
 -from fastmcp.server.transforms import GetToolNext, Transform
 -from fastmcp.tools.base import Tool
-+from fastmcp.server.transforms import Transform
 +from fastmcp.tools import Tool
  from fastmcp.utilities.versions import VersionSpec
  
++from ..transforms import Transform
++
++
  if TYPE_CHECKING:
 -    from fastmcp.server.providers.base import Provider
 +    from fastmcp.server.providers import Provider
-+    from fastmcp.server.transforms import GetToolNext
++
++    from ..transforms import GetToolNext
  
  
  class PromptsAsTools(Transform):
-@@ -119,7 +117,7 @@
+@@ -119,7 +120,7 @@
                      }
                  )
  
@@ -37,7 +40,7 @@
  
          return Tool.from_function(fn=list_prompts)
  
-@@ -166,4 +164,4 @@
+@@ -166,4 +167,4 @@
              }
          )
  

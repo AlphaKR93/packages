@@ -1,3 +1,4 @@
+import asyncio
 import re
 import secrets
 from contextlib import asynccontextmanager
@@ -7,34 +8,31 @@ from typing import Any, cast, override
 
 import httpx
 import mcp.types
-from anyio import Lock, Event
+from commons import catch
 from key_value.aio.adapters.pydantic import PydanticAdapter
 from mcp.shared.exceptions import McpError
 from pydantic import AnyUrl
 from pydantic import ValidationError as PydanticValidationError
 
 from fastmcp.exceptions import AuthorizationError, FastMCPError, NotFoundError, PromptError, ResourceError, ToolError
-from fastmcp.server.middleware import MiddlewareContext
+from fastmcp.server.middleware.middleware import MiddlewareContext
 from fastmcp.server.mixins import LifespanMixin, MCPOperationsMixin, TransportMixin
 from fastmcp.server.low_level import LowLevelServer
 from fastmcp.server.providers.aggregate import AggregateProvider
 from fastmcp.server.transforms.visibility import apply_session_transforms, is_enabled
-from fastmcp.server.transforms.tool_transform import ToolTransform, ToolTransformConfig
 from fastmcp.server.server import StateValue, _logger
-from fastmcp.server.providers import LocalProvider
 from fastmcp.tools import Tool
 from fastmcp.utilities.authorization import AuthContext, run_auth_checks
 from fastmcp.utilities.components import _coerce_version
 from fastmcp.utilities.versions import version_sort_key
 
 import alpha93.fastmcp._internal.server.context as _ctx
-from alpha93._tmp_commons import catch
 
 
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from collections.abc import AsyncIterator, Awaitable, Callable, Mapping, MutableSequence, Sequence
     from contextlib import AbstractAsyncContextManager
-    from typing import Final, Literal
+    from typing import Final, Literal, TypeVar
 
     from commons.types import AwaitableOr
     from key_value.aio.protocols import AsyncKeyValue
@@ -54,6 +52,7 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     type DuplicateBehavior = Literal["warn", "error", "replace", "ignore"]
     type Transport = Literal["stdio", "http"]
     type LifespanCallable[T] = Callable[[FastMCP[T]], AbstractAsyncContextManager[T]]
+    LifespanResultT = TypeVar("LifespanResultT", bound=Any)
 
     # Copied from fastmcp/client/
     import mcp.shared.context
@@ -70,7 +69,7 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
 
 # Compiled URI parsing regex to split a URI into protocol and path components
 URI_PATTERN: Final = re.compile(r"^([^:]+://)(.*?)$")
-_authorize = catch(AuthorizationError)
+_authorize = catch(AuthorizationError, coro=True).__call__(run_auth_checks)
 
 
 class FastMCP[LifespanResultT](
@@ -116,6 +115,7 @@ class FastMCP[LifespanResultT](
         # Initialize Provider (sets up _transforms)
         super().__init__()
 
+        from fastmcp.server.providers import LocalProvider
         self.__provider: Final = LocalProvider(on_duplicate)
         self.__support_tasks_by_default: Final = tasks
 
@@ -123,8 +123,8 @@ class FastMCP[LifespanResultT](
         self._lifespan_result: LifespanResultT | None = None
         self._lifespan_result_set: bool = False
         self._lifespan_ref_count: int = 0
-        self._lifespan_lock: Final = Lock()
-        self._started: Final = Event()
+        self._lifespan_lock: Final = asyncio.Lock()
+        self._started: Final = asyncio.Event()
         self._mask_error_details: Final = mask_error_details
         self._list_page_size: Final = list_page_size
 
@@ -158,7 +158,7 @@ class FastMCP[LifespanResultT](
             self,
             name=name or self.generate_name(),
             version=_coerce_version(version) or __import__("fastmcp").__version__,
-            lifespan=_lifespan_proxy(self),
+            lifespan=_lifespan_proxy(self), # type: ignore
             instructions=instructions,
             website_url=website_url,
             icons=icons,
@@ -282,8 +282,7 @@ class FastMCP[LifespanResultT](
                 if not skip_auth and tool.auth:
                     ctx_ = AuthContext(token=token, component=tool)
 
-                    # noinspection PyTypeChecker,PyUnresolvedReferences
-                    granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+                    granted, exc = await _authorize(tool.auth, ctx_)
                     if not granted or exc:
                         continue
                 authorized.append(tool)
@@ -301,8 +300,7 @@ class FastMCP[LifespanResultT](
         if not skip_auth and tool.auth:
             ctx_ = AuthContext(token=token, component=tool)
 
-            # noinspection PyTypeChecker,PyUnresolvedReferences
-            granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+            granted, exc = await _authorize(tool.auth, ctx_)
             if not granted or exc:
                 return None
 
@@ -335,8 +333,7 @@ class FastMCP[LifespanResultT](
             if not skip_auth and tool.auth:
                 ctx_ = AuthContext(token=token, component=tool)
 
-                # noinspection PyTypeChecker,PyUnresolvedReferences
-                granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+                granted, exc = await _authorize(tool.auth, ctx_)
                 if not granted or exc:
                     continue
             authorized.append(tool)
@@ -367,8 +364,7 @@ class FastMCP[LifespanResultT](
                 if not skip_auth and resource.auth:
                     ctx_ = AuthContext(token=token, component=resource)
 
-                    # noinspection PyTypeChecker,PyUnresolvedReferences
-                    granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+                    granted, exc = await _authorize(resource.auth, ctx_)
                     if not granted or exc:
                         continue
                 authorized.append(resource)
@@ -386,8 +382,7 @@ class FastMCP[LifespanResultT](
         if not skip_auth and resource.auth is not None:
             ctx_ = AuthContext(token=token, component=resource)
 
-            # noinspection PyTypeChecker,PyUnresolvedReferences
-            granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+            granted, exc = await _authorize(resource.auth, ctx_)
             if not granted or exc:
                 return None
 
@@ -417,8 +412,7 @@ class FastMCP[LifespanResultT](
             if not skip_auth and resource.auth:
                 ctx_ = AuthContext(token=token, component=resource)
 
-                # noinspection PyTypeChecker,PyUnresolvedReferences
-                granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+                granted, exc = await _authorize(resource.auth, ctx_)
                 if not granted or exc:
                     continue
             authorized.append(resource)
@@ -452,8 +446,7 @@ class FastMCP[LifespanResultT](
                 if not skip_auth and template.auth:
                     ctx_ = AuthContext(token=token, component=template)
 
-                    # noinspection PyTypeChecker,PyUnresolvedReferences
-                    granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+                    granted, exc = await _authorize(template.auth, ctx_)
                     if not granted or exc:
                         continue
                 authorized.append(template)
@@ -471,8 +464,7 @@ class FastMCP[LifespanResultT](
         if not skip_auth and template.auth:
             ctx_ = AuthContext(token=token, component=template)
 
-            # noinspection PyTypeChecker,PyUnresolvedReferences
-            granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+            granted, exc = await _authorize(template.auth, ctx_)
             if not granted or exc:
                 return None
 
@@ -502,8 +494,7 @@ class FastMCP[LifespanResultT](
             if not skip_auth and template.auth:
                 ctx_ = AuthContext(token=token, component=template)
 
-                # noinspection PyTypeChecker,PyUnresolvedReferences
-                granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+                granted, exc = await _authorize(template.auth, ctx_)
                 if not granted or exc:
                     continue
             authorized.append(template)
@@ -537,8 +528,7 @@ class FastMCP[LifespanResultT](
                 if not skip_auth and prompt.auth:
                     ctx_ = AuthContext(token=token, component=prompt)
 
-                    # noinspection PyTypeChecker,PyUnresolvedReferences
-                    granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+                    granted, exc = await _authorize(prompt.auth, ctx_)
                     if not granted or exc:
                         continue
                 authorized.append(prompt)
@@ -556,8 +546,7 @@ class FastMCP[LifespanResultT](
         if not skip_auth and prompt.auth:
             ctx_ = AuthContext(token=token, component=prompt)
 
-            # noinspection PyTypeChecker,PyUnresolvedReferences
-            granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+            granted, exc = await _authorize(prompt.auth, ctx_)
             if not granted or exc:
                 return None
 
@@ -587,8 +576,7 @@ class FastMCP[LifespanResultT](
             if not skip_auth and prompt.auth:
                 ctx_ = AuthContext(token=token, component=prompt)
 
-                # noinspection PyTypeChecker,PyUnresolvedReferences
-                granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+                granted, exc = await _authorize(prompt.auth, ctx_)
                 if not granted or exc:
                     continue
             authorized.append(prompt)
@@ -656,8 +644,7 @@ class FastMCP[LifespanResultT](
                         if not skip_auth and tool.auth:
                             ctx_ = AuthContext(token=token, component=tool)
 
-                            # noinspection PyTypeChecker,PyUnresolvedReferences
-                            granted, exc = await _authorize(lambda: run_auth_checks(tool.auth, ctx_))
+                            granted, exc = await _authorize(tool.auth, ctx_)
                             if not granted or exc:
                                 raise NotFoundError(f"Unknown tool: {name!r}")
                             # authorized
@@ -894,6 +881,7 @@ class FastMCP[LifespanResultT](
 
     def mount(self, server, /, tool_names = None, **kwargs) -> None:
         from fastmcp.server.providers.fastmcp_provider import FastMCPProvider
+        from fastmcp.server.transforms.tool_transform import ToolTransform, ToolTransformConfig
 
         assert server is not self, "Cannot mount a server onto itself"
         assert "as_proxy" not in kwargs.keys(), \
@@ -1003,7 +991,7 @@ async def default_lifespan(_, /) -> AsyncIterator[Any]:
     yield {}
 
 
-def _lifespan_proxy[T](fastmcp_server: FastMCP[T], /) -> Callable[[LowLevelServer[T]], AbstractAsyncContextManager[T]]:
+def _lifespan_proxy[T](fastmcp_server: FastMCP[T], /) -> Callable[[LowLevelServer[T, Any]], AbstractAsyncContextManager[T]]:
     # noinspection PyProtectedMember
     @asynccontextmanager
     async def wrap(_, /) -> AsyncIterator[T]:

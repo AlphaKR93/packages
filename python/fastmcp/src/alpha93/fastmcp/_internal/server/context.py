@@ -5,13 +5,13 @@ from contextvars import ContextVar
 from dataclasses import dataclass
 
 from mcp.server.lowlevel.server import request_ctx
+from uncalled_for import SharedContext
 
 import fastmcp.server.context as _origin
 from fastmcp.server.elicitation import (
     handle_elicit_accept,
     parse_elicit_response_type,
 )
-from fastmcp.server.sampling.run import sample_impl, sample_step_impl
 from fastmcp.server.server import StateValue
 from fastmcp.server.transforms.visibility import disable_components as _disable_components
 from fastmcp.server.transforms.visibility import enable_components as _enable_components
@@ -31,7 +31,6 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from mcp.shared.context import RequestContext
     from pydantic.networks import AnyUrl
     from starlette.requests import Request
-    from uncalled_for import SharedContext
 
     from fastmcp.server.elicitation import CancelledElicitation, DeclinedElicitation
     from fastmcp.server.low_level import MiddlewareServerSession
@@ -99,8 +98,7 @@ class Context:
             raise RuntimeError("FastMCP instance is no longer available")
         return fastmcp
 
-    async def __aenter__(self, /):
-        """Enter the context manager and set this context as the current context."""
+    async def __aenter__(self: FastMCP, /):
         # Inherit request-scoped state from parent context so middleware
         # and tool contexts share the same in-memory state dict.
         parent = _current_context.get(None)
@@ -118,8 +116,7 @@ class Context:
 
         return self
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb, /):
-        """Exit the context manager and reset the most recent token."""
+    async def __aexit__(self: FastMCP, exc_type, exc_val, exc_tb, /):
         if hasattr(self, "_shared_context"):
             await self._shared_context.__aexit__(exc_type, exc_val, exc_tb)
             del self._shared_context
@@ -342,10 +339,14 @@ class Context:
         await self.request_context.close_sse_stream()
 
     async def sample_step(self, /, *args, **kwargs):
+        from fastmcp.server.sampling.run import sample_step_impl
+
         return await sample_step_impl(self, *args, **kwargs)
 
     async def sample(self, /, *args, **kwargs):
         # TODO: Add background task support similar to elicit() when is_background_task
+        from fastmcp.server.sampling.run import sample_impl
+
         return await sample_impl(self, *args, **kwargs)
 
     async def elicit(self, message, /, *args, **kwargs):

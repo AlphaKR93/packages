@@ -1,0 +1,60 @@
+--- work/sources/fastmcp_slim/fastmcp/server/mixins/mcp_operations.pyi
++++ work/patched/fastmcp_slim/fastmcp/server/mixins/mcp_operations.pyi
+@@ -0,0 +1,57 @@
++from typing import final
++
++import mcp.types
++from alpha93.py_terser import keep_types
++
++from alpha93.fastmcp._internal.server.server import FastMCP
++
++
++class MCPOperationsMixin:
++    """Mixin providing MCP protocol handler setup and wire-format handlers."""
++
++    @keep_types
++    async def __list_tools_mcp(
++        self: FastMCP,
++        /,
++        request: mcp.types.ListToolsRequest
++    ) -> mcp.types.ListToolsResult:
++        ...
++
++    @keep_types
++    async def __list_resources_mcp(
++        self: FastMCP,
++        /,
++        request: mcp.types.ListResourcesRequest
++    ) -> mcp.types.ListResourcesResult:
++        ...
++
++    @keep_types
++    async def __list_resource_templates_mcp(
++        self: FastMCP,
++        /,
++        request: mcp.types.ListResourceTemplatesRequest
++    ) -> mcp.types.ListResourceTemplatesResult:
++        ...
++
++    @keep_types
++    async def __list_prompts_mcp(
++        self: FastMCP,
++        /,
++        request: mcp.types.ListPromptsRequest
++    ) -> mcp.types.ListPromptsResult:
++        ...
++
++    @final
++    def _setup_handlers(self: FastMCP, /) -> None:
++        """Set up core MCP protocol handlers.
++
++        List handlers use SDK decorators that pass the request object to our handler
++        (needed for pagination cursor). The SDK also populates caches like _tool_cache.
++
++        Exception: list_resource_templates SDK decorator doesn't pass the request,
++        so we register that handler directly.
++
++        The call_tool decorator is from the SDK (supports CreateTaskResult + validate_input).
++        The read_resource and get_prompt decorators are from LowLevelServer to add
++        CreateTaskResult support until the SDK provides it natively.
++        """

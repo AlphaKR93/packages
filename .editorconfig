@@ -1,0 +1,35 @@
+root = true
+
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+indent_size = 4
+ij_continuation_indent_size = 8
+indent_style = space
+tab_width = 8
+
+max_line_length = 120
+ij_visual_guides = 16, 80
+
+ij_formatter_tags_enabled = true
+ij_formatter_on_tag = @formatter:on
+ij_formatter_off_tag = @formatter:off
+
+
+[.editorconfig]
+charset = latin1
+insert_final_newline = false
+
+ij_editorconfig_space_before_colon = false
+ij_editorconfig_space_after_colon = false
+ij_editorconfig_space_before_comma = false
+ij_editorconfig_space_after_comma = true
+ij_editorconfig_spaces_around_assignment_operators = true
+
+max_line_length = off
+ij_visual_guides = none
+ij_editorconfig_align_group_field_declaration = false

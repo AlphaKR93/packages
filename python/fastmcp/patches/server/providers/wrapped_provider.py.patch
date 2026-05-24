@@ -1,15 +1,36 @@
 --- work/sources/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py
 +++ work/patched/fastmcp_slim/fastmcp/server/providers/wrapped_provider.py
-@@ -13,7 +13,7 @@
- from fastmcp.server.providers.base import Provider
+@@ -3,22 +3,19 @@
+ This module provides `_WrappedProvider`, an internal class that wraps a provider
+ with an additional transform. Created by `Provider.wrap_transform()`.
+ """
+-
+-from __future__ import annotations
+-
+ from collections.abc import AsyncIterator, Sequence
+ from contextlib import asynccontextmanager
+-from typing import TYPE_CHECKING
+ 
+-from fastmcp.server.providers.base import Provider
  from fastmcp.utilities.versions import VersionSpec
  
 -if TYPE_CHECKING:
+-    from fastmcp.prompts.base import Prompt
+-    from fastmcp.resources.base import Resource
+-    from fastmcp.resources.template import ResourceTemplate
++from .base import Provider
++
++
 +if __debug__ and __import__("typing").TYPE_CHECKING:
-     from fastmcp.prompts.base import Prompt
-     from fastmcp.resources.base import Resource
-     from fastmcp.resources.template import ResourceTemplate
-@@ -104,10 +104,9 @@
++    from fastmcp.prompts import Prompt
++    from fastmcp.resources import Resource, ResourceTemplate
+     from fastmcp.server.transforms import Transform
+-    from fastmcp.tools.base import Tool
++    from fastmcp.tools import Tool
+     from fastmcp.utilities.components import FastMCPComponent
+ 
+ 
+@@ -104,10 +101,9 @@
      async def get_tasks(self) -> Sequence[FastMCPComponent]:
          """Delegate to inner's get_tasks and apply wrapper's transforms."""
          # Import here to avoid circular imports

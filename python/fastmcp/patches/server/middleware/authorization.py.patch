@@ -1,6 +1,15 @@
 --- work/sources/fastmcp_slim/fastmcp/server/middleware/authorization.py
 +++ work/patched/fastmcp_slim/fastmcp/server/middleware/authorization.py
-@@ -29,21 +29,21 @@
+@@ -20,30 +20,28 @@
+     ])
+     ```
+ """
+-
+-from __future__ import annotations
+-
+ import logging
+-from collections.abc import Sequence
+ 
  import mcp.types as mt
  
  from fastmcp.exceptions import AuthorizationError
@@ -12,26 +21,33 @@
 -    AuthContext,
 -    run_auth_checks,
 -)
-+from fastmcp.prompts import Prompt, PromptResult
-+from fastmcp.resources import Resource, ResourceResult
-+from fastmcp.resources import ResourceTemplate
  from fastmcp.server.dependencies import get_access_token
- from fastmcp.server.middleware.middleware import (
-     CallNext,
-     Middleware,
-     MiddlewareContext,
- )
+-from fastmcp.server.middleware.middleware import (
+-    CallNext,
+-    Middleware,
+-    MiddlewareContext,
+-)
 -from fastmcp.tools.base import Tool, ToolResult
-+from fastmcp.tools import Tool, ToolResult
-+from fastmcp.utilities.authorization import (
-+    AuthCheck,
-+    AuthContext,
-+    run_auth_checks,
-+)
++from fastmcp.utilities.authorization import AuthContext, run_auth_checks
++
++from .middleware import Middleware
++
++
++if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Sequence
++
++    from fastmcp.prompts import Prompt, PromptResult
++    from fastmcp.resources import Resource, ResourceResult
++    from fastmcp.resources import ResourceTemplate
++    from fastmcp.tools import Tool, ToolResult
++    from fastmcp.utilities.authorization import AuthCheck
++
++    from .middleware import CallNext, MiddlewareContext
++
  
  logger = logging.getLogger(__name__)
  
-@@ -92,7 +92,8 @@
+@@ -92,7 +90,8 @@
  
          # STDIO has no auth concept, skip filtering
          # Late import to avoid circular import with context.py
@@ -41,7 +57,7 @@
  
          if _current_transport.get() == "stdio":
              return tools
-@@ -118,7 +119,8 @@
+@@ -118,7 +117,8 @@
          """Check auth before tool execution."""
          # STDIO has no auth concept, skip enforcement
          # Late import to avoid circular import with context.py
@@ -51,7 +67,7 @@
  
          if _current_transport.get() == "stdio":
              return await call_next(context)
-@@ -162,7 +164,8 @@
+@@ -162,7 +162,8 @@
          resources = await call_next(context)
  
          # STDIO has no auth concept, skip filtering
@@ -61,7 +77,7 @@
  
          if _current_transport.get() == "stdio":
              return resources
-@@ -187,7 +190,8 @@
+@@ -187,7 +188,8 @@
      ) -> ResourceResult:
          """Check auth before resource read."""
          # STDIO has no auth concept, skip enforcement
@@ -71,7 +87,7 @@
  
          if _current_transport.get() == "stdio":
              return await call_next(context)
-@@ -234,7 +238,8 @@
+@@ -234,7 +236,8 @@
          templates = await call_next(context)
  
          # STDIO has no auth concept, skip filtering
@@ -81,7 +97,7 @@
  
          if _current_transport.get() == "stdio":
              return templates
-@@ -261,7 +266,8 @@
+@@ -261,7 +264,8 @@
          prompts = await call_next(context)
  
          # STDIO has no auth concept, skip filtering
@@ -91,7 +107,7 @@
  
          if _current_transport.get() == "stdio":
              return prompts
-@@ -286,7 +292,8 @@
+@@ -286,7 +290,8 @@
      ) -> PromptResult:
          """Check auth before prompt render."""
          # STDIO has no auth concept, skip enforcement

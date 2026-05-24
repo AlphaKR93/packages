@@ -44,6 +44,10 @@ def rebuild_patches():
     generated = []
     for target_file in sorted(src.rglob("*")):
         if not target_file.is_file(): continue
+        if target_file.suffix == "pyc": continue
+        if (target_file.parent.name.startswith("__") and
+            target_file.parent.name.endswith("__")):
+            continue
 
         rel_file = target_file.relative_to(src)
         if str(rel_file) in excludes: continue

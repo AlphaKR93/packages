@@ -1,11 +1,10 @@
 --- work/sources/fastmcp_slim/fastmcp/tools/base.py
 +++ work/patched/fastmcp_slim/fastmcp/tools/base.py
-@@ -1,81 +1,36 @@
+@@ -1,81 +1,33 @@
 -from __future__ import annotations
-+from typing import Any
- 
+-
 -import warnings
--from collections.abc import Callable
+ from collections.abc import Callable
 -from typing import (
 -    TYPE_CHECKING,
 -    Annotated,
@@ -14,7 +13,8 @@
 -    TypeAlias,
 -    overload,
 -)
--
++from typing import Any
+ 
 -import mcp.types
  import pydantic_core
 -from mcp.shared.tool_name_validation import validate_and_warn_tool_name
@@ -33,10 +33,7 @@
 -from fastmcp.exceptions import FastMCPDeprecationWarning
 -from fastmcp.utilities.authorization import AuthCheck
 -from fastmcp.utilities.components import FastMCPComponent
-+from mcp.types import CallToolResult, ContentBlock, TextContent
-+from pydantic import BaseModel
-+
- from fastmcp.utilities.logging import get_logger
+-from fastmcp.utilities.logging import get_logger
 -from fastmcp.utilities.tasks import TaskConfig, TaskMeta
 -from fastmcp.utilities.types import (
 -    Audio,
@@ -57,15 +54,15 @@
 -if TYPE_CHECKING:
 -    from docket import Docket
 -    from docket.execution import Execution
-+from fastmcp.utilities.types import Audio, File, Image
-+
-+if __debug__ and __import__("typing").TYPE_CHECKING:
-+    from collections.abc import Callable
++from mcp.types import CallToolResult, ContentBlock, TextContent
++from pydantic import BaseModel
  
 -    from fastmcp.tools.function_tool import FunctionTool
 -    from fastmcp.tools.tool_transform import ArgTransform, TransformedTool
- 
+-
 -# Re-export from function_tool module
++from fastmcp.utilities.logging import get_logger
++from fastmcp.utilities.types import Audio, File, Image, validate
  
  logger = get_logger(__name__)
  
@@ -79,6 +76,7 @@
      return pydantic_core.to_json(data, fallback=str).decode()
  
  
++@validate
  class ToolResult(BaseModel):
 -    content: list[ContentBlock] = Field(
 -        description="List of content blocks for the tool result"
@@ -100,7 +98,7 @@
  
      def __init__(
          self,
-@@ -91,16 +46,6 @@
+@@ -91,16 +43,6 @@
          converted_content: list[ContentBlock] = _convert_to_content(result=content)
  
          if structured_content is not None:
@@ -117,7 +115,7 @@
              try:
                  structured_content = pydantic_core.to_jsonable_python(
                      value=structured_content
-@@ -122,7 +67,7 @@
+@@ -122,7 +64,7 @@
          )
  
      def to_mcp_result(
@@ -126,7 +124,7 @@
      ) -> (
          list[ContentBlock] | tuple[list[ContentBlock], dict[str, Any]] | CallToolResult
      ):
-@@ -137,332 +82,6 @@
+@@ -137,332 +79,6 @@
          return self.content, self.structured_content
  
  
@@ -459,7 +457,7 @@
  def _serialize_with_fallback(
      result: Any, serializer: ToolResultSerializerType | None = None
  ) -> str:
-@@ -509,52 +128,6 @@
+@@ -509,52 +125,6 @@
      return TextContent(type="text", text=_serialize_with_fallback(item, serializer))
  
  
@@ -512,7 +510,7 @@
  def _convert_to_content(
      result: Any,
      serializer: ToolResultSerializerType | None = None,
-@@ -564,16 +137,17 @@
+@@ -564,16 +134,17 @@
      if result is None:
          return []
  
@@ -532,7 +530,7 @@
          return [
              _convert_to_single_content_block(item, serializer)
              if not isinstance(item, ContentBlock)
-@@ -584,29 +158,4 @@
+@@ -584,29 +155,6 @@
      return [TextContent(type="text", text=_serialize_with_fallback(result, serializer))]
  
  
@@ -560,6 +558,7 @@
 -        from fastmcp.tools import function_tool
 -
 -        return getattr(function_tool, name)
--
++from alpha93.fastmcp._internal.components.tools.base import Tool
+ 
 -    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
-+__all__ = ["ToolResult"]
++__all__ = ["Tool", "ToolResult"]

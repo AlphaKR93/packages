@@ -1,32 +1,82 @@
 --- work/sources/fastmcp_slim/fastmcp/server/middleware/middleware.py
 +++ work/patched/fastmcp_slim/fastmcp/server/middleware/middleware.py
-@@ -1,12 +1,9 @@
+@@ -1,29 +1,24 @@
 -from __future__ import annotations
 -
  import logging
- from collections.abc import Awaitable, Sequence
+-from collections.abc import Awaitable, Sequence
  from dataclasses import dataclass, field, replace
  from datetime import datetime, timezone
  from functools import partial
- from typing import (
+-from typing import (
 -    TYPE_CHECKING,
-     Any,
-     Generic,
-     Literal,
-@@ -17,12 +14,11 @@
+-    Any,
+-    Generic,
+-    Literal,
+-    Protocol,
+-    runtime_checkable,
+-)
++from typing import Protocol, runtime_checkable
+ 
  import mcp.types as mt
- from typing_extensions import TypeVar
+-from typing_extensions import TypeVar
  
 -from fastmcp.prompts.base import Prompt, PromptResult
 -from fastmcp.resources.base import Resource, ResourceResult
 -from fastmcp.resources.template import ResourceTemplate
 -from fastmcp.tools.base import Tool, ToolResult
-+from fastmcp.prompts import Prompt, PromptResult
-+from fastmcp.resources import Resource, ResourceResult, ResourceTemplate
-+from fastmcp.tools import Tool, ToolResult
  
 -if TYPE_CHECKING:
 +if __debug__ and __import__("typing").TYPE_CHECKING:
++    from collections.abc import Awaitable, Sequence
++    from typing import Any, Literal, TypeVar
++
++    from fastmcp.prompts import Prompt, PromptResult
++    from fastmcp.resources import Resource, ResourceResult, ResourceTemplate
      from fastmcp.server.context import Context
++    from fastmcp.tools import Tool, ToolResult
++
++    T = TypeVar("T", default=Any)
++    R = TypeVar("R", covariant=True, default=Any)
++
  
  __all__ = [
+     "CallNext",
+@@ -34,17 +29,13 @@
+ logger = logging.getLogger(__name__)
+ 
+ 
+-T = TypeVar("T", default=Any)
+-R = TypeVar("R", covariant=True, default=Any)
+-
+-
+ @runtime_checkable
+-class CallNext(Protocol[T, R]):
++class CallNext[T, R](Protocol):
+     def __call__(self, context: MiddlewareContext[T]) -> Awaitable[R]: ...
+ 
+ 
+ @dataclass(kw_only=True, frozen=True)
+-class MiddlewareContext(Generic[T]):
++class MiddlewareContext[T]:
+     """
+     Unified context for all middleware operations.
+     """
+@@ -63,7 +54,7 @@
+         return replace(self, **kwargs)
+ 
+ 
+-def make_middleware_wrapper(
++def make_middleware_wrapper[T, R](
+     middleware: Middleware, call_next: CallNext[T, R]
+ ) -> CallNext[T, R]:
+     """Create a wrapper that applies a single middleware to a context. The
+@@ -76,7 +67,7 @@
+     return wrapper
+ 
+ 
+-class Middleware:
++class Middleware[T]:
+     """Base class for FastMCP middleware with dispatching hooks."""
+ 
+     async def __call__(
