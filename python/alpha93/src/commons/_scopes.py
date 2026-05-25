@@ -24,8 +24,10 @@ def catch(*types: type, coro: bool | None = None):
         # noinspection PyUnboundLocalVariable
         return acall if coro else call
 
-    from inspect import isawaitable
+    import inspect
 
     def __determine[**P](fn: Callable[P, Any] | Coroutine[P, Any], /):
-        return acall(fn) if isawaitable(fn) else call(fn)
+        return acall(fn) \
+            if inspect.iscoroutinefunction(fn) or inspect.isasyncgenfunction(fn) or inspect.isawaitable(fn) \
+            else call(fn)
     return __determine

@@ -1,47 +1,36 @@
 from collections.abc import Callable
-from typing import Literal, overload
+from typing import Literal, overload, Protocol
 
 from commons.types import Coroutine, Decorator, Transformer
 
 
 def constant[T](func: Callable[[], T]) -> T: ...
 
-type SuccessResult[R, T: BaseException = BaseException] = tuple[R, None]
-type ErrorResult[R, T: BaseException = BaseException] = tuple[None, T]
-type Result[R, T: BaseException = BaseException] = tuple[R | None, None | T] | SuccessResult[R, T] | ErrorResult[R, T]
+class Catcher[E: BaseException](Protocol):
+    @overload
+    def __call__[**P, T](self, fn: Callable[P, T], /) -> Callable[P, tuple[T, None]]: ...
+    @overload
+    def __call__[**P, T](self, fn: Callable[P, T], /) -> Callable[P, tuple[None, E]]: ...
+    def __call__[**P, T](self, fn: Callable[P, T], /) -> Callable[P, tuple[T | None, None | E]]: ...
+
+class AsyncCatcher[E: BaseException](Protocol):
+    @overload
+    def __call__[**P, T](self, fn: Coroutine[P, T], /) -> Coroutine[P, tuple[T, None]]: ...
+    @overload
+    def __call__[**P, T](self, fn: Coroutine[P, T], /) -> Coroutine[P, tuple[None, E]]: ...
+    def __call__[**P, T](self, fn: Coroutine[P, T], /) -> Coroutine[P, tuple[T | None, None | E]]: ...
 
 @overload
-def catch[R, **P, T: BaseException = BaseException](
+def catch[T: BaseException = BaseException](
     *exc_types: type[T],
     coro: Literal[False] = False,
-) -> Transformer[P, R, SuccessResult[R, T]]: ...
+) -> Catcher[T]: ...
 @overload
-def catch[R, **P, T: BaseException = BaseException](
-    *exc_types: type[T],
-    coro: Literal[False] = False,
-) -> Transformer[P, R, ErrorResult[R, T]]: ...
-@overload
-def catch[R, **P, T: BaseException = BaseException](
-    *exc_types: type[T],
-    coro: Literal[False] = False,
-) -> Transformer[P, R, Result[R, T]]: ...
-@overload
-def catch[R, **P, T: BaseException = BaseException](
+def catch[T: BaseException = BaseException](
     *exc_types: type[T],
     coro: Literal[True],
-) -> Decorator[Coroutine[P, T], Coroutine[P, SuccessResult[R, T]]]: ...
-@overload
-def catch[R, **P, T: BaseException = BaseException](
-    *exc_types: type[T],
-    coro: Literal[True],
-) -> Decorator[Coroutine[P, T], Coroutine[P, ErrorResult[R, T]]]: ...
-@overload
-def catch[R, **P, T: BaseException = BaseException](
-    *exc_types: type[T],
-    coro: Literal[True],
-) -> Decorator[Coroutine[P, T], Coroutine[P, Result[R, T]]]: ...
-@overload   # FIXME: Remove
-def catch[R, **P, T: BaseException = BaseException](
+) -> AsyncCatcher[T]: ...
+def catch[T: BaseException = BaseException](
     *exc_types: type[T],
     coro: bool = False,
-) -> Transformer[P, R, Result[R, T]] | Decorator[Coroutine[P, T], Coroutine[P, Result[R, T]]]: ...
+) -> Catcher[T] | AsyncCatcher[T]: ...
