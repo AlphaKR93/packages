@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import ClassVar, Annotated, Any
 
-from mcp.types import Annotations
+from mcp.types import Annotations, ResourceTemplate as SDKResourceTemplate, CreateTaskResult
 from pydantic import Field, field_validator
 from pydantic.json_schema import SkipJsonSchema
 
@@ -10,7 +10,11 @@ from fastmcp.resources.template import match_uri_template
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
 
+
 if __debug__ and __import__("typing").TYPE_CHECKING:
+    from fastmcp.utilities.tasks import TaskMeta
+
+    from ..base import Resource
     from .function_template import FunctionResourceTemplate
 
 
@@ -79,7 +83,7 @@ class ResourceTemplate(FastMCPComponent):
 
     async def _read(
             self, uri: str, params: dict[str, Any], /, task_meta: TaskMeta | None = None
-    ) -> ResourceResult | mcp.types.CreateTaskResult:
+    ) -> ResourceResult | CreateTaskResult:
         """Server entry point that handles task routing.
 
         This allows ANY ResourceTemplate subclass to support background execution

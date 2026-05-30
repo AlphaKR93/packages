@@ -82,8 +82,8 @@ class ResourceDecoratorMixin:
         return self._add_component(template)
 
     def resource(self, uri, /, **kwargs):
-        assert inspect.isroutine(uri), "Invalid @resource decorator usage; it requires a URI as the first argument. " \
-                                       "Use @resource('uri') instead of @resource"
+        assert not inspect.isroutine(uri), "Invalid @resource decorator usage; it requires a URI as the first argument. " \
+                                           "Use @resource('uri') instead of @resource"
 
         if isinstance(annotations := kwargs.get("annotations"), dict):
             kwargs["annotations"] = Annotations(**annotations)
