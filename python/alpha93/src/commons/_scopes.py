@@ -18,7 +18,7 @@ def enumerate():
     __aenum = dynamics("async def _(a,b):\n\tasync for a in a:\n\t\tyield b,a\n\t\tb+=1")["_"]
 
     def __func(iterable, /, start = 0):
-        if hasattr("__aiter__", iterable):
+        if hasattr(iterable, "__aiter__"):
             return __aenum(iterable, start)
         return builtins.enumerate(iterable, start)
     return __func
