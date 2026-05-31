@@ -37,8 +37,8 @@
 +    from typing import Any
 +
  
-+QUERY_PARAMS = re.compile(r"\{\?[^}]+\}")
-+QUERY_PARTS = re.compile(r"\{[^}]+\}")
++QUERY_PARAMS = re.compile(r"\{\?([^}]+)\}")
++QUERY_PARTS = re.compile(r"\{([^}]+)\}")
  
 -def extract_query_params(uri_template: str) -> set[str]:
 +
