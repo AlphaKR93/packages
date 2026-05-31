@@ -192,7 +192,6 @@ class FastAPI(Starlette, Routable):
     def exception_handler(self, status_code: int, /) -> Wrapper[Callable[[Request, int], Any]]: ...
     @overload
     def exception_handler[T: BaseException](self, exc_type: type[T], /) -> Wrapper[Callable[[Request, T], Any]]: ...
-    @overload
     def exception_handler(
         self,
         status_code_or_exc_type: int | type[BaseException],
