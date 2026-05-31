@@ -1,5 +1,5 @@
 import builtins
-from collections.abc import Callable, Iterable, AsyncIterable, Mapping, Awaitable
+from collections.abc import Callable, Iterable, AsyncIterable, Mapping
 from types import CoroutineType
 from typing import Literal, overload, Protocol, Self, Any
 
@@ -17,12 +17,12 @@ def enumerate[T](
     iterable: Iterable[T], /, start: int = 0
 ) -> builtins.enumerate[T]: ...
 @overload
-async def enumerate[T](
+def enumerate[T](
     iterable: AsyncIterable[T], /, start: int = 0
-) -> AsyncEnumerate[T]: ...
+) -> AsyncIterable[tuple[int, T]]: ...
 def enumerate[T](
     iterable: Iterable[T] | AsyncIterable[T], /, start: int = 0
-) -> builtins.enumerate[T] | CoroutineType[Any, Any, AsyncEnumerate[T]]: ...
+) -> builtins.enumerate[T] | AsyncIterable[tuple[int, T]]: ...
 
 @overload
 def catch[T: BaseException = BaseException](
@@ -38,11 +38,6 @@ def catch[T: BaseException = BaseException](
     *exc_types: type[T],
     coro: bool = False,
 ) -> Catcher[T] | AsyncCatcher[T]: ...
-
-
-class AsyncEnumerate[T](Protocol):
-    async def __aiter__(self, /) -> Self: ...
-    async def __anext__(self, /) -> tuple[int, T]: ...
 
 
 class Catcher[E: BaseException](Protocol):
