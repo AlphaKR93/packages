@@ -1,6 +1,6 @@
 [project]
 name = "hatch-shadow"
-version = "0.1.21"
+version = "0.2.1"
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 description = "Hatch plugin for vendoring/shadowing dependencies"
 classifiers = [
