@@ -1,13 +1,13 @@
 from collections.abc import Callable
-from typing import ClassVar, Annotated, Any
+from typing import TYPE_CHECKING, ClassVar, Annotated, Any
 from warnings import deprecated
 
 import pydantic_core
-from commons.types import SequenceOr
 from mcp.shared.tool_name_validation import validate_and_warn_tool_name
 from mcp.types import ContentBlock, Tool as MCPTool, ToolAnnotations, ToolExecution
 from pydantic import Field, model_validator
 from pydantic.json_schema import SkipJsonSchema
+from alpha93.commons.types import SequenceOr
 
 from fastmcp.utilities.authorization import AuthCheck
 from fastmcp.utilities.components import FastMCPComponent
@@ -17,7 +17,7 @@ from fastmcp.utilities.types import File, Image, Audio, validate
 # Pydantic evaluates this annotation via model_rebuild(); it must be in module globals.
 ToolResultSerializerType = Callable[[Any], str]
 
-if __debug__ and __import__("typing").TYPE_CHECKING:
+if __debug__ and TYPE_CHECKING:
     from mcp.types import CreateTaskResult
 
     from fastmcp.tools.base import ToolResult, ToolResultSerializerType  # noqa: F811

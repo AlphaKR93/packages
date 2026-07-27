@@ -36,7 +36,7 @@ packages = ["src/alpha93"]
 
 [tool.hatch.build.targets.wheel.force-include]
 "src/mcp" = "mcp"
-"src/sse_starlette.py" = "sse_starlette.py"
+#"src/sse_starlette.py" = "sse_starlette.py"
 
 [tool.hatch.build.hooks.makepatch]
 dependencies = ["makepatch>=0.1.3"]

@@ -1,27 +1,29 @@
+from terser_hints import constant
+
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from commons.types import Coroutine
+    from .types import Coroutine
 
-constant = lambda _: _()
 
 def dynamics(source, /):
     locals_ = {}
     exec(source, None, locals_)
     return locals_
 
+
+# noinspection shadowing-builtins
 @constant
 def enumerate():
     import builtins
 
-    __aenum = dynamics("async def _(a,b):\n\tasync for a in a:\n\t\tyield b,a\n\t\tb+=1")["_"]
+    __aenumerate = dynamics("async def _(a,b):\n\tasync for a in a:yield b,a;b+=1")["_"]
 
     def __func(iterable, /, start = 0):
-        if hasattr(iterable, "__aiter__"):
-            return __aenum(iterable, start)
-        return builtins.enumerate(iterable, start)
+        return __aenumerate(iterable, start) if hasattr(iterable, "__aiter__") else builtins.enumerate(iterable, start)
     return __func
+
 
 def throw(cls, /, *args, caused_by = None, **kwargs):
     try:
@@ -30,6 +32,7 @@ def throw(cls, /, *args, caused_by = None, **kwargs):
     except cls as exc:
         for k, v in kwargs.items(): setattr(exc, k, v)
         return exc
+
 
 def catch(*types: type, coro: bool | None = None):
     if coro is None or coro:

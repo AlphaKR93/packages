@@ -1,7 +1,7 @@
 import functools
 
 import anyio.to_thread
-from commons import constant
+from terser_hints import constant
 
 
 if __debug__ and __import__("typing").TYPE_CHECKING:

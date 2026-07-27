@@ -1,6 +1,6 @@
 --- work/sources/fastmcp_slim/fastmcp/utilities/authorization.py
 +++ work/patched/fastmcp_slim/fastmcp/utilities/authorization.py
-@@ -4,25 +4,27 @@
+@@ -4,25 +4,26 @@
  allow access or False to deny it. They can also raise ``AuthorizationError`` to
  deny with a custom message; other exceptions are masked and treated as denial.
  """
@@ -14,16 +14,15 @@
  from dataclasses import dataclass
 -from typing import TYPE_CHECKING, cast
 +
-+from commons.types import AwaitableOr
++from alpha93.commons.types import AwaitableOr
  
  from fastmcp.exceptions import AuthorizationError
  
 -logger = logging.getLogger(__name__)
- 
--if TYPE_CHECKING:
 +if __debug__ and __import__("typing").TYPE_CHECKING:
 +    from commons.types import SequenceOr
-+
+ 
+-if TYPE_CHECKING:
      from fastmcp.server.auth import AccessToken
 -    from fastmcp.tools.base import Tool
 +    from fastmcp.tools import Tool
@@ -36,7 +35,7 @@
  @dataclass
  class AuthContext:
      """Context passed to auth check callables.
-@@ -37,14 +39,14 @@
+@@ -37,14 +38,14 @@
      component: FastMCPComponent
  
      @property
@@ -54,7 +53,7 @@
  
  
  def require_scopes(*scopes: str) -> AuthCheck:
-@@ -59,7 +61,7 @@
+@@ -59,7 +60,7 @@
      return check
  
  
@@ -63,7 +62,7 @@
      """Require scopes when the accessed component has a specific tag."""
      required = set(scopes)
  
-@@ -73,13 +75,9 @@
+@@ -73,13 +74,9 @@
      return check
  
  

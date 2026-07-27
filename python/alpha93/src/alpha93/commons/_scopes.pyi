@@ -1,12 +1,10 @@
 import builtins
 from collections.abc import Callable, Iterable, AsyncIterable, Mapping
-from types import CoroutineType
-from typing import Literal, overload, Protocol, Self, Any
+from typing import Literal, overload, Protocol, Any
+from warnings import deprecated
 
-from commons.types import Coroutine
+from .types import Coroutine
 
-
-def constant[T](func: Callable[[], T]) -> T: ...
 
 def dynamics(source: str, /) -> Mapping[str, Any]: ...
 

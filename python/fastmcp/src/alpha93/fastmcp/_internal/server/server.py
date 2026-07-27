@@ -4,16 +4,17 @@ import secrets
 from contextlib import asynccontextmanager
 from dataclasses import replace
 from functools import partial
-from typing import Any, cast, override
+from typing import TYPE_CHECKING, Any, cast, override
 
 import httpx
 import mcp.types
-from commons import catch
+from alpha93.commons import catch
 from key_value.aio.adapters.pydantic import PydanticAdapter
 from mcp.shared.exceptions import McpError
 from pydantic import AnyUrl
 from pydantic import ValidationError as PydanticValidationError
 
+import alpha93.fastmcp._internal.server.context as _ctx
 from fastmcp.exceptions import AuthorizationError, FastMCPError, NotFoundError, PromptError, ResourceError, ToolError
 from fastmcp.server.middleware.middleware import MiddlewareContext
 from fastmcp.server.mixins import LifespanMixin, MCPOperationsMixin, TransportMixin
@@ -26,10 +27,7 @@ from fastmcp.utilities.authorization import AuthContext, run_auth_checks
 from fastmcp.utilities.components import _coerce_version
 from fastmcp.utilities.versions import version_sort_key
 
-import alpha93.fastmcp._internal.server.context as _ctx
-
-
-if __debug__ and __import__("typing").TYPE_CHECKING:
+if __debug__ and TYPE_CHECKING:
     from collections.abc import AsyncIterator, Awaitable, Callable, Mapping, MutableSequence, Sequence
     from contextlib import AbstractAsyncContextManager
     from typing import Final, Literal, TypeVar
