@@ -1,14 +1,15 @@
 from functools import lru_cache
 from types import UnionType
-from typing import Union, get_args, get_origin
+from typing import TYPE_CHECKING, Union, get_args, get_origin
+
+from terser_hints import constant
 
 from alpha93.fastapi._internal._compat.shared import lenient_issubclass
 from alpha93.fastapi._internal._compat.v2 import ModelField
-from commons import constant
 from pydantic import ValidationError, BaseModel
 
 
-if __debug__ and __import__("typing").TYPE_CHECKING:
+if __debug__ and TYPE_CHECKING:
     from typing import Any
 
 

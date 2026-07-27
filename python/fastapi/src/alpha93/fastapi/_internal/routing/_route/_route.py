@@ -31,13 +31,14 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from collections.abc import Callable, Sequence, Coroutine, Awaitable
     from typing import Any
 
-    from alpha93.fastapi._internal._compat.v2 import ModelField
-    from commons.types import AwaitableOr
-    from fastapi.params import Depends
-    from fastapi.types import GenerateUniqueIdFunction
+    from alpha93.commons.types import AwaitableOr
     from pydantic.main import IncEx
     from starlette.routing import BaseRoute
     from starlette.types import Scope, ASGIApp, Receive, Send
+
+    from alpha93.fastapi._internal._compat.v2 import ModelField
+    from fastapi.params import Depends
+    from fastapi.types import GenerateUniqueIdFunction
 
 
 # Copy of starlette.routing.request_response modified to include the

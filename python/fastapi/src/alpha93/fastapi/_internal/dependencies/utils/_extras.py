@@ -1,11 +1,12 @@
-from typing import get_args, get_origin
+from typing import TYPE_CHECKING, get_args, get_origin
+
+from pydantic import create_model
+from terser_hints import constant
 
 from alpha93.fastapi._internal.params import Body
-from commons import constant
 from fastapi.utils import create_model_field
-from pydantic import create_model
 
-if __debug__ and __import__("typing").TYPE_CHECKING:
+if __debug__ and TYPE_CHECKING:
     from collections.abc import Sequence
     from typing import Any
 

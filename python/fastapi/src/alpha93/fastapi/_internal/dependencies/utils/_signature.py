@@ -1,10 +1,10 @@
 import inspect
-from typing import ForwardRef
+from typing import TYPE_CHECKING, ForwardRef
 
-from commons import constant
+from terser_hints import constant
 from pydantic.v1.typing import evaluate_forwardref
 
-if __debug__ and __import__("typing").TYPE_CHECKING:
+if __debug__ and TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any, Final
 

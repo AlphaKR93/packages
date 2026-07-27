@@ -1,11 +1,11 @@
 from copy import deepcopy
 
-from alpha93.fastapi._internal._compat.shared import lenient_issubclass
-from alpha93.fastapi._internal.params._params import Param
-from commons import constant
 from pydantic import BaseModel
 from starlette.datastructures import ImmutableMultiDict, Headers
+from terser_hints import constant
 
+from alpha93.fastapi._internal._compat.shared import lenient_issubclass
+from alpha93.fastapi._internal.params._params import Param
 from .._base import get_validation_alias
 from .._pydantic_utils import get_missing_field_error, get_cached_model_fields, field_annotation_is_sequence
 

@@ -1,4 +1,4 @@
-from typing import override
+from typing import TYPE_CHECKING, override
 
 from fastapi.exception_handlers import http_exception_handler, request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
@@ -14,7 +14,7 @@ from starlette.middleware.exceptions import ExceptionMiddleware
 
 from .routing._routable import Routable
 
-if __debug__ and __import__("typing").TYPE_CHECKING:
+if __debug__ and TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 

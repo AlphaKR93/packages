@@ -3,14 +3,14 @@
 @@ -1,10 +1,11 @@
 -from collections.abc import Mapping, Sequence
 -from typing import Annotated, Any, TypedDict
-+from typing import TypedDict
++from typing import TYPE_CHECKING, TypedDict
  
 -from annotated_doc import Doc
  from pydantic import BaseModel, create_model
  from starlette.exceptions import HTTPException as StarletteHTTPException
 -from starlette.exceptions import WebSocketException as StarletteWebSocketException
 +
-+if __debug__ and __import__("typing").TYPE_CHECKING:
++if __debug__ and TYPE_CHECKING:
 +    from collections.abc import Mapping, Sequence
 +    from typing import Any
  

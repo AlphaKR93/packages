@@ -1,12 +1,12 @@
-from commons import constant
+from terser_hints import constant
+
 from fastapi.dependencies.models import Dependant
 from fastapi.exceptions import DependencyScopeError
 from fastapi.utils import get_path_param_names
-from ._param import analyze_param
-
-from ._signature import get_typed_signature
-from ..._compat.shared import lenient_issubclass
 from ...._internal import params
+from ..._compat.shared import lenient_issubclass
+from ._param import analyze_param
+from ._signature import get_typed_signature
 
 
 if __debug__ and __import__("typing").TYPE_CHECKING:

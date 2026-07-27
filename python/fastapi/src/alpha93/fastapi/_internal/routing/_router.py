@@ -3,8 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi.datastructures import Default
 from fastapi.params import Depends
 from fastapi.utils import generate_unique_id as _default_generate_unique_id, get_value_or_default
-from starlette.responses import Response, JSONResponse
-from starlette.routing import Router, _DefaultLifespan, BaseRoute, Route
+from starlette.responses import JSONResponse
+from starlette.routing import Router, _DefaultLifespan
 
 from ._route import APIRoute
 from ._routable import Routable
@@ -13,8 +13,11 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from collections.abc import Callable, Sequence, AsyncIterator, Mapping
     from typing import Any
 
-    from fastapi.types import GenerateUniqueIdFunction
+    from starlette.responses import Response
+    from starlette.routing import BaseRoute, Route
     from starlette.types import ASGIApp, Lifespan
+
+    from fastapi.types import GenerateUniqueIdFunction
 
 
 def _merge_lifespan_context(original_context: Lifespan[Any], nested_context: Lifespan[Any]) -> Lifespan[Any]:
@@ -110,6 +113,10 @@ class APIRouter(Router, Routable):
         /,
         *,
         route_class: type[APIRoute] | None = None,
+        response_model_by_alias = True,
+        response_model_exclude_unset = False,
+        response_model_exclude_defaults = False,
+        response_model_exclude_none = False,
         response_class: type[Response] = Default(JSONResponse),
         dependencies: Sequence[Depends] | None = None,
         callbacks: list[BaseRoute] | None = None,
@@ -117,6 +124,13 @@ class APIRouter(Router, Routable):
         strict_content_type: bool = Default(True),
         **kwargs,
     ) -> None:
+        kwargs.update({
+            "response_model_by_alias": response_model_by_alias,
+            "response_model_exclude_unset": response_model_exclude_unset,
+            "response_model_exclude_defaults": response_model_exclude_defaults,
+            "response_model_exclude_none": response_model_exclude_none,
+        })
+
         cls = route_class or self.route_class
         kwargs["response_class"] = get_value_or_default(response_class, self.default_response)
         kwargs["generate_unique_id"] = get_value_or_default(generate_unique_id, self.generate_unique_id)
