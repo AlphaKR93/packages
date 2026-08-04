@@ -10,3 +10,6 @@
 [submodule "python/mcp/work/sources"]
 	path = python/mcp/work/sources
 	url = git@github.com:modelcontextprotocol/python-sdk.git
+[submodule "langchain-core"]
+	path = python/langchain-core/work/sources
+	url = https://github.com/langchain-ai/langchain.git
