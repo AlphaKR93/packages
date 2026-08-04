@@ -1,0 +1,19 @@
+import sys
+from collections.abc import Callable
+from typing import Self
+
+from ._function import Function
+
+class Method[C, **P, T](Function[P, T]):
+    @property
+    def __self__(self) -> C: ...
+    @property
+    def __func__(self) -> Function[P, T]: ...
+
+    def __new__(cls, func: Callable[P, T], instance: C, /) -> Self: ...
+
+    if sys.version_info >= (3, 13):
+        def __get__(self, instance: C, owner: type[C] | None = None, /) -> Self: ...
+
+    def __eq__(self, value: object, /) -> bool: ...
+    def __hash__(self) -> int: ...

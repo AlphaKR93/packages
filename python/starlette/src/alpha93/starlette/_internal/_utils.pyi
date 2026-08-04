@@ -1,14 +1,15 @@
-from collections.abc import Callable, Awaitable, Generator
+from collections.abc import Awaitable, Callable, Generator
 from contextlib import AbstractAsyncContextManager, contextmanager
-from typing import Any, TypeIs, overload, TypeVar, Protocol
+from typing import Any, Protocol, TypeGuard, TypeVar, overload
+
+from alpha93.commons.types import AwaitableOr
 
 from starlette.types import Scope
 
-
 @overload
-def is_async_callable[T](obj: Callable[..., Awaitable[T]], /) -> TypeIs[Callable[..., Awaitable[T]]]: ...
+def is_async_callable[T](obj: Callable[..., AwaitableOr[T]], /) -> TypeGuard[Callable[..., Awaitable[T]]]: ...
 @overload
-def is_async_callable(obj: Any, /) -> TypeIs[Callable[..., Awaitable[Any]]]: ...
+def is_async_callable(obj: Callable[..., Any], /) -> bool: ...
 
 T_co = TypeVar("T_co", covariant=True)
 class AwaitableOrContextManager(Awaitable[T_co], AbstractAsyncContextManager[T_co], Protocol[T_co]): ...

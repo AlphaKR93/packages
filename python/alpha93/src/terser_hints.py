@@ -1,6 +1,13 @@
-preserve_docstring = lambda x: x
-preserve_annotations = lambda x: x
+preserve_docstring = preserve_annotations = not_none = inline = lambda x: x
 constant = lambda x: x()
+unreachable = lambda: None
 
 
-__all__ = ("preserve_docstring", "preserve_annotations", "constant")
+__all__ = (
+    "constant",
+    "inline",
+    "not_none",
+    "preserve_annotations",
+    "preserve_docstring",
+    "unreachable",
+)

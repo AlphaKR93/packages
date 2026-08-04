@@ -34,17 +34,18 @@ dependencies = ["makepatch"]
 [tool.hatch.build.hooks.makepatch.options]
 module-source = "starlette"
 excludes = [
-    "websockets.py",
-    "types.py",
-    "testclient.py",
-    "templating.py",
-    "staticfiles.py",
-    "status.py",
-    "schemas.py",
-    "formparsers.py",
-    "config.py",
     "middleware/sessions.py",
     "middleware/wsgi.py",
+    "config.py",
+    "formparsers.py",
+    "routing.py",
+    "schemas.py",
+    "staticfiles.py",
+    "status.py",
+    "templating.py",
+    "testclient.py",
+    "types.py",
+    "websockets.py",
 ]
 dev-excludes = [
     ".github/**/*",
@@ -54,3 +55,6 @@ dev-excludes = [
     "mkdocs.yml",
     "CITATION.cff",
 ]
+
+[tool.ruff]
+src = ["src", "work/patched"]

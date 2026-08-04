@@ -1,15 +1,13 @@
 --- work/sources/starlette/_exception_handler.py
 +++ work/patched/starlette/_exception_handler.py
-@@ -1,26 +1,27 @@
+@@ -1,32 +1,26 @@
 -from __future__ import annotations
-+from ._utils import is_async_callable
-+from .concurrency import run_in_threadpool
-+from .exceptions import HTTPException
-+from .requests import Request
- 
--from typing import Any
 +if __debug__ and __import__("typing").TYPE_CHECKING:
 +    from typing import Any
+ 
+-from typing import Any
++    from .requests import Request
++    from .types import ASGIApp, ExceptionHandler, Message, Receive, Scope, Send
  
 -from starlette._utils import is_async_callable
 -from starlette.concurrency import run_in_threadpool
@@ -17,14 +15,13 @@
 -from starlette.requests import Request
 -from starlette.types import ASGIApp, ExceptionHandler, Message, Receive, Scope, Send
 -from starlette.websockets import WebSocket
-+    from .types import ASGIApp, ExceptionHandler, Message, Receive, Scope, Send
- 
--ExceptionHandlers = dict[Any, ExceptionHandler]
--StatusHandlers = dict[int, ExceptionHandler]
 +    type ExceptionHandlers = dict[Any, ExceptionHandler]
 +    type StatusHandlers = dict[int, ExceptionHandler]
  
+-ExceptionHandlers = dict[Any, ExceptionHandler]
+-StatusHandlers = dict[int, ExceptionHandler]
  
+-
 -def _lookup_exception_handler(exc_handlers: ExceptionHandlers, exc: Exception) -> ExceptionHandler | None:
 -    for cls in type(exc).__mro__:
 +def _lookup_exception_handler(exc_handlers: ExceptionHandlers, exc: Exception, /) -> ExceptionHandler | None:
@@ -40,12 +37,47 @@
 +def wrap_app_handling_exceptions(app: ASGIApp, conn: Request, /) -> ASGIApp:
      exception_handlers: ExceptionHandlers
      status_handlers: StatusHandlers
-     try:
-@@ -51,6 +52,7 @@
+-    try:
+-        exception_handlers, status_handlers = conn.scope["starlette.exception_handlers"]
+-    except KeyError:
+-        exception_handlers, status_handlers = {}, {}
++    exception_handlers, status_handlers = conn.scope.get("starlette.exception_handlers", ({}, {}))
  
-             if handler is None:
-                 raise exc
-+            handler: ExceptionHandler
+     async def wrapped_app(scope: Scope, receive: Receive, send: Send) -> None:
+         response_started = False
+@@ -41,24 +35,22 @@
+         try:
+             await app(scope, receive, sender)
+         except Exception as exc:
+-            handler = None
+-
+-            if isinstance(exc, HTTPException):
+-                handler = status_handlers.get(exc.status_code)
+-
+-            if handler is None:
+-                handler = _lookup_exception_handler(exception_handlers, exc)
++            from ._utils import is_async_callable
++            from .concurrency import run_in_threadpool
++            from .exceptions import HTTPException
++
++            handler: ExceptionHandler | None = \
++                status_handlers.get(exc.status_code) if isinstance(exc, HTTPException) \
++                else _lookup_exception_handler(exception_handlers, exc)
+ 
+-            if handler is None:
+-                raise exc
++            if not handler:
++                raise
  
              if response_started:
                  raise RuntimeError("Caught handled exception, but response already started.") from exc
+ 
+-            if is_async_callable(handler):
+-                response = await handler(conn, exc)
+-            else:
+-                response = await run_in_threadpool(handler, conn, exc)
++            response = (await handler(conn, exc)) if is_async_callable(handler) else \
++                await run_in_threadpool(handler, conn, exc)
+             if response is not None:
+                 await response(scope, receive, sender)
+ 

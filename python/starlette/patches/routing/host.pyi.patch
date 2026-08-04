@@ -1,0 +1,6 @@
+--- work/sources/starlette/routing/host.pyi
++++ work/patched/starlette/routing/host.pyi
+@@ -0,0 +1,3 @@
++from alpha93.starlette._internal.routing._routes.host import Host
++
++__all__ = "Host",

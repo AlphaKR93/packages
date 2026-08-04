@@ -7,21 +7,18 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from .types import Coroutine
 
 
-def dynamics(source, /):
-    locals_ = {}
-    exec(source, None, locals_)
-    return locals_
-
-
 # noinspection shadowing-builtins
 @constant
 def enumerate():
     import builtins
 
-    __aenumerate = dynamics("async def _(a,b):\n\tasync for a in a:yield b,a;b+=1")["_"]
+    async def __aenumerate(iterable, start: int, /):
+        async for k in iterable:
+            yield start, k
+            start += 1
 
     def __func(iterable, /, start = 0):
-        return __aenumerate(iterable, start) if hasattr(iterable, "__aiter__") else builtins.enumerate(iterable, start)
+        return (__aenumerate if hasattr(iterable, "__aiter__") else builtins.enumerate)(iterable, start)
     return __func
 
 

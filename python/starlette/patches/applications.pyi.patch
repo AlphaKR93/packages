@@ -1,16 +1,17 @@
 --- work/sources/starlette/applications.pyi
 +++ work/patched/starlette/applications.pyi
-@@ -0,0 +1,94 @@
-+from collections.abc import Sequence, Callable, MutableSequence, Iterable
-+from typing import Any, Self, ParamSpec, overload
+@@ -0,0 +1,92 @@
++from collections.abc import Callable, Iterable, MutableSequence, Sequence
++from typing import Any, Self, overload
 +
-+from commons.types import AwaitableOr
++from alpha93.commons.types import AwaitableOr
++
 +from .datastructures import State, URLPath
 +from .middleware import Middleware, _MiddlewareFactory
 +from .requests import Request
 +from .responses import Response
 +from .routing import BaseRoute, Router
-+from .types import ASGIApp, ExceptionHandler, ExceptionHandlers, Lifespan, Send, Receive, Scope
++from .types import ASGIApp, ExceptionHandler, ExceptionHandlers, Lifespan
 +
 +class Starlette:
 +    """A Starlette ASGI application."""
@@ -50,9 +51,6 @@
 +                startup and shutdown tasks. This is a newer style that replaces the
 +                `on_startup` and `on_shutdown` handlers. Use one or the other, not both.
 +        """
-+        ...
-+
-+    async def __call__(self, scope: Scope, receive: Receive, send: Send, /) -> None: ...
 +
 +    def build_middleware_stack(self, /) -> ASGIApp: ...
 +    def url_path_for(self, name: str, /, **path_params: Any) -> URLPath: ...

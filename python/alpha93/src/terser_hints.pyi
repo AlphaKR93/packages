@@ -1,5 +1,5 @@
-from typing import Callable
-
+from collections.abc import Callable
+from typing import Never, TypeGuard
 
 def preserve_docstring[T: type | Callable](obj: T, /) -> T:
     """
@@ -8,7 +8,6 @@ def preserve_docstring[T: type | Callable](obj: T, /) -> T:
     a no-op at runtime.
     """
 
-
 def preserve_annotations[T: type | Callable](obj: T, /) -> T:
     """
     Marker decorator: tells terser to keep this function/class's type annotations
@@ -16,6 +15,11 @@ def preserve_annotations[T: type | Callable](obj: T, /) -> T:
     a no-op at runtime.
     """
 
+def inline[T: Callable](obj: T, /) -> T:
+    ...
+
+def not_none[T](value: T | None, /) -> T:
+    ...
 
 def constant[T](func: Callable[[], T], /) -> T:
     """
@@ -25,5 +29,14 @@ def constant[T](func: Callable[[], T], /) -> T:
     just calls `fn` once and returns its result.
     """
 
+def unreachable() -> Never:
+    ...
 
-__all__ = ("preserve_docstring", "preserve_annotations", "constant")
+__all__ = (
+    "constant",
+    "inline",
+    "not_none",
+    "preserve_annotations",
+    "preserve_docstring",
+    "unreachable",
+)

@@ -5,10 +5,10 @@
 +from contextlib import AbstractAsyncContextManager
 +from typing import Any, Protocol
 +
-+from commons.types import AwaitableOr
++from alpha93.commons.types import AwaitableOr
++
 +from starlette.requests import Request
 +from starlette.responses import Response
-+
 +
 +type StatelessLifespan[T] = Callable[[T], AbstractAsyncContextManager[None]]
 +type StatefulLifespan[T] = Callable[[T], AbstractAsyncContextManager[Mapping[str, Any]]]
