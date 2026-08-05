@@ -1,3 +1,11 @@
+[build-system]
+requires = ["hatchling", "makepatch>=0.2.5"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alpha93"]
+
+
 [project]
 name = "mcp-minimal"
 version = "1.27.1"
@@ -16,12 +24,8 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "makepatch",
+    "makepatch>=0.2.5",
 ]
-
-[build-system]
-requires = ["hatchling", "makepatch"]
-build-backend = "hatchling.build"
 
 [tool.uv]
 exclude-dependencies = ["python-dotenv", "starlette"]
@@ -31,16 +35,8 @@ alpha93 = { path = "../alpha93" }
 makepatch = { path = "../makepatch" }
 starlette-minimal = { path = "../starlette" }
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/alpha93"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"src/mcp" = "mcp"
-#"src/sse_starlette.py" = "sse_starlette.py"
 
 [tool.hatch.build.hooks.makepatch]
-dependencies = ["makepatch>=0.1.3"]
-
 [tool.hatch.build.hooks.makepatch.options]
 module-source = "src/mcp"
 excludes = [

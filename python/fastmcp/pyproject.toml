@@ -1,6 +1,21 @@
+[build-system]
+requires = ["hatchling", "makepatch>=0.2.5"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "patches/__init__.py.patch"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alpha93"]
+
+[tool.hatch.build.targets.wheel.force-include]
+#"src/fastmcp" = "fastmcp"
+
+
 [project]
 name = "fastmcp-minimal"
-dynamic = ["version"]
+version = "3.3.1"
+# dynamic = ["version"]
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 requires-python = "==3.14.*"
 dependencies = [
@@ -29,22 +44,8 @@ makepatch = { path = "../makepatch" }
 starlette-minimal = { path = "../starlette" }
 mcp-minimal = { path = "../mcp" }
 
-[build-system]
-requires = ["hatchling", "makepatch"]
-build-backend = "hatchling.build"
-
-[tool.hatch.version]
-path = "work/patched/fastmcp_slim/fastmcp/__init__.py"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/alpha93"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"src/fastmcp" = "fastmcp"
 
 [tool.hatch.build.hooks.makepatch]
-dependencies = ["makepatch"]
-
 [tool.hatch.build.hooks.makepatch.options]
 module-source = "fastmcp_slim/fastmcp"
 # module-name = "fastmcp"   # TODO: Resolve from [module-source] then add it to dependency

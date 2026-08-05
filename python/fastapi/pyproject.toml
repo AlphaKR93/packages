@@ -1,3 +1,14 @@
+[build-system]
+requires = ["hatchling", "makepatch>=0.2.5"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "work/sources/fastapi/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alpha93"]
+
+
 [project]
 name = "fastapi-minimal"
 dynamic = ["version"]
@@ -12,7 +23,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "makepatch",
+    "makepatch>=0.2.5",
 ]
 
 [tool.uv]
@@ -26,22 +37,8 @@ alpha93 = { path = "../alpha93" }
 makepatch = { path = "../makepatch" }
 starlette-minimal = { path = "../starlette" }
 
-[build-system]
-requires = ["hatchling", "makepatch"]
-build-backend = "hatchling.build"
-
-[tool.hatch.version]
-path = "work/sources/fastapi/__init__.py"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/alpha93"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"src/fastapi" = "fastapi"
 
 [tool.hatch.build.hooks.makepatch]
-dependencies = ["makepatch"]
-
 [tool.hatch.build.hooks.makepatch.options]
 module-source = "fastapi"
 excludes = [

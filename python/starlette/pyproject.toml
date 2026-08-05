@@ -1,3 +1,14 @@
+[build-system]
+requires = ["hatchling", "makepatch>=0.2.5"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "work/sources/starlette/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alpha93"]
+
+
 [project]
 name = "starlette-minimal"
 dynamic = ["version"]
@@ -9,28 +20,19 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["makepatch"]
+dev = [
+    "makepatch>=0.2.5"
+]
 
 [tool.uv.sources]
 alpha93 = { path = "../alpha93" }
 makepatch = { path = "../makepatch" }
 
-[build-system]
-requires = ["hatchling", "makepatch"]
-build-backend = "hatchling.build"
 
-[tool.hatch.version]
-path = "work/sources/starlette/__init__.py"
-
-[tool.hatch.build.targets.wheel]
-packages = ["src/alpha93"]
-
-[tool.hatch.build.targets.wheel.force-include]
-"src/starlette" = "starlette"
+[tool.ruff]
+src = ["src", "work/patched"]
 
 [tool.hatch.build.hooks.makepatch]
-dependencies = ["makepatch"]
-
 [tool.hatch.build.hooks.makepatch.options]
 module-source = "starlette"
 excludes = [
@@ -55,6 +57,3 @@ dev-excludes = [
     "mkdocs.yml",
     "CITATION.cff",
 ]
-
-[tool.ruff]
-src = ["src", "work/patched"]

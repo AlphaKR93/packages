@@ -49,6 +49,7 @@ class PatcherBuildHook(BuildHookInterface):
 
         patcher.copy(dst)
         self.__success = patcher.apply(dst)
+        build_data["force_include"][str(dst.relative_to(config.project_root))] = dst.name
 
     @override
     def finalize(self, version: str, build_data: dict[str, Any], artifact_path: str) -> None:
