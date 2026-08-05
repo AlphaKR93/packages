@@ -1,0 +1,46 @@
+[build-system]
+requires = ["uv_build>=0.11.18,<0.12.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "alpha93.commons"
+
+
+[project]
+name = "alpha93"
+version = "0.4.0"
+authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
+description = "Various common utility modules by @AlphaKR93"
+license = "MIT"
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Other Environment",
+    "Intended Audience :: Developers",
+
+    "Topic :: Utilities",
+    "Typing :: Typed",
+
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Programming Language :: Python :: Free Threading",
+    "Programming Language :: Python :: Free Threading :: 3 - Stable",
+]
+dependencies = [
+    "alpha93-stubs",
+    "terser-hints>=0.1.0",
+]
+
+[project.urls]
+# homepage = "https://alpha93.kr/project/python/commons"
+source = "https://github.com/AlphaKR93/packages/tree/main/python/alpha93"
+issues = "https://github.com/AlphaKR93/packages/issues"
+changelog = "https://github.com/AlphaKR93/packages/blob/main/python/alpha93/CHANGELOG.md"
+
+[tool.uv.sources]
+alpha93-stubs = { workspace = true }

@@ -4,7 +4,7 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from .types import Coroutine
+    from alpha93.types import ReturnsCoroutine
 
 
 # noinspection shadowing-builtins
@@ -31,9 +31,9 @@ def throw(cls, /, *args, caused_by = None, **kwargs):
         return exc
 
 
-def catch(*types: type, coro: bool | None = None):
+def catch(*types: type[BaseException], coro: bool | None = None):
     if coro is None or coro:
-        def acall[**P](fn: Coroutine[P, Any], /):
+        def acall[**P](fn: ReturnsCoroutine[P, Any], /):
             async def __func(*args: P.args, **kwargs: P.kwargs):
                 try: return await fn(*args, **kwargs), None
                 except types as e: return None, e
@@ -51,8 +51,8 @@ def catch(*types: type, coro: bool | None = None):
 
     import inspect
 
-    def __determine[**P](fn: Callable[P, Any] | Coroutine[P, Any], /):
+    def __determine[**P](fn: Callable[P, Any] | ReturnsCoroutine[P, Any], /):
         return acall(fn) \
             if inspect.iscoroutinefunction(fn) or inspect.isasyncgenfunction(fn) or inspect.isawaitable(fn) \
-            else call(fn)
+            else call(fn)  # ty: ignore[invalid-argument-type]
     return __determine

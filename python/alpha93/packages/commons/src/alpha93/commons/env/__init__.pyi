@@ -1,6 +1,5 @@
 from typing import overload
 
-
 @overload
 def get(name: str, default: str, /) -> str: ...
 @overload

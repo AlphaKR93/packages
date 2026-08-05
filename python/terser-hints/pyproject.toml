@@ -1,0 +1,59 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/terser_hints.py"]
+
+[tool.hatch.build.targets.force-include]
+"src/terser_hints.py" = "terser_hints.py"
+"src/terser_hints.pyi" = "terser_hints.pyi"
+
+
+[project]
+name = "terser-hints"
+version = "0.1.0"
+authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
+description = "Type hint stubs for py-terser"
+keywords = ["minify", "minifier", "uglify", "uglifier", "mangler", "compressor"]
+readme = "README.md"
+license = "MIT"
+classifiers = [
+    "Environment :: Console",
+    "Environment :: Plugins",
+    "Framework :: Hatch",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Pre-processors",
+    "Topic :: Text Processing :: General",
+    "Topic :: Utilities",
+
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    #"Programming Language :: Python :: 3.15",  # TODO
+    "Programming Language :: Python :: Free Threading",
+    "Programming Language :: Python :: Free Threading :: 3 - Stable",
+    "Programming Language :: Python :: Implementation :: CPython",
+
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+
+    "Development Status :: 3 - Alpha",
+]
+
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+
+
+[project.urls]
+source = "https://github.com/MadeByAlpha/py-terser.git"
+issues = "https://github.com/MadeByAlpha/py-terser/issues"

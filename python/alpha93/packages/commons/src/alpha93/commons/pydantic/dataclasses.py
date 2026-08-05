@@ -1,16 +1,18 @@
-from typing import TYPE_CHECKING
-
-from pydantic import BaseModel, ConfigDict, create_model, dataclasses
-
-if TYPE_CHECKING:
+if __debug__ and __import__("typing").TYPE_CHECKING:
     from typing import Any
+
     from _typeshed import DataclassInstance
+    from pydantic import BaseModel
 
 
-__PRESERVE_DOCSTRINGS = ConfigDict(use_attribute_docstrings=True)
+def to_model(dataclass: type[DataclassInstance], /) -> type[BaseModel]:
+    """
+    Converts `dataclasses.dataclass` class into `pydantic.BaseModel`.
+    """
 
-def to_model(dataclass: type[DataclassInstance]) -> type[BaseModel]:
-    _pydantic: Any = dataclasses.dataclass(dataclass, config=__PRESERVE_DOCSTRINGS)
+    from pydantic import BaseModel, ConfigDict, create_model, dataclasses
+
+    _pydantic: Any = dataclasses.dataclass(dataclass, config=ConfigDict(use_attribute_docstrings=True))
     return create_model(
         _pydantic.__name__,
         __base__=BaseModel,
