@@ -17,9 +17,12 @@ type AwaitableOr[T] = T | Awaitable[T]
 type Optional[T] = T
 """Helper type for Pydantic. Use with default or default_factory in `Annotated[Field()]`."""
 
-class AnyObject(Any):
-    def __init__(self, obj: Any | None = None, /):
-        ...
+def any_object(obj: Any | None = None, /) -> Any:
+    """
+    Returns ``obj`` or a new `object()` with ``Any`` type.
+
+    :param obj: The value to cast to ``Any``. Returns a new ``object()`` if ``None``.
+    """
 
 class __TypedGetter(Protocol):
     def __getitem__[T](self, item: type[T]) -> __Typed[T]: ...

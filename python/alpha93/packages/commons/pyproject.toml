@@ -8,7 +8,7 @@ module-name = "alpha93.commons"
 
 [project]
 name = "alpha93"
-version = "0.4.0"
+version = "0.4.1"
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 description = "Various common utility modules by @AlphaKR93"
 license = "MIT"

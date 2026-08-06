@@ -11,7 +11,7 @@ packages = ["src/alpha93/types/__init__.pyi"]
 
 [project]
 name = "alpha93-stubs"
-version = "0.1.0"
+version = "1.0.0"
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 description = "Some type stubs by @AlphaKR93"
 license = "MIT"

@@ -15,7 +15,7 @@ dynamic = ["version"]
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 requires-python = "==3.14.*"
 dependencies = [
-    "alpha93",
+    "alpha93>=0.4.1",
     "anyio>=4.13.0",
 ]
 
@@ -25,7 +25,6 @@ dev = [
 ]
 
 [tool.uv.sources]
-alpha93 = { path = "../alpha93/packages/commons" }
 makepatch = { path = "../makepatch" }
 
 

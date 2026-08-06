@@ -5,8 +5,7 @@ type SequenceOr[T] = T | Sequence[T]
 type Optional[T] = T | None
 Unset = ...
 
-# noinspection pep8-naming
-def AnyObject(obj: object | None = None, /):
+def any_object(obj: object | None = None, /):
     return obj or object()
 
 
