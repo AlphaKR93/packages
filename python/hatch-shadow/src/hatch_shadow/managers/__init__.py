@@ -1,4 +1,4 @@
-from ._managers import PackageManager
+from ._managers import PackageManager, PackageManagerError
 
 
-__all__ = ("PackageManager",)
+__all__ = ("PackageManager", "PackageManagerError")

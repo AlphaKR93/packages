@@ -6,3 +6,6 @@
 
 # Library
 /uv.lock
+
+# hatch-shadow build artifacts (see pyproject.toml of consumers)
+.shadow-vendor/
