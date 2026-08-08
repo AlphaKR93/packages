@@ -2,6 +2,11 @@
 
 ## 0.4.x
 
+### 0.4.2
+
+- Renamed `alpha93.commons.utils` into `alpha93.commons.collections`
+- Added `SingletonSequence` and `MutableSingletonSequence` in `alpha93.commons.collections`
+
 ### 0.4.1
 
 - Removed `alpha93.commons.types.AnyObject` and added `alpha93.commons.types.any_object()`<br/>

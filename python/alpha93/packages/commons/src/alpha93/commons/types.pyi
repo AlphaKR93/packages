@@ -2,9 +2,9 @@ from collections.abc import Awaitable, Sequence
 from typing import Any, Protocol
 
 __all__ = (
-    "AnyObject",
     "AwaitableOr",
     "SequenceOr",
+    "any_object",
     "typed",
 )
 

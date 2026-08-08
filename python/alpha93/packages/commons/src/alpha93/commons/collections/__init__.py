@@ -1,4 +1,5 @@
 from ._mapping import MappingAccessor, MutableMappingAccessor, accessor
+from ._singleton import MutableSingletonSequence, SingletonSequence
 
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from ._mapping import MappingLike, MutableMappingLike
@@ -8,5 +9,7 @@ __all__ = (
     "MappingLike",
     "MutableMappingAccessor",
     "MutableMappingLike",
+    "MutableSingletonSequence",
+    "SingletonSequence",
     "accessor",
 )
