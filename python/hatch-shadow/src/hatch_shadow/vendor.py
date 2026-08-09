@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import hashlib
+import os
 import shutil
+import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -9,15 +12,32 @@ from .managers import PackageManager, PackageManagerError
 if TYPE_CHECKING:
     from hatchling.bridge.app import Application
 
-VENDOR_DIRNAME = ".shadow-vendor"
+VENDOR_DIRNAME = "shadow-vendor"
 
 
 class VendorResolutionError(Exception):
     """Raised when dependencies cannot be resolved/vendored from the current build context."""
 
 
+def _cache_root() -> Path:
+    if cache_home := os.environ.get("XDG_CACHE_HOME"):
+        return Path(cache_home) / "hatch"
+    if sys.platform == "darwin":
+        return Path.home() / "Library" / "Caches" / "hatch"
+    if sys.platform == "win32":
+        local_app_data = os.environ.get("LOCALAPPDATA", str(Path.home() / "AppData" / "Local"))
+        return Path(local_app_data) / "hatch" / "Cache"
+    return Path.home() / ".cache" / "hatch"
+
+
 def vendor_dir(root: str) -> Path:
-    return Path(root) / VENDOR_DIRNAME
+    # Vendoring outside the project tree (rather than e.g. a `.shadow-vendor`
+    # directory at the project root) sidesteps VCS-based file selection
+    # entirely: a project-root directory must be un-ignored for the sdist to
+    # carry it, which defeats the purpose of `.gitignore`-ing build output.
+    resolved = Path(root).resolve()
+    key = hashlib.sha256(str(resolved).encode()).hexdigest()[:16]
+    return _cache_root() / VENDOR_DIRNAME / f"{resolved.name}-{key}"
 
 
 def is_vendored(root: str) -> bool:
@@ -26,7 +46,7 @@ def is_vendored(root: str) -> bool:
 
 
 def vendor(root: str, app: Application) -> Path:
-    """Resolve and vendor every runtime dependency of `root` into `.shadow-vendor`.
+    """Resolve and vendor every runtime dependency of `root` into a cache directory.
 
     Requires real filesystem access to the project's package manager context
     (e.g. a reachable `uv.lock`/workspace for uv-managed projects), so this
@@ -48,7 +68,7 @@ def vendor(root: str, app: Application) -> Path:
             "[shadow] Failed to resolve dependencies for vendoring. This usually means the build has "
             "no access to the package manager's workspace context (e.g. a wheel built from an "
             "isolated, extracted sdist). Run `hatch build -t shadow-vendor` from within the project's "
-            f"workspace first, so its `.shadow-vendor` directory can be reused by the `wheel` target.\n{e}"
+            f"workspace first, so its cached vendor directory can be reused by the `wheel` target.\n{e}"
         )
         raise VendorResolutionError(msg) from e
 

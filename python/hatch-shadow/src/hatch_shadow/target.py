@@ -7,7 +7,7 @@ from .vendor import vendor
 
 
 class ShadowVendorBuilder(BuilderInterface):
-    """Resolves and vendors runtime dependencies into `.shadow-vendor`.
+    """Resolves and vendors runtime dependencies into a cache directory.
 
     Runs against the live project tree, so it must be invoked from a context
     with real access to the package manager's workspace (e.g. `hatch build -t
