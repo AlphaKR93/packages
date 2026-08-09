@@ -24,24 +24,9 @@ class PatcherBuildHook(BuildHookInterface):
         config = self.__config
         patcher = self.__patcher
 
-        if patcher.has_sdist_cache():
+        if self.target_name == "wheel" and patcher.has_sdist_cache():
             dst = self.__dst = config.project_root / "src" / config.module_name
             build_data["force_include"][str(dst)] = dst.name
-            return
-
-        if patcher.setup_required():
-            patcher.resolve_sources()
-            patcher.resolve_src()
-
-            dst = config.project_root / "work/patched"
-            if dst.exists():
-                if not dst.is_dir(): raise RuntimeError(f"{dst} is not a directory")
-                shutil.rmtree(dst)
-            dst.mkdir(parents=True)
-
-            patcher.copy(dst)
-            patcher.apply(dst / config.module_source)
-            self.__success = False
             return
 
         patcher.resolve_src()

@@ -71,16 +71,16 @@ wheels = [
 
 [[package]]
 name = "makepatch"
-version = "0.2.6"
+version = "0.2.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "hatchling" },
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4c/88/01d17c3b24d781f3b0e8393c7daa734f6d70e7564afe57519c9fb0d40b7a/makepatch-0.2.6.tar.gz", hash = "sha256:448d2f0af792d632582dbedb993cb6467d0ddf65a38ec8e23be5c1d157a907c7", size = 20875, upload-time = "2026-08-09T06:03:32.416Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/95/b6/0435aa8347bc888655483deae7c8544f4740b3d07a8a071b101424a64bea/makepatch-0.2.7.tar.gz", hash = "sha256:a97b9ba5eaf61c2bd538cf0e6a7daa6d601a34acb8e943612e1d328e4cfa411a", size = 20886, upload-time = "2026-08-09T06:36:56.371Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/5b/5e/02a2089e05563eace121a84276685bfc58e335b14b030c4ce89a9462131c/makepatch-0.2.6-py3-none-any.whl", hash = "sha256:18eeed4830bc6158d347f3c908cf8114812e42582c736d2c4cdbeee80197893f", size = 9361, upload-time = "2026-08-09T06:03:31.335Z" },
+    { url = "https://files.pythonhosted.org/packages/83/22/a543b14d5288a5d14ca303d6c558267327f704e28c50c6c3c939935530e9/makepatch-0.2.7-py3-none-any.whl", hash = "sha256:5b51a6b155bb75d611c4461b7da0b834f35f7bc740027d5e8a2b0f5885fc10cd", size = 9333, upload-time = "2026-08-09T06:36:57.542Z" },
 ]
 
 [[package]]

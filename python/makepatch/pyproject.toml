@@ -16,7 +16,7 @@ rebuild-patches = "makepatch.scripts:rebuild_patches"
 [project]
 name = "makepatch"
 readme = "README.md"
-version = "0.2.6"
+version = "0.2.8"
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 description = "Hatch build hook to easily hard-fork packages with patches!"
 license = "MIT"

@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "makepatch>=0.2.6"]
+requires = ["hatchling", "makepatch @ file:///home/alphakr93/Documents/Projects/AlphaKR93/packages/main/python/makepatch"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
