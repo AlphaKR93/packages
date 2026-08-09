@@ -28,6 +28,9 @@ dev = [
 [tool.ruff]
 src = ["src", "work/patched"]
 
+[tool.ty.environment]
+root = ["src", "work/patched"]
+
 [tool.hatch.build.hooks.makepatch.options]
 module-source = "starlette"
 excludes = [
@@ -51,4 +54,6 @@ dev-excludes = [
     "tests/**/*",
     "mkdocs.yml",
     "CITATION.cff",
+    "pyproject.toml",
+    "uv.lock",
 ]

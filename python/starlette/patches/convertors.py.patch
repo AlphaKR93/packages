@@ -2,42 +2,18 @@
 +++ work/patched/starlette/convertors.py
 @@ -1,13 +1,11 @@
 -from __future__ import annotations
--
- import math
--import uuid
--from typing import Any, ClassVar, Generic, TypeVar
- 
--T = TypeVar("T")
 +if __debug__ and __import__("typing").TYPE_CHECKING:
 +    from typing import Any, ClassVar
-+    from uuid import UUID
- 
- 
+
+ import math
+ import uuid
+-from typing import Any, ClassVar, Generic, TypeVar
+
+-T = TypeVar("T")
+
+-
 -class Convertor(Generic[T]):
 +class Convertor[T]:
      regex: ClassVar[str] = ""
- 
+
      def convert(self, value: str) -> T:
-@@ -63,16 +61,18 @@
-         assert value >= 0.0, "Negative floats are not supported"
-         assert not math.isnan(value), "NaN values are not supported"
-         assert not math.isinf(value), "Infinite values are not supported"
--        return ("%0.20f" % value).rstrip("0").rstrip(".")
-+        return f"{value:0.20f}".rstrip("0").rstrip(".")
- 
- 
--class UUIDConvertor(Convertor[uuid.UUID]):
-+class UUIDConvertor(Convertor[UUID]):
-     regex = "[0-9a-fA-F]{8}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{4}-?[0-9a-fA-F]{12}"
- 
--    def convert(self, value: str) -> uuid.UUID:
-+    def convert(self, value: str) -> UUID:
-+        import uuid
-+
-         return uuid.UUID(value)
- 
--    def to_string(self, value: uuid.UUID) -> str:
-+    def to_string(self, value: UUID) -> str:
-         return str(value)
- 
- 

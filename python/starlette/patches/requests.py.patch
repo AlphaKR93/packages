@@ -10,9 +10,9 @@
  from http import cookies as http_cookies
 -from typing import TYPE_CHECKING, Any, Generic, NoReturn, cast
 +from typing import Any
- 
+
  import anyio
- 
+
 -from starlette._utils import AwaitableOrContextManager, AwaitableOrContextManagerWrapper
 -from starlette.datastructures import URL, Address, FormData, Headers, QueryParams, State
 -from starlette.exceptions import HTTPException
@@ -48,28 +48,28 @@
 +    from .routing import Router
 +    from .types import Message, Receive, Scope, Send
 +
- 
+
  SERVER_PUSH_HEADERS_TO_COPY = {
      "accept",
 @@ -74,17 +55,14 @@
      pass
- 
- 
+
+
 -StateT = TypeVar("StateT", bound=Mapping[str, Any] | State, default=State)
 -
 -
 -class HTTPConnection(Mapping[str, Any], Generic[StateT]):
-+class HTTPConnection(Mapping[str, Any]):
++class HTTPConnection[StateT : State | Mapping = State](Mapping[str, Any]):
      """
      A base class for incoming HTTP connections, that is used to provide
      any functionality that is common to both `Request` and `WebSocket`.
      """
- 
+
      def __init__(self, scope: Scope, receive: Receive | None = None) -> None:
 -        assert scope["type"] in ("http", "websocket")
 +        assert scope["type"] == "http"
          self.scope = scope
- 
+
      def __getitem__(self, key: str) -> Any:
 @@ -162,19 +140,11 @@
          # client is a 2 item tuple of (host, port), None if missing
@@ -78,7 +78,7 @@
 +            host_port: Any
              return Address(*host_port)
          return None
- 
+
      @property
 -    def session(self) -> dict[str, Any]:
 -        assert "session" in self.scope, "SessionMiddleware must be installed to access request.session"
@@ -92,45 +92,37 @@
      def auth(self) -> Any:
          assert "auth" in self.scope, "AuthenticationMiddleware must be installed to access request.auth"
          return self.scope["auth"]
-@@ -185,14 +155,14 @@
-         return self.scope["user"]
- 
-     @property
--    def state(self) -> StateT:
-+    def state(self) -> State:
-         if not hasattr(self, "_state"):
-             # Ensure 'state' has an empty dict if it's not already populated.
-             self.scope.setdefault("state", {})
+@@ -192,7 +162,7 @@
              # Create a state instance with a reference to the dict in which it should
              # store info
              self._state = State(self.scope["state"])
 -        return cast(StateT, self._state)
 +        return self._state
- 
+
      def url_for(self, name: str, /, **path_params: Any) -> URL:
          url_path_provider: Router | Starlette | None = self.scope.get("router") or self.scope.get("app")
 @@ -210,7 +180,7 @@
      raise RuntimeError("Send channel has not been made available")
- 
- 
+
+
 -class Request(HTTPConnection[StateT]):
 +class Request[StateT : State | Mapping = State](HTTPConnection[StateT]):
      _form: FormData | None
- 
+
      def __init__(self, scope: Scope, receive: Receive = empty_receive, send: Send = empty_send):
 @@ -224,7 +194,7 @@
- 
+
      @property
      def method(self) -> str:
 -        return cast(str, self.scope["method"])
 +        return self.scope["method"]
- 
+
      @property
      def receive(self) -> Receive:
 @@ -258,58 +228,6 @@
              self._body = b"".join(chunks)
          return self._body
- 
+
 -    async def json(self) -> Any:
 -        if not hasattr(self, "_json"):  # pragma: no branch
 -            body = await self.body()
