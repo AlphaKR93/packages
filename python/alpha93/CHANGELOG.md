@@ -2,6 +2,11 @@
 
 ## 0.5.x
 
+### 0.5.1
+
+- Fixed `AttributeError` when attempting to access after `del MutableSingletonSequence.value` (now returns `None`
+  properly)
+
 ### 0.5.0
 
 - Bumped minor version to 0.5.0

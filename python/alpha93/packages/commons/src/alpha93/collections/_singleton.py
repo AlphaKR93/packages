@@ -132,12 +132,16 @@ class MutableSingletonSequence[T](MutableSequence[T], SingletonSequence[T], ABC)
 class SingletonList[T](MutableSingletonSequence[T], list[T]):
     # noinspection missing-constructor
     def __init__(self, value: T | None = None, /):
-        self.__value: T | None = value
+        if value is not None:
+            self.__value: T = value
 
     @override
     @property
     def value(self) -> T | None:
-        return self.__value
+        try:
+            return self.__value
+        except AttributeError:
+            return None
 
     @value.setter
     def value(self, value: T):

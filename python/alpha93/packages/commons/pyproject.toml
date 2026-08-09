@@ -8,7 +8,7 @@ namespace = true
 
 [project]
 name = "alpha93"
-version = "0.5.0"
+version = "0.5.1"
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 description = "Various common utility modules by @AlphaKR93"
 license = "MIT"
