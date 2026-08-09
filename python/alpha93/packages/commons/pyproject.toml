@@ -3,12 +3,12 @@ requires = ["uv_build>=0.11.18,<0.12.0"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
-module-name = "alpha93.commons"
+namespace = true
 
 
 [project]
 name = "alpha93"
-version = "0.4.2"
+version = "0.5.0"
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 description = "Various common utility modules by @AlphaKR93"
 license = "MIT"

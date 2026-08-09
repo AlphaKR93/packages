@@ -1,5 +1,14 @@
 # Changelogs
 
+## 0.5.x
+
+### 0.5.0
+
+- Bumped minor version to 0.5.0
+- Migrated `alpha93.commons.collections` to `alpha93.collections`
+- Moved constructor of `SingletonSequence` and `MutableSingletonSequence` to `SingletonTuple` and `SingletonList`
+- Added `alpha93.collections.utils`
+
 ## 0.4.x
 
 ### 0.4.2

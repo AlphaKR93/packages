@@ -7,15 +7,10 @@ if __debug__ and TYPE_CHECKING:
     from typing import Final, SupportsIndex
 
 
-__all__ = "MutableSingletonSequence", "SingletonSequence"
+__all__ = "MutableSingletonSequence", "SingletonList", "SingletonSequence", "SingletonTuple"
 
 class SingletonSequence[T](Sequence[T], ABC):
     __slots__ = ()
-
-    def __new__(cls, value: T, /):
-        if cls is SingletonSequence:
-            return _SingletonSequenceImpl(value)
-        return super().__new__(cls)
 
     @property
     @abstractmethod
@@ -42,7 +37,7 @@ class SingletonSequence[T](Sequence[T], ABC):
 
     @override
     def __reversed__(self, /):
-        return self.value
+        return iter(self)
 
     @override
     def index(self, value, start: SupportsIndex = 0, stop: SupportsIndex | None = None, /):
@@ -54,7 +49,7 @@ class SingletonSequence[T](Sequence[T], ABC):
     def count(self, value, /):
         return 1 if value == self.value else 0
 
-class _SingletonSequenceImpl[T](SingletonSequence[T], tuple[T]):
+class SingletonTuple[T](SingletonSequence[T], tuple[T]):
     def __init__(self, value: T, /):
         self.__value: Final[T] = value
 
@@ -70,11 +65,6 @@ class MutableSingletonSequence[T](MutableSequence[T], SingletonSequence[T], ABC)
         @override
         def index(self, value, start: SupportsIndex = 0, stop: SupportsIndex | None = None, /):
             ...
-
-    def __new__(cls, value: T | None = None, /):
-        if cls is SingletonSequence:
-            return _MutableSingletonSequenceImpl(value)
-        return super(MutableSequence).__new__(cls)
 
     @override
     def __len__(self, /):
@@ -139,7 +129,7 @@ class MutableSingletonSequence[T](MutableSequence[T], SingletonSequence[T], ABC)
             raise ValueError
         del self.value
 
-class _MutableSingletonSequenceImpl[T](MutableSingletonSequence[T], list[T]):
+class SingletonList[T](MutableSingletonSequence[T], list[T]):
     # noinspection missing-constructor
     def __init__(self, value: T | None = None, /):
         self.__value: T | None = value
