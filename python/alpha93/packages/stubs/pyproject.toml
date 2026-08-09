@@ -3,15 +3,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/alpha93/types/__init__.pyi"]
-
-[tool.hatch.build.targets.force-include]
-"src/alpha93/types" = "alpha93/types"
+packages = ["src/alpha93"]
 
 
 [project]
 name = "alpha93-stubs"
-version = "1.0.0"
+version = "1.0.1"
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 description = "Some type stubs by @AlphaKR93"
 license = "MIT"
