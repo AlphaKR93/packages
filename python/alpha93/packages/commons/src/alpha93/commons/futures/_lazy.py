@@ -6,7 +6,7 @@ from terser_hints import not_none
 if sys.version_info >= (3, 15):
     lazy = __lazy_import__  # noqa: F821
 else:
-    def lazy(name: str, /):
+    def __lazy_import__(name: str, /):
         try:
             return sys.modules[name]
         except KeyError:

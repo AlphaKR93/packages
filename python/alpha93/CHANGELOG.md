@@ -2,6 +2,14 @@
 
 ## 0.5.x
 
+### 0.5.3
+
+- Fixed incorrectly set `alpha93.commons.futures.__all__`
+
+### 0.5.2
+
+- Fixed incorrectly built `alpha93-stubs`
+
 ### 0.5.1
 
 - Fixed `AttributeError` when attempting to access after `del MutableSingletonSequence.value` (now returns `None`

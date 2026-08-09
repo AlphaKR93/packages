@@ -74,4 +74,6 @@ dev-excludes = [
     "CITATION.cff",
     "CONTRIBUTING.md",
     "SECURITY.md",
+    "pyproject.toml",
+    "uv.lock",
 ]

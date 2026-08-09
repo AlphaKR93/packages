@@ -18,7 +18,6 @@ if __debug__ and TYPE_CHECKING:
     from collections.abc import Callable
     from typing import Any
 
-    from fastapi.types import IncEx
     from starlette.middleware.base import DispatchFunction
     from starlette.types import ASGIApp, ExceptionHandler
 
