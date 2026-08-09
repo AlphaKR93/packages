@@ -38,7 +38,6 @@ excludes = [
     "middleware/wsgi.py",
     "config.py",
     "formparsers.py",
-    "routing.py",
     "schemas.py",
     "staticfiles.py",
     "status.py",
