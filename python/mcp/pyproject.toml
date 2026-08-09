@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "makepatch>=0.2.5"]
+requires = ["hatchling", "makepatch>=0.2.6"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
@@ -24,18 +24,16 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "makepatch>=0.2.5",
+    "makepatch>=0.2.6",
 ]
 
 [tool.uv]
 exclude-dependencies = ["python-dotenv", "starlette"]
 
 [tool.uv.sources]
-makepatch = { path = "../makepatch" }
 starlette-minimal = { path = "../starlette" }
 
 
-[tool.hatch.build.hooks.makepatch]
 [tool.hatch.build.hooks.makepatch.options]
 module-source = "src/mcp"
 excludes = [

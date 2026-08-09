@@ -27,18 +27,20 @@ wheels = [
 ]
 
 [[package]]
-name = "makepatch"
-version = "0.1.7"
+name = "makepatch-1"
+version = "0.2.5"
 source = { editable = "." }
 dependencies = [
     { name = "hatchling" },
     { name = "pydantic" },
+    { name = "typing-extensions", marker = "python_full_version < '3.15'" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "hatchling", specifier = ">=1.29.0" },
-    { name = "pydantic", specifier = ">=2.13.4" },
+    { name = "pydantic", specifier = ">=2.13.0" },
+    { name = "typing-extensions", marker = "python_full_version < '3.15'", specifier = ">=4.15.0" },
 ]
 
 [package.metadata.requires-dev]

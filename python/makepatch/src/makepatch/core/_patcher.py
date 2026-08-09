@@ -13,15 +13,14 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
 
 @final
 class PatchApplier:
-    if __debug__ and __import__("typing").TYPE_CHECKING:
-        __slots__ = (
-            "__config",
-            "__excludes",
-            "__excludes_dev",
-            "__patches",
-            "__src",
-            "__sources",
-        )
+    __slots__ = (
+        "__config",
+        "__excludes",
+        "__excludes_dev",
+        "__patches",
+        "__sources",
+        "__src",
+    )
 
     def __init__(self, config: PatcherConfig, /) -> None:
         self.__config: Final = config
@@ -34,6 +33,9 @@ class PatchApplier:
         # INTENDED: required for later use
         self.__src: Path | None = None
         self.__sources: Path | None = None
+
+    def has_sdist_cache(self, /):
+        return (self.__config.project_root / "src" / self.__config.module_name).resolve().exists()
 
     def setup_required(self, /):
         return not (self.__config.project_root / "work/patched").resolve().exists()

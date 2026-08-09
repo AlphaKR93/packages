@@ -2,6 +2,9 @@
 build-backend = "hatchling.build"
 requires = ["hatchling"]
 
+[tool.hatch.build.targets.wheel]
+packages = ["src/makepatch"]
+
 [project.entry-points.hatch]
 makepatch = "makepatch.__hooks__"
 
@@ -12,11 +15,12 @@ rebuild-patches = "makepatch.scripts:rebuild_patches"
 
 [project]
 name = "makepatch"
-version = "0.2.5"
+readme = "README.md"
+version = "0.2.6"
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 description = "Hatch build hook to easily hard-fork packages with patches!"
 license = "MIT"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -45,4 +49,8 @@ dev = []
 # homepage = "https://alpha93.kr/project/python/makepatch"
 source = "https://github.com/AlphaKR93/packages/tree/main/python/makepatch"
 issues = "https://github.com/AlphaKR93/packages/issues"
+changelogs = "https://github.com/AlphaKR93/packages/blob/main/python/makepatch/CHANGELOG.md"
 
+
+[tool.ruff]
+target-version = "py314"

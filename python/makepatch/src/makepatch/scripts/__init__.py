@@ -1,16 +1,17 @@
 import shutil
+import sys
 from pathlib import Path
 
 from makepatch._config import PatcherConfig
 from makepatch.core import PatchApplier
 
+from ._rebuild import rebuild_patches
+
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from typing import Final
 
 
-from ._rebuild import rebuild_patches
-
-def init_patches():
+def apply_patches():
     root: Final = Path(__import__("os").getcwd())
     config: Final = PatcherConfig.from_pyproject(root)
     patcher: Final = PatchApplier(config)
@@ -25,4 +26,7 @@ def init_patches():
     dst.mkdir(parents=True)
 
     patcher.copy(dst)
-    exit(not patcher.apply(dst / config.module_source))
+    sys.exit(not patcher.apply(dst / config.module_source))
+
+
+__all__ = "apply_patches", "rebuild_patches"

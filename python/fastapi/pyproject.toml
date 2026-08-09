@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "makepatch>=0.2.5"]
+requires = ["hatchling", "makepatch>=0.2.6"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
@@ -23,7 +23,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "makepatch>=0.2.5",
+    "makepatch>=0.2.6",
 ]
 
 [tool.uv]
@@ -33,11 +33,9 @@ exclude-dependencies = [
 ]
 
 [tool.uv.sources]
-makepatch = { path = "../makepatch" }
 starlette-minimal = { path = "../starlette" }
 
 
-[tool.hatch.build.hooks.makepatch]
 [tool.hatch.build.hooks.makepatch.options]
 module-source = "fastapi"
 excludes = [

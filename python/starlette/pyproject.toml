@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "makepatch>=0.2.5"]
+requires = ["hatchling", "makepatch>=0.2.6"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
@@ -24,14 +24,10 @@ dev = [
     "makepatch>=0.2.5"
 ]
 
-[tool.uv.sources]
-makepatch = { path = "../makepatch" }
-
 
 [tool.ruff]
 src = ["src", "work/patched"]
 
-[tool.hatch.build.hooks.makepatch]
 [tool.hatch.build.hooks.makepatch.options]
 module-source = "starlette"
 excludes = [
