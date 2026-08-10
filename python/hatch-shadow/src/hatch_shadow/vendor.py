@@ -14,6 +14,13 @@ if TYPE_CHECKING:
 
 VENDOR_DIRNAME = "shadow-vendor"
 
+# The name vendored files are embedded under, relative to the project root,
+# when they're bundled inside an sdist. `uv build` builds the wheel from a
+# freshly extracted copy of that sdist in an isolated cache directory with
+# no workspace access, so this lets that later wheel-from-sdist build find
+# the payload with nothing more than a lookup relative to its own root.
+EMBEDDED_VENDOR_DIRNAME = ".shadow-vendor"
+
 
 class VendorResolutionError(Exception):
     """Raised when dependencies cannot be resolved/vendored from the current build context."""
@@ -42,6 +49,15 @@ def vendor_dir(root: str) -> Path:
 
 def is_vendored(root: str) -> bool:
     vendor = vendor_dir(root)
+    return vendor.exists() and any(vendor.iterdir())
+
+
+def embedded_vendor_dir(root: str) -> Path:
+    return Path(root) / EMBEDDED_VENDOR_DIRNAME
+
+
+def is_embedded_vendored(root: str) -> bool:
+    vendor = embedded_vendor_dir(root)
     return vendor.exists() and any(vendor.iterdir())
 
 
