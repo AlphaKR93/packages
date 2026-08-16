@@ -4,24 +4,24 @@ requires-python = "==3.14.*"
 
 [[package]]
 name = "alpha93"
-version = "0.5.1"
+version = "0.5.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "alpha93-stubs" },
     { name = "terser-hints" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/44/d1/f2ec08447ba5f240d3ce7f3dfc09220fa3dc83e6a5d920fdba45282cd989/alpha93-0.5.1.tar.gz", hash = "sha256:d27f52067d6a990546afcd070d06f2daeccfe9c684c5d0f66867d7c6074b1a87", size = 5224, upload-time = "2026-08-09T06:06:02.699Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9a/59/de754f79bae1cfd314ae5589e9ce1fcdd4272df41e40c85ec2e33de67566/alpha93-0.5.3.tar.gz", hash = "sha256:9f35ae9a9c7aed5727a4ea8794192523face8337f86a0a4ef0265c1998828fdc", size = 5237, upload-time = "2026-08-09T08:18:55.172Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d3/3e/6657696b1b15bc9ed3bc88c2454c6b95119d3baca60162f366be29274ea0/alpha93-0.5.1-py3-none-any.whl", hash = "sha256:f18fc92a9e1f75515cdb4179b0ab42c0fc9e4944807384e8b6ff4c938a3ba23b", size = 10534, upload-time = "2026-08-09T06:06:01.648Z" },
+    { url = "https://files.pythonhosted.org/packages/61/cd/541be02ba6824de19cacfd4d01b8a29512e5ce4db115b78050e829737088/alpha93-0.5.3-py3-none-any.whl", hash = "sha256:6076337fdd28ee602026d5e23f0b8a12373ce4448e23219ef7dc1fe620c3103a", size = 10535, upload-time = "2026-08-09T08:18:54.203Z" },
 ]
 
 [[package]]
 name = "alpha93-stubs"
-version = "1.0.0"
+version = "1.0.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d0/4e/fafed37221dbf8337e08b738d2a09e767742f26cf52e737d0e24250cf1b9/alpha93_stubs-1.0.0.tar.gz", hash = "sha256:20bf17ba8c2c7b5b10dbfa8a1645ebba6548507f031d47641a31e2cb957195da", size = 1871, upload-time = "2026-08-06T10:34:02.783Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/39/d2/737303bd5fe1f9111a4754775b5a09b9a267d10874638dc1ebf40512fc7f/alpha93_stubs-1.0.1.tar.gz", hash = "sha256:02f8c63eef428e26728c4c743ed901471e3f295ea55b7432782944817e437295", size = 1851, upload-time = "2026-08-09T07:48:16.789Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/e3/3fcc1de89239307fd38136fed5d7c34055ec0d3d67eecc0f96aa554652a7/alpha93_stubs-1.0.0-py3-none-any.whl", hash = "sha256:2b213ca0a7317552e4a25a9734feb8d1527f4533525ecec247033a2459fb0f1e", size = 1490, upload-time = "2026-08-06T10:34:03.832Z" },
+    { url = "https://files.pythonhosted.org/packages/59/fc/b572e2f671756c20425198688ad6cfdd10213fa5652861a0be437a859250/alpha93_stubs-1.0.1-py3-none-any.whl", hash = "sha256:c443a7e562da62c0842a51dee4bfeb629358db5995e16a9b1d9abcb4a7e5927a", size = 3008, upload-time = "2026-08-09T07:48:15.912Z" },
 ]
 
 [[package]]
@@ -71,16 +71,16 @@ wheels = [
 
 [[package]]
 name = "makepatch"
-version = "0.2.7"
+version = "0.2.8"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "hatchling" },
     { name = "pydantic" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/95/b6/0435aa8347bc888655483deae7c8544f4740b3d07a8a071b101424a64bea/makepatch-0.2.7.tar.gz", hash = "sha256:a97b9ba5eaf61c2bd538cf0e6a7daa6d601a34acb8e943612e1d328e4cfa411a", size = 20886, upload-time = "2026-08-09T06:36:56.371Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e4/65/eb1b0fce3277fc8bda7375e20c8adb917b903043f51ad0766155bde443f0/makepatch-0.2.8.tar.gz", hash = "sha256:cfb4e4317c6854f4d734a9c5a41b92c19363a220c8295e249ab76c06c0fbaaaa", size = 20882, upload-time = "2026-08-09T06:43:03.055Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/83/22/a543b14d5288a5d14ca303d6c558267327f704e28c50c6c3c939935530e9/makepatch-0.2.7-py3-none-any.whl", hash = "sha256:5b51a6b155bb75d611c4461b7da0b834f35f7bc740027d5e8a2b0f5885fc10cd", size = 9333, upload-time = "2026-08-09T06:36:57.542Z" },
+    { url = "https://files.pythonhosted.org/packages/ba/6f/f90faa8a88d616c56fc846ce752ec098941e65c1bada19f15b1bfcd93baa/makepatch-0.2.8-py3-none-any.whl", hash = "sha256:f0e56a96e415a1aa011a7e6d65297e8b37503c208b1948e0f3c2730a3c195998", size = 9307, upload-time = "2026-08-09T06:43:01.773Z" },
 ]
 
 [[package]]
@@ -190,11 +190,11 @@ dev = [{ name = "makepatch", specifier = ">=0.2.5" }]
 
 [[package]]
 name = "terser-hints"
-version = "0.1.0"
+version = "0.1.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d1/f1/a9bce7f49b96edf5e4c21be7a790298bd7db2b4fa3a09303ff69281d5635/terser_hints-0.1.0.tar.gz", hash = "sha256:361892923af9504f9730c654667aa4509971e7543ad82898d22fb2bfd4893647", size = 1751, upload-time = "2026-08-05T08:24:28.817Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7c/84/6149d5ee8bbbcf913e1a0e2b4dd428e6ae7c181584954794b27664d20aa6/terser_hints-0.1.1.tar.gz", hash = "sha256:a999070cc664bd17c04a830141001eb04ac42a5a1ea69a7026cf448f22132909", size = 1732, upload-time = "2026-08-09T07:53:44.088Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/10/f7/6f7e86b878066e9f11cc580f9ee98026835ef1eccc125d606ad1ed738df7/terser_hints-0.1.0-py3-none-any.whl", hash = "sha256:b609d653e3d589e41aceaba11d997b29919a9f1c2647b8f32f796b997b83204e", size = 1485, upload-time = "2026-08-05T08:24:27.589Z" },
+    { url = "https://files.pythonhosted.org/packages/73/8c/f733e5423cca7798659434f2b6ee5f10077091d27795e31cc2f6f47638b7/terser_hints-0.1.1-py3-none-any.whl", hash = "sha256:13dce48e54a857887abd2a28b24304d311be810fda1507f96aa1ef5a95178d62", size = 2112, upload-time = "2026-08-09T07:53:42.997Z" },
 ]
 
 [[package]]

@@ -1,13 +1,34 @@
 from abc import ABC, abstractmethod
 from collections.abc import MutableSequence, Sequence
-from typing import TYPE_CHECKING, override
+from typing import TYPE_CHECKING, ClassVar, override
 
 if __debug__ and TYPE_CHECKING:
     from collections.abc import Iterable
-    from typing import Final, SupportsIndex
+    from typing import Any, Final, SupportsIndex
 
 
-__all__ = "MutableSingletonSequence", "SingletonList", "SingletonSequence", "SingletonTuple"
+__all__ = "MetaSingleton", "MutableSingletonSequence", "Singleton", "SingletonList", "SingletonSequence", "SingletonTuple"
+
+class MetaSingleton(type):
+    """
+    Metaclass for implementing the Singleton pattern.
+    """
+
+    __instances: ClassVar[dict[type, Any]] = {}
+
+    def __call__(cls, /, *args, **kwargs) -> Any:
+        if cls not in cls.__instances:
+            cls.__instances[cls] = super().__call__(*args, **kwargs)
+        return cls.__instances[cls]
+
+
+class Singleton(metaclass=MetaSingleton):
+    """
+    Base class for implementing the Singleton pattern.
+    """
+
+    def __init__(self):
+        super().__init__()
 
 class SingletonSequence[T](Sequence[T], ABC):
     __slots__ = ()

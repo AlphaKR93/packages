@@ -1,5 +1,12 @@
 # Changelogs
 
+## 0.6.x
+
+### 0.6.0
+
+- Added `Singleton`, `Reference`, `GuardedValue` in `alpha93.collections`
+- Added `alpha93.commons.utils.exceptions`
+
 ## 0.5.x
 
 ### 0.5.3

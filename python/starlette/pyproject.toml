@@ -34,10 +34,11 @@ root = ["src", "work/patched"]
 [tool.hatch.build.hooks.makepatch.options]
 module-source = "starlette"
 excludes = [
-    "middleware/sessions.py",
-    "middleware/wsgi.py",
     "config.py",
     "formparsers.py",
+    "middleware/sessions.py",
+    "middleware/wsgi.py",
+    "routing.py",
     "schemas.py",
     "staticfiles.py",
     "status.py",

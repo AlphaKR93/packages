@@ -1,5 +1,5 @@
 from collections.abc import Callable
-from typing import Never, TypeGuard
+from typing import Never
 
 def preserve_docstring[T: type | Callable](obj: T, /) -> T:
     """
