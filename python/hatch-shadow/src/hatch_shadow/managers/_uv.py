@@ -1,9 +1,9 @@
 import os
 import tempfile
 from pathlib import Path
-from subprocess import PIPE, check_call, check_output
+from subprocess import CalledProcessError, run
 
-from hatch_shadow.managers import PackageManager
+from hatch_shadow.managers import PackageManager, PackageManagerError
 
 
 class UvPackageManager(PackageManager):
@@ -43,7 +43,7 @@ class UvPackageManager(PackageManager):
             # workspace members and local path dependencies have no prebuilt
             # wheel, so they are excluded here and installed separately.
             args += ["--no-emit-workspace", "--no-emit-local"]
-        return check_output(args, stderr=PIPE, text=True)
+        return _run(args).stdout
 
     @staticmethod
     def __local_specs(full: str, remote: str) -> list[str]:
@@ -67,12 +67,12 @@ class UvPackageManager(PackageManager):
         os.close(fd)
         try:
             Path(requirements_file).write_text(requirements)
-            check_call([
+            _run([
                 "uv", "pip", "install",
                 "--no-build",
                 "--requirements", requirements_file,
                 "--target", target,
-            ], stdout=PIPE, stderr=PIPE, cwd=cwd)
+            ], cwd=cwd)
         finally:
             Path(requirements_file).unlink()
 
@@ -81,9 +81,17 @@ class UvPackageManager(PackageManager):
         if not specs:
             return
 
-        check_call([
+        _run([
             "uv", "pip", "install",
             "--no-deps",
             "--target", target,
             *specs,
-        ], stdout=PIPE, stderr=PIPE, cwd=cwd)
+        ], cwd=cwd)
+
+
+def _run(args: list[str], *, cwd: Path | None = None):
+    try:
+        return run(args, cwd=cwd, capture_output=True, text=True, check=True)
+    except CalledProcessError as e:
+        msg = f"Command `{' '.join(args)}` failed:\n{e.stderr}"
+        raise PackageManagerError(msg) from e

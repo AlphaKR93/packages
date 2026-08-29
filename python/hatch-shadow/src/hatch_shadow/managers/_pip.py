@@ -1,9 +1,8 @@
 import sys
 from pathlib import Path
-from shlex import quote
-from subprocess import PIPE, check_call
+from subprocess import CalledProcessError, run
 
-from hatch_shadow.managers import PackageManager
+from hatch_shadow.managers import PackageManager, PackageManagerError
 
 
 class PipPackageManager(PackageManager):
@@ -12,7 +11,7 @@ class PipPackageManager(PackageManager):
         return (Path(root) / "requirements.txt").exists()
 
     def install_packages(self, target: str):
-        return check_call([
+        args = [
             sys.executable,
             "-m", "pip",
             "install",
@@ -20,7 +19,12 @@ class PipPackageManager(PackageManager):
             "--disable-pip-version-check",
             "--no-python-version-warning",
             "-r",
-            quote(str(Path(self.root) / "requirements.txt")),
+            str(Path(self.root) / "requirements.txt"),
             "-t",
-            quote(target),
-        ], stdout=PIPE, stderr=PIPE, shell=False)
+            target,
+        ]
+        try:
+            run(args, capture_output=True, text=True, check=True)
+        except CalledProcessError as e:
+            msg = f"Command `{' '.join(args)}` failed:\n{e.stderr}"
+            raise PackageManagerError(msg) from e

@@ -1,4 +1,10 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
+
+
+class PackageManagerError(Exception):
+    """Raised when a package manager fails to resolve/install dependencies."""
 
 
 class PackageManager(ABC):
