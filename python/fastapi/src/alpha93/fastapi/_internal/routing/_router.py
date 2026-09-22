@@ -3,10 +3,13 @@ from contextlib import asynccontextmanager
 from fastapi.datastructures import Default
 from fastapi.params import Depends
 from fastapi.utils import generate_unique_id as _default_generate_unique_id, get_value_or_default
-from starlette.responses import JSONResponse
-from starlette.routing import Router, _DefaultLifespan
+from starlette._utils import get_route_path
+from starlette.datastructures import URL
+from starlette.responses import JSONResponse, RedirectResponse
+from starlette.routing import Match, Router, _DefaultLifespan
 
-from ._route import APIRoute
+from ._include import _IncludedRouter, _RouterIncludeContext, _get_scope_included_router
+from ._route import APIRoute, APIWebSocketRoute
 from ._routable import Routable
 
 if __debug__ and __import__("typing").TYPE_CHECKING:
@@ -14,8 +17,8 @@ if __debug__ and __import__("typing").TYPE_CHECKING:
     from typing import Any
 
     from starlette.responses import Response
-    from starlette.routing import BaseRoute, Route
-    from starlette.types import ASGIApp, Lifespan
+    from starlette.routing import BaseRoute
+    from starlette.types import ASGIApp, Lifespan, Receive, Scope, Send
 
     from fastapi.types import GenerateUniqueIdFunction
 
@@ -98,10 +101,44 @@ class APIRouter(Router, Routable):
         self.default_response = default_response
         self.generate_unique_id = generate_unique_id
         self.strict_content_type = strict_content_type
+        self._routes_version = 0
+
+    def _mark_routes_changed(self, /) -> None:
+        self._routes_version += 1
+
+    def _get_routes_version(self, /, seen: set[int] | None = None) -> int:
+        if seen is None:
+            seen = set()
+        router_id = id(self)
+        if router_id in seen:
+            return self._routes_version
+        seen.add(router_id)
+        version = self._routes_version
+        for route in self.routes:
+            if isinstance(route, _IncludedRouter):
+                version += route.original_router._get_routes_version(seen)
+        return version
+
+    def _contains_router(self, router: "APIRouter", /, seen: set[int] | None = None) -> bool:
+        if seen is None:
+            seen = set()
+        router_id = id(self)
+        if router_id in seen:
+            return False
+        seen.add(router_id)
+        for route in self.routes:
+            if not isinstance(route, _IncludedRouter):
+                continue
+            if route.original_router is router:
+                return True
+            if route.original_router._contains_router(router, seen):
+                return True
+        return False
 
     def route(self, path: str, /, **kwargs):
         def decorator(func):
             self.add_route(path, func, **kwargs)
+            self._mark_routes_changed()
             return func
         return decorator
 
@@ -148,10 +185,34 @@ class APIRouter(Router, Routable):
 
         route = cls(self.prefix + path, endpoint, **kwargs)
         self.routes.append(route)
+        self._mark_routes_changed()
+
+    def add_api_websocket_route(
+        self,
+        path: str,
+        endpoint: Callable[..., Any],
+        /,
+        *,
+        name: str | None = None,
+        dependencies: Sequence[Depends] | None = None,
+    ) -> None:
+        current_dependencies = self.dependencies.copy()
+        if dependencies:
+            current_dependencies.extend(dependencies)
+
+        route = APIWebSocketRoute(
+            self.prefix + path,
+            endpoint,
+            name=name,
+            dependencies=current_dependencies,
+            dependency_overrides_provider=self.dependency_overrides_provider,
+        )
+        self.routes.append(route)
+        self._mark_routes_changed()
 
     def include_router(
         self,
-        router,
+        router: "APIRouter",
         /,
         prefix = "",
         dependencies = None,
@@ -163,6 +224,10 @@ class APIRouter(Router, Routable):
     ) -> None:
         """
         Include another `APIRouter` in the same current `APIRouter`.
+
+        This is lazy: routes contributed by `router` are resolved on demand
+        (and re-resolved whenever `router`'s own routes change), instead of
+        being eagerly cloned into `self.routes` at include time.
 
         Read more about it in the
         [FastAPI docs for Bigger Applications](https://fastapi.tiangolo.com/tutorial/bigger-applications/).
@@ -185,6 +250,9 @@ class APIRouter(Router, Routable):
         ```
         """
         assert self is not router, "Cannot include the same APIRouter instance into itself"
+        assert not router._contains_router(self), (
+            "Cannot include an APIRouter instance that already includes this router"
+        )
         if prefix:
             assert prefix.startswith("/"), "A path prefix must start with '/'"
             assert not prefix.endswith("/"), "A path prefix must not end with '/'"
@@ -193,50 +261,77 @@ class APIRouter(Router, Routable):
                 path = getattr(r, "path")  # noqa: B009
                 assert path, f"Prefix and path cannot be both empty (path operation: {getattr(r, "name", "unknown")})"
 
-        prefix += self.prefix
-        for route in router.routes:
-            route.path = prefix + route.path
-            if isinstance(route, APIRoute):
-                router: APIRouter
+        include_context = _RouterIncludeContext.for_include(
+            parent_router=self,
+            included_router=router,
+            prefix=prefix,
+            dependencies=dependencies,
+            default_response_class=default_response,
+            callbacks=callbacks,
+            generate_unique_id_function=generate_unique_id,
+            strict_content_type=strict_content_type,
+        )
+        self.routes.append(_IncludedRouter(original_router=router, include_context=include_context))
+        self._mark_routes_changed()
+        self.lifespan_context = _merge_lifespan_context(self.lifespan_context, router.lifespan_context)
 
-                current_dependencies = self.dependencies.copy()
-                if dependencies:
-                    current_dependencies.extend(dependencies)
-                if route.dependencies:
-                    current_dependencies.extend(route.dependencies)
-                route.dependencies = current_dependencies
+    async def app(self, scope: Scope, receive: Receive, send: Send, /) -> None:
+        # Same as starlette.routing.Router.app, but without the redirect_slashes
+        # low-priority pass that upstream added for frontend fallback routes
+        # (not supported by this fork).
+        assert scope["type"] in ("http", "websocket", "lifespan")
 
-                current_callbacks = self.callbacks.copy()
-                if callbacks:
-                    current_callbacks.extend(callbacks)
-                if route.callbacks:
-                    current_callbacks.extend(route.callbacks)
-                route.callbacks = current_callbacks
+        if "router" not in scope:
+            scope["router"] = self
 
-                route.response_class = get_value_or_default(
-                    route.response_class,
-                    router.default_response,
-                    default_response,
-                    self.default_response,
-                )
+        if scope["type"] == "lifespan":
+            await self.lifespan(scope, receive, send)
+            return
 
-                generate_unique_id_function = get_value_or_default(
-                    route.generate_unique_id_function,
-                    router.generate_unique_id,
-                    generate_unique_id,
-                    self.generate_unique_id,
-                )
+        partial = None
+        for route in self.routes:
+            match, child_scope = route.matches(scope)
+            if match == Match.FULL:
+                scope.update(child_scope)
+                await route.handle(scope, receive, send)
+                return
+            if match == Match.PARTIAL and partial is None:
+                partial = (route, child_scope)
 
-                route.strict_content_type = get_value_or_default(
-                    route.strict_content_type,
-                    router.strict_content_type,
-                    strict_content_type,
-                    self.strict_content_type
-                )
+        if partial is not None:
+            route, child_scope = partial
+            scope.update(child_scope)
+            await route.handle(scope, receive, send)
+            return
 
-                route.setup(route.path, route.operation_id, generate_unique_id_function)
-                self.routes.append(route)
-            elif isinstance(route, Route):
-                self.routes.append(route)
-        if router.lifespan_context:
-            self.lifespan_context = _merge_lifespan_context(self.lifespan_context, router.lifespan_context)
+        route_path = get_route_path(scope)
+        if scope["type"] == "http" and self.redirect_slashes and route_path != "/":
+            redirect_scope = dict(scope)
+            if route_path.endswith("/"):
+                redirect_scope["path"] = redirect_scope["path"].rstrip("/")
+            else:
+                redirect_scope["path"] = redirect_scope["path"] + "/"
+
+            for route in self.routes:
+                match, _ = route.matches(redirect_scope)
+                if match != Match.NONE:
+                    redirect_url = URL(scope=redirect_scope)
+                    response = RedirectResponse(url=str(redirect_url))
+                    await response(scope, receive, send)
+                    return
+
+        await self.default(scope, receive, send)
+
+    async def handle(self, scope: Scope, receive: Receive, send: Send, /) -> None:
+        included_router = _get_scope_included_router(scope)
+        if isinstance(included_router, _IncludedRouter) and included_router.original_router is self:
+            await included_router._handle_selected(scope, receive, send)
+            return
+        await self.app(scope, receive, send)
+
+    def matches(self, scope: Scope, /) -> tuple[Match, Scope]:
+        included_router = _get_scope_included_router(scope)
+        if isinstance(included_router, _IncludedRouter) and included_router.original_router is self:
+            match, child_scope, _, _ = included_router._match(scope)
+            return match, child_scope
+        return Match.NONE, {}

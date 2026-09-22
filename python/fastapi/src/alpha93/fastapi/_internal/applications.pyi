@@ -1,7 +1,8 @@
 from collections.abc import Sequence, MutableMapping, Callable
 from typing import Unpack, Self, Any, override, final, overload
 
-from commons.types import Wrapper
+from alpha93.types import Wrapper
+from fastapi.params import Depends
 from fastapi.routing import APIRouter
 from starlette._exception_handler import ExceptionHandlers
 from starlette.applications import Starlette
@@ -157,6 +158,17 @@ class FastAPI(Starlette, Routable):
 
     @override
     def include_router(self, router: APIRouter, /, **kwargs: Unpack[RouterParameters]): ...
+
+    @override
+    def add_api_websocket_route(
+        self,
+        path: str,
+        endpoint: Callable[..., Any],
+        /,
+        *,
+        name: str | None = None,
+        dependencies: Sequence[Depends] | None = None,
+    ) -> None: ...
 
     def middleware[T: DispatchFunction](self, /) -> Wrapper[T]:
         """

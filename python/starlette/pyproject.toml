@@ -38,14 +38,12 @@ excludes = [
     "formparsers.py",
     "middleware/sessions.py",
     "middleware/wsgi.py",
-    "routing.py",
     "schemas.py",
     "staticfiles.py",
     "status.py",
     "templating.py",
     "testclient.py",
     "types.py",
-    "websockets.py",
 ]
 dev-excludes = [
     ".github/**/*",

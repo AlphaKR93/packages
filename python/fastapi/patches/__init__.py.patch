@@ -1,8 +1,8 @@
 --- work/sources/fastapi/__init__.py
 +++ work/patched/fastapi/__init__.py
-@@ -2,24 +2,9 @@
+@@ -2,24 +2,10 @@
  
- __version__ = "0.136.1"
+ __version__ = "0.141.1"
  
 -from starlette import status as status
 -
@@ -27,7 +27,8 @@
 -from .websockets import WebSocketDisconnect as WebSocketDisconnect
 +from .applications import FastAPI
 +from .datastructures import UploadFile
-+from .exceptions import HTTPException
++from .exceptions import HTTPException, WebSocketException
 +from .params import Body, Cookie, Depends, Header, Path, Query, Security
 +from .requests import Request
 +from .routing import APIRouter
++from .websockets import WebSocket, WebSocketDisconnect

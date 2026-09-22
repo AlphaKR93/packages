@@ -1,6 +1,6 @@
 --- work/sources/starlette/middleware/exceptions.py
 +++ work/patched/starlette/middleware/exceptions.py
-@@ -1,19 +1,14 @@
+@@ -1,19 +1,15 @@
 -from __future__ import annotations
 -
 -from collections.abc import Mapping
@@ -17,9 +17,10 @@
 -from starlette.types import ASGIApp, ExceptionHandler, Receive, Scope, Send
 -from starlette.websockets import WebSocket
 +from .._exception_handler import wrap_app_handling_exceptions
-+from ..exceptions import HTTPException
++from ..exceptions import HTTPException, WebSocketException
 +from ..requests import Request
 +from ..responses import PlainTextResponse, Response
++from ..websockets import WebSocket
 +
 +if __debug__ and __import__("typing").TYPE_CHECKING:
 +    from collections.abc import Mapping
@@ -30,24 +31,7 @@
  
  class ExceptionMiddleware:
      def __init__(
-@@ -27,7 +22,6 @@
-         self._status_handlers: StatusHandlers = {}
-         self._exception_handlers: ExceptionHandlers = {
-             HTTPException: self.http_exception,
--            WebSocketException: self.websocket_exception,
-         }
-         if handlers is not None:  # pragma: no branch
-             for key, value in handlers.items():
-@@ -45,7 +39,7 @@
-             self._exception_handlers[exc_class_or_status_code] = handler
- 
-     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
--        if scope["type"] not in ("http", "websocket"):
-+        if scope["type"] != "http":
-             await self.app(scope, receive, send)
-             return
- 
-@@ -54,11 +48,7 @@
+@@ -54,11 +50,7 @@
              self._status_handlers,
          )
  
@@ -56,15 +40,7 @@
 -            conn = Request(scope, receive, send)
 -        else:
 -            conn = WebSocket(scope, receive, send)
-+        conn = Request(scope, receive, send)
++        conn: Request | WebSocket = Request(scope, receive, send) if scope["type"] == "http" else WebSocket(scope, receive, send)
  
          await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
  
-@@ -67,7 +57,3 @@
-         if exc.status_code in {204, 304}:
-             return Response(status_code=exc.status_code, headers=exc.headers)
-         return PlainTextResponse(exc.detail, status_code=exc.status_code, headers=exc.headers)
--
--    async def websocket_exception(self, websocket: WebSocket, exc: Exception) -> None:
--        assert isinstance(exc, WebSocketException)
--        await websocket.close(code=exc.code, reason=exc.reason)  # pragma: no cover

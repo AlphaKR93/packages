@@ -51,7 +51,7 @@
 
  SERVER_PUSH_HEADERS_TO_COPY = {
      "accept",
-@@ -74,17 +55,14 @@
+@@ -74,10 +55,7 @@
      pass
 
 
@@ -63,14 +63,6 @@
      """
      A base class for incoming HTTP connections, that is used to provide
      any functionality that is common to both `Request` and `WebSocket`.
-     """
-
-     def __init__(self, scope: Scope, receive: Receive | None = None) -> None:
--        assert scope["type"] in ("http", "websocket")
-+        assert scope["type"] == "http"
-         self.scope = scope
-
-     def __getitem__(self, key: str) -> Any:
 @@ -162,19 +140,11 @@
          # client is a 2 item tuple of (host, port), None if missing
          host_port = self.scope.get("client")

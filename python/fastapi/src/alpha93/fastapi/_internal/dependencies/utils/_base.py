@@ -1,6 +1,6 @@
 from terser_hints import constant
 
-from fastapi.dependencies.models import Dependant
+from fastapi.dependencies.models import Dependant, _get_computed_scope, _is_async_gen_callable, _is_gen_callable
 from fastapi.exceptions import DependencyScopeError
 from fastapi.utils import get_path_param_names
 from ...._internal import params
@@ -74,8 +74,8 @@ def get_dependant(
         if param_details.depends is not None:
             assert param_details.depends.dependency
             if (
-                (dependant.is_gen_callable or dependant.is_async_gen_callable)
-                and dependant.computed_scope == "request"
+                (_is_gen_callable(dependant.call) or _is_async_gen_callable(dependant.call))
+                and _get_computed_scope(dependant=dependant) == "request"
                 and param_details.depends.scope == "function"
             ):
                 assert dependant.call

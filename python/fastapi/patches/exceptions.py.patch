@@ -1,6 +1,6 @@
 --- work/sources/fastapi/exceptions.py
 +++ work/patched/fastapi/exceptions.py
-@@ -1,10 +1,11 @@
+@@ -1,11 +1,13 @@
 -from collections.abc import Mapping, Sequence
 -from typing import Annotated, Any, TypedDict
 +from typing import TYPE_CHECKING, TypedDict
@@ -8,15 +8,16 @@
 -from annotated_doc import Doc
  from pydantic import BaseModel, create_model
  from starlette.exceptions import HTTPException as StarletteHTTPException
--from starlette.exceptions import WebSocketException as StarletteWebSocketException
-+
+ from starlette.exceptions import WebSocketException as StarletteWebSocketException
+ 
 +if __debug__ and TYPE_CHECKING:
 +    from collections.abc import Mapping, Sequence
 +    from typing import Any
- 
++
  
  class EndpointContext(TypedDict, total=False):
-@@ -44,118 +45,14 @@
+     function: str
+@@ -44,41 +46,9 @@
  
      def __init__(
          self,
@@ -61,16 +62,10 @@
      ) -> None:
          super().__init__(status_code=status_code, detail=detail, headers=headers)
  
+@@ -92,65 +62,9 @@
  
--class WebSocketException(StarletteWebSocketException):
--    """
--    A WebSocket exception you can raise in your own code to show errors to the client.
--
--    This is for client errors, invalid authentication, invalid data, etc. Not for server
--    errors in your code.
--
--    Read more about it in the
--    [FastAPI docs for WebSockets](https://fastapi.tiangolo.com/advanced/websockets/).
+     Read more about it in the
+     [FastAPI docs for WebSockets](https://fastapi.tiangolo.com/advanced/websockets/).
 -
 -    ## Example
 -
@@ -102,8 +97,8 @@
 -            await websocket.send_text(f"Session cookie is: {session}")
 -            await websocket.send_text(f"Message text was: {data}, for item ID: {item_id}")
 -    ```
--    """
--
+     """
+ 
 -    def __init__(
 -        self,
 -        code: Annotated[
@@ -130,32 +125,11 @@
 -            ),
 -        ] = None,
 -    ) -> None:
--        super().__init__(code=code, reason=reason)
--
--
- RequestErrorModel: type[BaseModel] = create_model("Request")
--WebSocketErrorModel: type[BaseModel] = create_model("WebSocket")
++    def __init__(self, code: int, reason: str | None = None) -> None:
+         super().__init__(code=code, reason=reason)
  
  
- class FastAPIError(RuntimeError):
-@@ -221,16 +118,6 @@
-         self.body = body
- 
- 
--class WebSocketRequestValidationError(ValidationException):
--    def __init__(
--        self,
--        errors: Sequence[Any],
--        *,
--        endpoint_ctx: EndpointContext | None = None,
--    ) -> None:
--        super().__init__(errors, endpoint_ctx=endpoint_ctx)
--
--
- class ResponseValidationError(ValidationException):
-     def __init__(
-         self,
-@@ -241,16 +128,3 @@
+@@ -241,16 +155,3 @@
      ) -> None:
          super().__init__(errors, endpoint_ctx=endpoint_ctx)
          self.body = body

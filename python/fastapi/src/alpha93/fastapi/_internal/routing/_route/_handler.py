@@ -2,6 +2,7 @@ import email
 import inspect
 import json
 from collections.abc import Callable, Coroutine, AsyncIterator, Iterator
+from contextlib import asynccontextmanager
 from logging import warning
 from typing import Any
 
@@ -10,12 +11,13 @@ from alpha93.fastapi._contextlib import AsyncExitStack
 from alpha93.fastapi._internal._compat.v2 import ModelField
 from alpha93.fastapi._internal.dependencies.utils import solve_dependencies
 from fastapi.datastructures import DefaultPlaceholder
-from fastapi.dependencies.models import Dependant
+from fastapi.dependencies.models import Dependant, _is_async_gen_callable, _is_coroutine_callable, _is_gen_callable
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import HTTPException, EndpointContext, RequestValidationError, ResponseValidationError
+from fastapi.sse import ServerSentEvent, format_sse_event, KEEPALIVE_COMMENT, _PING_INTERVAL
 from fastapi.utils import is_body_allowed_for_status_code
 from pydantic.main import IncEx
-from starlette.concurrency import run_in_threadpool
+from starlette.concurrency import iterate_in_threadpool, run_in_threadpool
 from starlette.requests import Request
 from starlette.responses import Response, StreamingResponse
 
@@ -158,10 +160,14 @@ def get_request_handler(
     strict_content_type: bool,
     stream_item_field: ModelField | None,
     is_json_stream: bool,
+    is_sse_stream: bool = False,
 ) -> Callable[[Request], Coroutine[Any, Any, Response]]:
     assert dependant.call is not None, "dependant.call must be a function"
     response_class: type[Response] = response_class.value if isinstance(response_class, DefaultPlaceholder) \
         else response_class
+    is_async_gen = _is_async_gen_callable(dependant.call)
+    is_gen = _is_gen_callable(dependant.call)
+    is_coroutine = _is_coroutine_callable(dependant.call)
 
     async def solve(request: Request, endpoint_ctx: EndpointContext, /):
         # Solve dependencies and run path operation function, auto-closing dependencies
@@ -184,7 +190,7 @@ def get_request_handler(
             raise RequestValidationError(errors, body=body, endpoint_ctx=endpoint_ctx)
         return solved_result
 
-    if is_json_stream:
+    if is_sse_stream or is_json_stream:
         # Shared serializer for stream items.
         # Validates against stream_item_field when set, then
         # serializes to JSON bytes.
@@ -208,7 +214,99 @@ def get_request_handler(
                 # TODO: Customizable JSON provider
                 return json.dumps(data).encode("utf-8")
 
-        if dependant.is_async_gen_callable:
+    if is_sse_stream:
+        def _serialize_sse_item(ctx: EndpointContext, item: Any, /) -> bytes:
+            if isinstance(item, ServerSentEvent):
+                # User controls the event structure. Serialize the data
+                # payload if present. ServerSentEvent items skip
+                # stream_item_field validation (the user may mix types
+                # intentionally).
+                if item.raw_data is not None:
+                    data_str: str | None = item.raw_data
+                elif item.data is not None:
+                    if hasattr(item.data, "model_dump_json"):
+                        data_str = item.data.model_dump_json()
+                    else:
+                        data_str = json.dumps(jsonable_encoder(item.data))
+                else:
+                    data_str = None
+                return format_sse_event(
+                    data_str=data_str, event=item.event, id=item.id, retry=item.retry, comment=item.comment,
+                )
+            else:
+                return format_sse_event(data_str=_serialize_data(ctx, item).decode("utf-8"))
+
+        async def produce_response(ctx: EndpointContext, solved_result: SolvedDependency, request: Request, /):
+            # Generator endpoint: stream as Server-Sent Events
+            gen = dependant.call(**solved_result.values)
+            sse_aiter: AsyncIterator[Any] = gen.__aiter__() if is_async_gen else iterate_in_threadpool(gen)
+
+            async_exit_stack = request.scope.get("fastapi_inner_astack")
+            assert isinstance(async_exit_stack, AsyncExitStack), "fastapi_inner_astack not found in request scope"
+
+            @asynccontextmanager
+            async def _sse_producer_cm() -> AsyncIterator[Any]:
+                # Use a memory stream to decouple generator iteration from the
+                # keepalive timer. A producer task pulls items from the
+                # generator independently, so `anyio.fail_after` never wraps
+                # the generator's `__anext__` directly, avoiding
+                # CancelledError that would finalize the generator (and also
+                # working for sync generators running in a thread pool).
+                send_stream, receive_stream = anyio.create_memory_object_stream[bytes](max_buffer_size=1)
+
+                async def _producer() -> None:
+                    async with send_stream:
+                        async for raw_item in sse_aiter:
+                            await send_stream.send(_serialize_sse_item(ctx, raw_item))
+
+                send_keepalive, receive_keepalive = anyio.create_memory_object_stream[bytes](max_buffer_size=1)
+
+                async def _keepalive_inserter() -> None:
+                    async with send_keepalive, receive_stream:
+                        try:
+                            while True:
+                                try:
+                                    with anyio.fail_after(_PING_INTERVAL):
+                                        data = await receive_stream.receive()
+                                    await send_keepalive.send(data)
+                                except TimeoutError:
+                                    await send_keepalive.send(KEEPALIVE_COMMENT)
+                        except anyio.EndOfStream:
+                            pass
+
+                async with anyio.create_task_group() as tg:
+                    tg.start_soon(_producer)
+                    tg.start_soon(_keepalive_inserter)
+                    yield receive_keepalive
+                    tg.cancel_scope.cancel()
+
+            # Enter the SSE context manager on the request-scoped exit stack.
+            # The stack outlives the streaming response, so __aexit__ runs
+            # via proper structured teardown, not via GeneratorExit thrown
+            # into an async generator.
+            sse_receive_stream = await async_exit_stack.enter_async_context(_sse_producer_cm())
+            async_exit_stack.push_async_callback(sse_receive_stream.aclose)
+
+            async def _sse_with_checkpoints(stream: AsyncIterator[bytes]) -> AsyncIterator[bytes]:
+                async for data in stream:
+                    yield data
+                    # Guarantee a checkpoint so cancellation can be delivered
+                    # even when the producer is faster than the consumer.
+                    await anyio.sleep(0)
+
+            response_args = _build_response_args(status_code=status_code, solved_result=solved_result)
+            response = StreamingResponse(
+                _sse_with_checkpoints(sse_receive_stream),
+                media_type="text/event-stream",
+                **response_args,
+            )
+            response.headers["Cache-Control"] = "no-cache"
+            # For Nginx proxies to not buffer server sent events
+            response.headers["X-Accel-Buffering"] = "no"
+            response.headers.raw.extend(solved_result.response.headers.raw)
+            return response
+    elif is_json_stream:
+        if is_async_gen:
             async def _jsonl_stream(ctx: EndpointContext, generator) -> AsyncIterator[bytes]:
                 async for item in generator:
                     # noinspection PyTypeChecker
@@ -222,7 +320,7 @@ def get_request_handler(
                     # noinspection PyTypeChecker
                     yield _serialize_data(ctx, item) + b'\n'
 
-        async def produce_response(ctx: EndpointContext, solved_result: SolvedDependency, /):
+        async def produce_response(ctx: EndpointContext, solved_result: SolvedDependency, _request: Request, /):
             # Generator endpoint: stream as JSONL
             generator = dependant.call(**solved_result.values)
 
@@ -233,8 +331,8 @@ def get_request_handler(
             )
             response.headers.raw.extend(solved_result.response.headers.raw)
             return response
-    elif dependant.is_gen_callable or dependant.is_async_gen_callable:
-        if dependant.is_async_gen_callable:
+    elif is_gen or is_async_gen:
+        if is_async_gen:
             async def _raw_stream(**kwargs):
                 async for chunk in dependant.call(**kwargs):
                     yield chunk
@@ -245,7 +343,7 @@ def get_request_handler(
         else:
             call = dependant.call
 
-        async def produce_response(_: EndpointContext, solved_result: SolvedDependency, /):
+        async def produce_response(_: EndpointContext, solved_result: SolvedDependency, _request: Request, /):
             gen = call(**solved_result.values)
 
             response_args = _build_response_args(status_code=status_code, solved_result=solved_result)
@@ -259,8 +357,8 @@ def get_request_handler(
         else:
             _response = lambda content, args: response_class(content, **args)
 
-        async def produce_response(endpoint_ctx: EndpointContext, solved_result: SolvedDependency, /):
-            if dependant.is_coroutine_callable:
+        async def produce_response(endpoint_ctx: EndpointContext, solved_result: SolvedDependency, _request: Request, /):
+            if is_coroutine:
                 raw_response = await dependant.call(**solved_result.values)
             else:
                 raw_response = await run_in_threadpool(dependant.call, **solved_result.values)
@@ -285,7 +383,7 @@ def get_request_handler(
                 exclude_unset=response_model_exclude_unset,
                 exclude_defaults=response_model_exclude_defaults,
                 exclude_none=response_model_exclude_none,
-                is_coroutine=dependant.is_coroutine_callable,
+                is_coroutine=is_coroutine,
                 endpoint_ctx=endpoint_ctx,
                 dump_json=use_dump_json,
             )
@@ -305,6 +403,6 @@ def get_request_handler(
             endpoint_ctx["path"] = f"{request.method} {request.scope.get("root_path", "").rstrip("/")}{dependant.path}"
 
         solved_result = await solve(request, endpoint_ctx)
-        return await produce_response(endpoint_ctx, solved_result)
+        return await produce_response(endpoint_ctx, solved_result, request)
 
     return app

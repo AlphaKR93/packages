@@ -124,4 +124,15 @@ class APIRouter(Router, Routable):
     def add_api_route(self, path: str, endpoint: Callable[..., Any], /,  **kwargs: Unpack[RouteParams]): ...
 
     @override
+    def add_api_websocket_route(
+        self,
+        path: str,
+        endpoint: Callable[..., Any],
+        /,
+        *,
+        name: str | None = None,
+        dependencies: Sequence[Depends] | None = None,
+    ) -> None: ...
+
+    @override
     def include_router(self, router: Router, /, **kwargs: Unpack[RouterParameters]): ...

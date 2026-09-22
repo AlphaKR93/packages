@@ -23,9 +23,18 @@ class Routable(ABC):
     @abstractmethod
     def include_router(self, router, /, **kwargs): ...
 
+    @abstractmethod
+    def add_api_websocket_route(self, path, endpoint, /, **kwargs): ...
+
     def api_route(self, path, /, **kwargs):
         def wrapper(func: Callable[..., Any], /):
             self.add_api_route(path, func, **kwargs)
+            return func
+        return wrapper
+
+    def websocket(self, path, /, **kwargs):
+        def wrapper(func: Callable[..., Any], /):
+            self.add_api_websocket_route(path, func, **kwargs)
             return func
         return wrapper
 

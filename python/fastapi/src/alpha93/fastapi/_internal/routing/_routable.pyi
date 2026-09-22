@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
-from collections.abc import Callable, Sequence, Iterable
+from collections.abc import Awaitable, Callable, Sequence, Iterable
 from typing import Any, TypedDict, Unpack
 
 from alpha93.fastapi._internal.routing._router import RouterParameters
-from commons.types import Wrapper
+from alpha93.types import Wrapper
 from fastapi.params import Depends
 from fastapi.types import GenerateUniqueIdFunction
+from fastapi.websockets import WebSocket
 from pydantic.main import IncEx
 from starlette.responses import Response
 from starlette.routing import BaseRoute, Router, LiteralMethods, Route
@@ -385,5 +386,46 @@ class Routable(ABC):
         @app.trace("/items/{item_id}")
         def trace_item(item_id: str):
             return None
+        ```
+        """
+
+    @abstractmethod
+    def add_api_websocket_route(
+        self,
+        path: str,
+        endpoint: Callable[..., Any],
+        /,
+        *,
+        name: str | None = None,
+        dependencies: Sequence[Depends] | None = None,
+    ) -> None: ...
+
+    def websocket(
+        self,
+        path: str,
+        /,
+        *,
+        name: str | None = None,
+        dependencies: Sequence[Depends] | None = None,
+    ) -> Wrapper[Callable[[WebSocket], Awaitable[None]]]:
+        """
+        Decorate a WebSocket function.
+
+        Read more about it in the
+        [FastAPI docs for WebSockets](https://fastapi.tiangolo.com/advanced/websockets/).
+
+        ## Example
+
+        ```python
+        from fastapi import FastAPI, WebSocket
+
+        app = FastAPI()
+
+        @app.websocket("/ws")
+        async def websocket_endpoint(websocket: WebSocket):
+            await websocket.accept()
+            while True:
+                data = await websocket.receive_text()
+                await websocket.send_text(f"Message text was: {data}")
         ```
         """

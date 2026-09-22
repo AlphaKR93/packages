@@ -1,6 +1,7 @@
-from fastapi.dependencies.models import Dependant
+from fastapi.dependencies.models import Dependant, _get_cache_key, _get_oauth_scopes
 
 if __debug__ and __import__("typing").TYPE_CHECKING:
+    from fastapi.dependencies.models import _UsesScopesCache
     from fastapi.types import DependencyCacheKey
 
 
@@ -11,12 +12,15 @@ def get_flat_dependant(
     skip_repeats: bool = False,
     visited: list[DependencyCacheKey] | None = None,
     parent_oauth_scopes: list[str] | None = None,
+    uses_scopes_cache: "_UsesScopesCache | None" = None,
 ) -> Dependant:
     if visited is None:
         visited: list[DependencyCacheKey] = []
+    if uses_scopes_cache is None:
+        uses_scopes_cache = {}
 
-    visited.append(dependant.cache_key)
-    use_parent_oauth_scopes = (parent_oauth_scopes or []) + (dependant.oauth_scopes or [])
+    visited.append(_get_cache_key(dependant=dependant, uses_scopes_cache=uses_scopes_cache))
+    use_parent_oauth_scopes = (parent_oauth_scopes or []) + _get_oauth_scopes(dependant=dependant)
 
     flat_dependant = Dependant(
         path_params=dependant.path_params.copy(),
@@ -40,14 +44,15 @@ def get_flat_dependant(
     )
 
     for sub_dependant in dependant.dependencies:
-        if skip_repeats and sub_dependant.cache_key in visited:
+        if skip_repeats and _get_cache_key(dependant=sub_dependant, uses_scopes_cache=uses_scopes_cache) in visited:
             continue
 
         flat_sub = get_flat_dependant(
             sub_dependant,
             skip_repeats=skip_repeats,
             visited=visited,
-            parent_oauth_scopes=flat_dependant.oauth_scopes,
+            parent_oauth_scopes=_get_oauth_scopes(dependant=flat_dependant),
+            uses_scopes_cache=uses_scopes_cache,
         )
         flat_dependant.dependencies.append(flat_sub)
         flat_dependant.path_params.extend(flat_sub.path_params)

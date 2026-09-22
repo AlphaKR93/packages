@@ -1,6 +1,6 @@
 --- work/sources/fastapi/responses.py
 +++ work/patched/fastapi/responses.py
-@@ -1,98 +1,2 @@
+@@ -1,98 +1,3 @@
 -import importlib
 -from typing import Any, Protocol, cast
 -
@@ -30,13 +30,13 @@
 -try:
 -    ujson = cast(_UjsonModule, importlib.import_module("ujson"))
 -except ModuleNotFoundError:  # pragma: nocover
--    ujson = None  # type: ignore  # ty: ignore[unused-ignore-comment]
+-    ujson = None  # type: ignore[assignment]
 -
 -
 -try:
 -    orjson = cast(_OrjsonModule, importlib.import_module("orjson"))
 -except ModuleNotFoundError:  # pragma: nocover
--    orjson = None  # type: ignore  # ty: ignore[unused-ignore-comment]
+-    orjson = None  # type: ignore[assignment]
 -
 -
 -@deprecated(
@@ -99,5 +99,6 @@
 -        return orjson.dumps(
 -            content, option=orjson.OPT_NON_STR_KEYS | orjson.OPT_SERIALIZE_NUMPY
 -        )
++from fastapi.sse import EventSourceResponse
 +from starlette.responses import Response, PlainTextResponse, JSONResponse, FileResponse, HTMLResponse, StreamingResponse, RedirectResponse
-+__all__ = ("Response", "PlainTextResponse", "JSONResponse", "FileResponse", "HTMLResponse", "StreamingResponse", "RedirectResponse",)
++__all__ = ("Response", "PlainTextResponse", "JSONResponse", "FileResponse", "HTMLResponse", "StreamingResponse", "RedirectResponse", "EventSourceResponse",)

@@ -129,7 +129,7 @@
  ) -> Any:
      """
      Convert any object to something that can be encoded in JSON.
-@@ -336,11 +250,6 @@
+@@ -338,11 +252,6 @@
      for encoder, classes_tuple in encoders_by_class_tuples.items():
          if isinstance(obj, classes_tuple):
              return encoder(obj)

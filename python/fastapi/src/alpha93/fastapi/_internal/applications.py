@@ -104,6 +104,9 @@ class FastAPI(Starlette, Routable):
     def include_router(self, router, /, **kwargs):
         self.router.include_router(router, **kwargs)
 
+    def add_api_websocket_route(self, path: str, endpoint: Callable[..., Any], /, **kwargs):
+        self.router.add_api_websocket_route(path, endpoint, **kwargs)
+
     def middleware(self, /):
         def decorator(func: DispatchFunction):
             self.add_middleware(BaseHTTPMiddleware, dispatch=func)  # ty: ignore[invalid-argument-type]
