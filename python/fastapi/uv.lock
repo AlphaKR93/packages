@@ -63,6 +63,7 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "alpha93-stubs" },
     { name = "makepatch" },
 ]
 
@@ -75,7 +76,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "makepatch", specifier = ">=0.2.6" }]
+dev = [
+    { name = "alpha93-stubs", specifier = ">=1.0.0" },
+    { name = "makepatch", specifier = ">=0.2.6" },
+]
 
 [[package]]
 name = "hatchling"

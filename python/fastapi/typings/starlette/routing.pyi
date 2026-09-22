@@ -1,0 +1,185 @@
+import types
+from collections.abc import Awaitable, Callable, Collection, Sequence
+from contextlib import AbstractAsyncContextManager, AbstractContextManager
+from enum import Enum
+from re import Pattern
+from typing import Any, Self
+
+from .convertors import Convertor
+from .datastructures import URLPath
+from .middleware import Middleware
+from .requests import Request
+from .responses import Response
+from .types import ASGIApp, Lifespan, Receive, Scope, Send
+from .websockets import WebSocket
+
+class NoMatchFound(Exception):
+    """
+    Raised by `.url_for(name, **path_params)` and `.url_path_for(name, **path_params)`
+    if no matching route exists.
+    """
+    def __init__(self, name: str, path_params: dict[str, Any]) -> None: ...
+
+class Match(Enum):
+    NONE = ...
+    PARTIAL = ...
+    FULL = ...
+
+def request_response(
+    func: Callable[[Request], Awaitable[Response] | Response],
+) -> ASGIApp:
+    """
+    Takes a function or coroutine `func(request) -> response`,
+    and returns an ASGI application.
+    """
+
+def websocket_session(func: Callable[[WebSocket], Awaitable[None]]) -> ASGIApp:
+    """
+    Takes a coroutine `func(session)`, and returns an ASGI application.
+    """
+
+def get_name(endpoint: Callable[..., Any]) -> str: ...
+def replace_params(
+    path: str, param_convertors: dict[str, Convertor[Any]], path_params: dict[str, str]
+) -> tuple[str, dict[str, str]]: ...
+
+PARAM_REGEX = ...
+
+def compile_path(path: str) -> tuple[Pattern[str], str, dict[str, Convertor[Any]]]:
+    """
+    Given a path string, like: "/{username:str}",
+    or a host string, like: "{subdomain}.mydomain.org", return a three-tuple
+    of (regex, format, {param_name:convertor}).
+
+    regex:      "/(?P<username>[^/]+)"
+    format:     "/{username}"
+    convertors: {"username": StringConvertor()}
+    """
+
+class BaseRoute:
+    def matches(self, scope: Scope) -> tuple[Match, Scope]: ...
+    def url_path_for(self, name: str, /, **path_params: Any) -> URLPath: ...
+    async def handle(self, scope: Scope, receive: Receive, send: Send) -> None: ...
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """
+        A route may be used in isolation as a stand-alone ASGI app.
+        This is a somewhat contrived case, as they'll almost always be used
+        within a Router, but could be useful for some tooling and minimal apps.
+        """
+
+class Route(BaseRoute):
+    def __init__(
+        self,
+        path: str,
+        endpoint: Callable[..., Any],
+        *,
+        methods: Collection[str] | None = ...,
+        name: str | None = ...,
+        include_in_schema: bool = ...,
+        middleware: Sequence[Middleware] | None = ...,
+        max_body_size: int | None = ...,
+    ) -> None: ...
+    def matches(self, scope: Scope) -> tuple[Match, Scope]: ...
+    def url_path_for(self, name: str, /, **path_params: Any) -> URLPath: ...
+    async def handle(self, scope: Scope, receive: Receive, send: Send) -> None: ...
+    def __eq__(self, other: object) -> bool: ...
+
+class WebSocketRoute(BaseRoute):
+    def __init__(
+        self,
+        path: str,
+        endpoint: Callable[..., Any],
+        *,
+        name: str | None = ...,
+        middleware: Sequence[Middleware] | None = ...,
+    ) -> None: ...
+    def matches(self, scope: Scope) -> tuple[Match, Scope]: ...
+    def url_path_for(self, name: str, /, **path_params: Any) -> URLPath: ...
+    async def handle(self, scope: Scope, receive: Receive, send: Send) -> None: ...
+    def __eq__(self, other: object) -> bool: ...
+
+class Mount(BaseRoute):
+    def __init__(
+        self,
+        path: str,
+        app: ASGIApp | None = ...,
+        routes: Sequence[BaseRoute] | None = ...,
+        name: str | None = ...,
+        *,
+        middleware: Sequence[Middleware] | None = ...,
+        max_body_size: int | None = ...,
+    ) -> None: ...
+    @property
+    def routes(self) -> list[BaseRoute]: ...
+    def matches(self, scope: Scope) -> tuple[Match, Scope]: ...
+    def url_path_for(self, name: str, /, **path_params: Any) -> URLPath: ...
+    async def handle(self, scope: Scope, receive: Receive, send: Send) -> None: ...
+    def __eq__(self, other: object) -> bool: ...
+
+class Host(BaseRoute):
+    def __init__(self, host: str, app: ASGIApp, name: str | None = ...) -> None: ...
+    @property
+    def routes(self) -> list[BaseRoute]: ...
+    def matches(self, scope: Scope) -> tuple[Match, Scope]: ...
+    def url_path_for(self, name: str, /, **path_params: Any) -> URLPath: ...
+    async def handle(self, scope: Scope, receive: Receive, send: Send) -> None: ...
+    def __eq__(self, other: object) -> bool: ...
+
+class _AsyncLiftContextManager[_T](AbstractAsyncContextManager[_T]):  # noqa: UP049
+    def __init__(self, cm: AbstractContextManager[_T]) -> None: ...
+    async def __aenter__(self) -> _T: ...
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: types.TracebackType | None,
+    ) -> bool | None: ...
+
+class _DefaultLifespan:
+    def __init__(self, router: Router) -> None: ...
+    async def __aenter__(self) -> None: ...
+    async def __aexit__(self, *exc_info: object) -> None: ...
+    def __call__(self, app: object) -> Self: ...
+
+class Router:
+    def __init__(
+        self,
+        routes: Sequence[BaseRoute] | None = ...,
+        redirect_slashes: bool = ...,
+        default: ASGIApp | None = ...,
+        lifespan: Lifespan[Any] | None = ...,
+        *,
+        middleware: Sequence[Middleware] | None = ...,
+        max_body_size: int | None = ...,
+    ) -> None: ...
+    async def not_found(self, scope: Scope, receive: Receive, send: Send) -> None: ...
+    def url_path_for(self, name: str, /, **path_params: Any) -> URLPath: ...
+    async def lifespan(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """
+        Handle ASGI lifespan messages, which allows us to manage application
+        startup and shutdown events.
+        """
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        """
+        The main entry point to the Router class.
+        """
+
+    async def app(self, scope: Scope, receive: Receive, send: Send) -> None: ...
+    def __eq__(self, other: object) -> bool: ...
+    def mount(self, path: str, app: ASGIApp, name: str | None = ...) -> None: ...
+    def host(self, host: str, app: ASGIApp, name: str | None = ...) -> None: ...
+    def add_route(
+        self,
+        path: str,
+        endpoint: Callable[[Request], Awaitable[Response] | Response],
+        methods: Collection[str] | None = ...,
+        name: str | None = ...,
+        include_in_schema: bool = ...,
+    ) -> None: ...
+    def add_websocket_route(
+        self,
+        path: str,
+        endpoint: Callable[[WebSocket], Awaitable[None]],
+        name: str | None = ...,
+    ) -> None: ...

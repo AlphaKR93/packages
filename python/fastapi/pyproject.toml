@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling", "makepatch @ file:///home/alphakr93/Documents/Projects/AlphaKR93/packages/main/python/makepatch"]
+requires = ["hatchling", "makepatch"]
 build-backend = "hatchling.build"
 
 [tool.hatch.version]
@@ -23,6 +23,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "alpha93-stubs>=1.0.0",
     "makepatch>=0.2.6",
 ]
 
@@ -42,25 +43,12 @@ excludes = [
     ".agents/**/*",
     "_compat/**/*",
     "openapi/**/*",
-    "middleware/cors.py",
-    "middleware/gzip.py",
-    "middleware/httpsredirect.py",
-    "middleware/trustedhost.py",
-    "middleware/wsgi.py",
-    "security/oauth2.py",
-    "security/open_id_connect_url.py",
-    "dependencies/utils.py",
     "__main__.py",
     "cli.py",
-    "param_functions.py",
     "staticfiles.py",
     "templating.py",
     "testclient.py",
-    "background.py",
-    "logger.py",
-    "sse.py",
     "types.py",
-    "websockets.py",
 ]
 dev-excludes = [
     ".github/**/*",
