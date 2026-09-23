@@ -15,7 +15,6 @@ members = [
 
 [[package]]
 name = "alpha93"
-version = "0.5.2"
 source = { editable = "packages/commons" }
 dependencies = [
     { name = "alpha93-stubs" },
@@ -25,12 +24,11 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "alpha93-stubs", editable = "packages/stubs" },
-    { name = "terser-hints", specifier = ">=0.1.0" },
+    { name = "terser-hints", specifier = ">=0.1.1" },
 ]
 
 [[package]]
 name = "alpha93-stubs"
-version = "1.0.1"
 source = { editable = "packages/stubs" }
 
 [[package]]
@@ -99,8 +97,7 @@ wheels = [
 
 [[package]]
 name = "commons"
-version = "0.5.1"
-source = { virtual = "." }
+source = { editable = "." }
 
 [package.dev-dependencies]
 dev = [
@@ -309,11 +306,11 @@ wheels = [
 
 [[package]]
 name = "terser-hints"
-version = "0.1.0"
+version = "0.1.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d1/f1/a9bce7f49b96edf5e4c21be7a790298bd7db2b4fa3a09303ff69281d5635/terser_hints-0.1.0.tar.gz", hash = "sha256:361892923af9504f9730c654667aa4509971e7543ad82898d22fb2bfd4893647", size = 1751, upload-time = "2026-08-05T08:24:28.817Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7c/84/6149d5ee8bbbcf913e1a0e2b4dd428e6ae7c181584954794b27664d20aa6/terser_hints-0.1.1.tar.gz", hash = "sha256:a999070cc664bd17c04a830141001eb04ac42a5a1ea69a7026cf448f22132909", size = 1732, upload-time = "2026-08-09T07:53:44.088Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/10/f7/6f7e86b878066e9f11cc580f9ee98026835ef1eccc125d606ad1ed738df7/terser_hints-0.1.0-py3-none-any.whl", hash = "sha256:b609d653e3d589e41aceaba11d997b29919a9f1c2647b8f32f796b997b83204e", size = 1485, upload-time = "2026-08-05T08:24:27.589Z" },
+    { url = "https://files.pythonhosted.org/packages/73/8c/f733e5423cca7798659434f2b6ee5f10077091d27795e31cc2f6f47638b7/terser_hints-0.1.1-py3-none-any.whl", hash = "sha256:13dce48e54a857887abd2a28b24304d311be810fda1507f96aa1ef5a95178d62", size = 2112, upload-time = "2026-08-09T07:53:42.997Z" },
 ]
 
 [[package]]

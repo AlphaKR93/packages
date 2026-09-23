@@ -2,13 +2,16 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.hatch.version]
+path = "../../alpha93/__init__.pyi"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/alpha93"]
 
 
 [project]
 name = "alpha93-stubs"
-version = "1.0.1"
+dynamic = ["version"]
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 description = "Some type stubs by @AlphaKR93"
 license = "MIT"

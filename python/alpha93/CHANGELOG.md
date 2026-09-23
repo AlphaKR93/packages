@@ -1,5 +1,28 @@
 # Changelogs
 
+## 1.2.x
+
+### 1.2.2
+
+- PyCharm doesn't recognize `i` is the alias of `__call__`
+
+### 1.2.1
+
+- Forgot to add `alpha93.commons.types.constructor#i`
+
+### 1.2.0
+
+- Added `alpha93.commons.types.constructor` for PyCharm (it handles `__call__` incorrectly)<br>
+  Usage: `constructor[Foo].i(Foo.__init__)(*args, **kwargs)` (`i` is alias of `__call__`)
+
+## 1.1.x
+
+### 1.1.0
+
+- Merged versioning system (previously the version of `alpha93-stubs` was `1.0.1`)
+- Added `alpha93.commons.types.type_is`<br>
+  Example: `type_is[Iterable].hasattr(obj, "__iter__")`
+
 ## 0.6.x
 
 ### 0.6.0

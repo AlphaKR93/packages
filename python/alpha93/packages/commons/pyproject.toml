@@ -1,14 +1,17 @@
 [build-system]
-requires = ["uv_build>=0.11.18,<0.12.0"]
-build-backend = "uv_build"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
-[tool.uv.build-backend]
-namespace = true
+[tool.hatch.version]
+path = "../../alpha93/__init__.pyi"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/alpha93"]
 
 
 [project]
 name = "alpha93"
-version = "0.6.0"
+dynamic = ["version"]
 authors = [{ name = "Alpha", email = "dev@alpha93.kr" }]
 description = "Various common utility modules by @AlphaKR93"
 license = "MIT"
@@ -33,7 +36,7 @@ classifiers = [
 ]
 dependencies = [
     "alpha93-stubs",
-    "terser-hints>=0.1.0",
+    "terser-hints>=0.1.1",
 ]
 
 [project.urls]
