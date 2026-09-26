@@ -1,7 +1,8 @@
 from collections.abc import Awaitable, Sequence
 
 if __debug__ and __import__("typing").TYPE_CHECKING:
-    from typing import Any, TypeIs
+    from typing import Any, TypeGuard
+
 
 type AwaitableOr[T] = T | Awaitable[T]
 type SequenceOr[T] = T | Sequence[T]
@@ -12,20 +13,34 @@ def any_object(obj: object | None = None, /) -> Any:
     return obj or object()
 
 
-class typed[T]:
-    @staticmethod
-    def getattr(self, name: str, default = ..., /) -> T:  # noqa: PLW0211
-        return getattr(self, name) if default is ... else getattr(self, name, default)
+class typed:
+    __slots__ = ()
+
+    def __getitem__(self, typ, /):
+        return self.__Typed(typ)
+
+    class __Typed:
+        __slots__ = ("__type",)
+
+        def __init__(self, typ, /):
+            self.__type = typ
+
+        def __call__(self, init, /):
+            return self.__type
+
+        @staticmethod
+        def getattr(obj, name: str, default = ..., /):
+            return getattr(obj, name) if default is ... else getattr(obj, name, default)
+typed = typed() # type: ignore[ty:invalid-assignment]
+constructor = any_object(typed)
+
 
 class type_is[T]:
-    @staticmethod
-    def hasattr(self, attr: str, /) -> TypeIs[T]:
-        return hasattr(self, attr)
-
-class __ConstructorObject:
     __slots__ = ()
-    def __getitem__(self, typ, /):
-        call = lambda _: typ
-        setattr(call, "i", call)
-        return call
-constructor = any_object(__ConstructorObject())
+
+    def __new__(cls, obj, /):
+        return True
+
+    @staticmethod
+    def hasattr(obj, attr: str, /) -> TypeGuard[T]:
+        return hasattr(obj, attr)

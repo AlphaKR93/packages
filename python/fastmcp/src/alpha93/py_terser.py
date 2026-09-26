@@ -1,1 +1,0 @@
-keep_types = lambda _: _

@@ -1,6 +1,5 @@
-from collections.abc import Awaitable, Sequence, Callable
-from typing import Any, Protocol, TypeIs, Concatenate
-
+from collections.abc import Awaitable, Callable, Sequence
+from typing import Any, Concatenate, TypeGuard, overload
 
 __all__ = (
     "AwaitableOr",
@@ -10,15 +9,12 @@ __all__ = (
 )
 
 Unset: Any
-typed: __TypedAccessor
-type_is: __TypeIsAccessor
-constructor: __ConstructorAccessor
 
 type SequenceOr[T] = T | Sequence[T]
 type AwaitableOr[T] = T | Awaitable[T]
 
 type Optional[T] = T
-"""Helper type for Pydantic. Use with default or default_factory in `Annotated[Field()]`."""
+Optional.__doc__ = "Helper type for Pydantic. Use with default or default_factory in `Annotated[Field()]`." # noqa: PYI017
 
 def any_object(obj: Any | None = None, /) -> Any:
     """
@@ -27,18 +23,30 @@ def any_object(obj: Any | None = None, /) -> Any:
     :param obj: The value to cast to ``Any``. Returns a new ``object()`` if ``None``.
     """
 
-class __TypedAccessor(Protocol):
-    def __getitem__[T](self, typ: type[T]) -> __Typed[T]: ...
-    class __Typed[T](Protocol):
-        def getattr[U](self, obj, name: str, default: U = ...) -> T: ...
+class typed[T]:
+    __slots__ = ()
 
-class __TypeIsAccessor(Protocol):
-    def __getitem__[T](self, typ: type[T]) -> __TypeIs[T]: ...
-    class __TypeIs[T](Protocol):
-        def hasattr(self, obj, attr: str, /) -> TypeIs[T]: ...
+    def __new__[**P](cls, init: Callable[Concatenate[T, P], None], /) -> Callable[P, T]: ...
 
-class __ConstructorAccessor(Protocol):
-    def __getitem__[T](self, typ: type[T]) -> __Constructor[T]: ...
-    class __Constructor[T](Protocol):
-        def i[**P](self, init: Callable[Concatenate[T, P], None], /) -> Callable[P, T]: ...
-        def __call__[**P](self, init: Callable[Concatenate[T, P], None], /) -> Callable[P, T]: ...
+    @overload
+    @classmethod
+    def getattr(cls, obj: object, name: str, /) -> T: ...
+
+    @overload
+    @classmethod
+    def getattr[U = None](cls, obj: object, name: str, default: U = ..., /) -> T | U: ...
+
+class type_is[T]:
+    __slots__ = ()
+
+    def __new__(cls, obj: object, /) -> TypeGuard[T]: ...
+
+    @classmethod
+    def hasattr(cls, obj: object, attr: str, /) -> TypeGuard[T]: ...
+
+from warnings import deprecated
+
+@deprecated("Use typed instead.")
+class constructor[T]:
+    @deprecated("Use typed instead.")
+    def __new__[P](cls, init: Callable[Concatenate[T, P], None], /) -> Callable[P, T]: ...

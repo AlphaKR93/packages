@@ -2,7 +2,7 @@ import builtins
 from collections.abc import AsyncIterable, Callable, Iterable
 from typing import Any, Literal, Protocol, overload
 
-from .types import Coroutine
+from alpha93.types import ReturnsCoroutine
 
 def throw[T: BaseException](cls: type[T], /, *args, caused_by: BaseException | None = None, **kwargs) -> T: ...
 
@@ -37,7 +37,7 @@ class __Catch[E: BaseException](Protocol):
 
 
 class __AsyncCatch[E: BaseException](Protocol):
-    def __call__[**P, T](self, fn: Coroutine[P, T], /) -> Coroutine[P, tuple[T, E]]: ...
+    def __call__[**P, T](self, fn: ReturnsCoroutine[P, T], /) -> ReturnsCoroutine[P, tuple[T, E]]: ...
 
 
 class __AmbiguousCatch[E: BaseException](Protocol):

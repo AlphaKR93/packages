@@ -1,8 +1,0 @@
-### JetBrains IDEs
-/.idea/
-
-### Python
-/.venv/
-
-# Library
-/uv.lock

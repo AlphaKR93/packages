@@ -1,8 +1,0 @@
---- work/sources/fastapi/security/base.py
-+++ work/patched/fastapi/security/base.py
-@@ -1,4 +1,4 @@
--from fastapi.openapi.models import SecurityBase as SecurityBaseModel
-+from alpha93.fastapi.models import SecurityBase as SecurityBaseModel
- 
- 
- class SecurityBase:

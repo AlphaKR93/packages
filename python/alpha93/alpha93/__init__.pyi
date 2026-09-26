@@ -1,1 +1,3 @@
-__version__ = "1.2.2"
+# ruff: noqa: PYI052
+
+__version__ = "1.2.5"

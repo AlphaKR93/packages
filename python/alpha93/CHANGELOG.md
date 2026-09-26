@@ -2,6 +2,21 @@
 
 ## 1.2.x
 
+### 1.2.5
+
+- Implemented real fix of 1.2.4
+
+### 1.2.4
+
+- Fixed `alpha93.commons.types.typed` failed to initialize object
+
+### 1.2.3
+
+- Refactored `alpha93.commons.types`
+  - `constructor[T].__call__(T.__init__)` is now `typed[T](T.__init__)`
+  - Deprecated `constructor[T]`, will be removed in 1.3.0
+  - Added `type_is[T](object) -> TypeGuard[T]`
+
 ### 1.2.2
 
 - PyCharm doesn't recognize `i` is the alias of `__call__`
