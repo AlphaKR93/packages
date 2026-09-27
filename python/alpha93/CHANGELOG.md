@@ -2,6 +2,10 @@
 
 ## 1.2.x
 
+### 1.2.6
+
+- Fixed `ImportError` on Python 3.13
+
 ### 1.2.5
 
 - Implemented real fix of 1.2.4
