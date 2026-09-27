@@ -1,7 +1,10 @@
+from __future__ import annotations
+
 import weakref
 
 if __debug__ and __import__("typing").TYPE_CHECKING:
     from collections.abc import Callable
+
 
 class Reference[T]:
     """Lazy-initialized weakref wrapper"""

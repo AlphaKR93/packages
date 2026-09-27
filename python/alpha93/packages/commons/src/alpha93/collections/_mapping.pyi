@@ -1,7 +1,6 @@
 from abc import ABC
 from collections.abc import Mapping, MutableMapping
-from typing import Any, Final, overload, Protocol, override
-
+from typing import Any, Final, Protocol, overload, override
 
 class MappingLike[K, V](Protocol):
     def __getitem__(self, item: K, /) -> V: ...

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from collections.abc import Awaitable, Sequence
 
 if __debug__ and __import__("typing").TYPE_CHECKING:

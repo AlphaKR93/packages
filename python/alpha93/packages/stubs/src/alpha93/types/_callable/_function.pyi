@@ -4,6 +4,7 @@ from collections.abc import Callable
 from typing import Any, ParamSpec, Self, TypeVar, TypeVarTuple, overload
 
 from _typeshed import AnnotateFunc, AnnotationForm
+
 from alpha93.types import Method
 
 class Function[**P, T](Callable[P, T]):
@@ -16,8 +17,7 @@ class Function[**P, T](Callable[P, T]):
     __module__: str
     __kwdefaults__: dict[str, Any] | None
 
-    if sys.version_info >= (3, 12):
-        __type_params__: tuple[TypeVar | ParamSpec | TypeVarTuple, ...]
+    __type_params__: tuple[TypeVar | ParamSpec | TypeVarTuple, ...]
     if sys.version_info >= (3, 14):
         __annotate__: AnnotateFunc | None
 

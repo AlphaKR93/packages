@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 from collections.abc import MutableSequence, Sequence
 from typing import TYPE_CHECKING, ClassVar, override
@@ -7,7 +9,14 @@ if __debug__ and TYPE_CHECKING:
     from typing import Any, Final, SupportsIndex
 
 
-__all__ = "MetaSingleton", "MutableSingletonSequence", "Singleton", "SingletonList", "SingletonSequence", "SingletonTuple"
+__all__ = (
+    "MetaSingleton",
+    "MutableSingletonSequence",
+    "Singleton",
+    "SingletonList",
+    "SingletonSequence",
+    "SingletonTuple",
+)
 
 class MetaSingleton(type):
     """
